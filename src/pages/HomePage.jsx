@@ -5,6 +5,7 @@ import CourseCard from '../components/CourseCard';
 import LiveClassCard from '../components/LiveClassCard';
 import AnimalStrip from '../components/AnimalStrip';
 import { API_BASE, ANIMALS } from '../utils/constants';
+import { motion } from "framer-motion";
 
 export default function HomePage({ onAuth }) {
   const { user } = useAuth();

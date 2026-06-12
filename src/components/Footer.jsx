@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { ANIMALS } from '../utils/constants';
 
 export default function Footer() {
   return (
