@@ -1,2293 +1,77 @@
-// // import { useState, useEffect, createContext, useContext, useCallback } from "react";
-
-// // // ─────────────────────────────────────────────
-// // // CONFIG
-// // // ─────────────────────────────────────────────
-// // const API_BASE = "http://localhost:5000/api";
-
-// // // ─────────────────────────────────────────────
-// // // AUTH CONTEXT
-// // // ─────────────────────────────────────────────
-// // const AuthContext = createContext(null);
-// // const useAuth = () => useContext(AuthContext);
-
-// // function AuthProvider({ children }) {
-// //   const [user, setUser] = useState(null);
-// //   const [token, setToken] = useState(() => localStorage.getItem("token"));
-// //   const [loading, setLoading] = useState(true);
-
-// //   useEffect(() => {
-// //     if (token) {
-// //       fetch(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-// //         .then(r => r.json())
-// //         .then(d => { if (d.success) setUser(d.data || d.user); else logout(); })
-// //         .catch(() => logout())
-// //         .finally(() => setLoading(false));
-// //     } else setLoading(false);
-// //   }, [token]);
-
-// //   const login = async (email, password) => {
-// //     const r = await fetch(`${API_BASE}/auth/login`, {
-// //       method: "POST", headers: { "Content-Type": "application/json" },
-// //       body: JSON.stringify({ email, password })
-// //     });
-// //     const d = await r.json();
-// //     if (d.success) { setToken(d.token); localStorage.setItem("token", d.token); setUser(d.user || d.data); }
-// //     return d;
-// //   };
-
-// //   const register = async (name, email, password) => {
-// //     const r = await fetch(`${API_BASE}/auth/register`, {
-// //       method: "POST", headers: { "Content-Type": "application/json" },
-// //       body: JSON.stringify({ name, email, password })
-// //     });
-// //     const d = await r.json();
-// //     if (d.success) { setToken(d.token); localStorage.setItem("token", d.token); setUser(d.user || d.data); }
-// //     return d;
-// //   };
-
-// //   const logout = () => { setUser(null); setToken(null); localStorage.removeItem("token"); };
-
-// //   const authFetch = useCallback((url, opts = {}) => {
-// //     return fetch(`${API_BASE}${url}`, {
-// //       ...opts,
-// //       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, ...(opts.headers || {}) }
-// //     }).then(r => r.json());
-// //   }, [token]);
-
-// //   return (
-// //     <AuthContext.Provider value={{ user, token, loading, login, register, logout, authFetch, isAdmin: user?.role === "admin" }}>
-// //       {children}
-// //     </AuthContext.Provider>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // DESIGN TOKENS
-// // // ─────────────────────────────────────────────
-// // const css = `
-// //   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
-// //   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-// //   :root {
-// //     --bg: #0a0b14;
-// //     --bg2: #11132a;
-// //     --bg3: #181b35;
-// //     --surface: #1e2245;
-// //     --surface2: #252a52;
-// //     --primary: #6c63ff;
-// //     --primary-light: #8b85ff;
-// //     --primary-glow: rgba(108,99,255,0.25);
-// //     --accent: #ff6b6b;
-// //     --accent2: #ffd93d;
-// //     --green: #6bcb77;
-// //     --cyan: #4ecdc4;
-// //     --text: #f0f2ff;
-// //     --text2: #9ba3c8;
-// //     --text3: #6b7280;
-// //     --border: rgba(108,99,255,0.2);
-// //     --radius: 14px;
-// //     --radius-sm: 8px;
-// //     --shadow: 0 8px 32px rgba(0,0,0,0.4);
-// //     --font: 'Plus Jakarta Sans', sans-serif;
-// //     --font2: 'Space Grotesk', sans-serif;
-// //   }
-
-// //   html { scroll-behavior: smooth; }
-// //   body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
-// //   a { color: inherit; text-decoration: none; }
-// //   button { cursor: pointer; font-family: var(--font); border: none; outline: none; }
-// //   input, textarea, select { font-family: var(--font); }
-// //   img { max-width: 100%; }
-
-// //   /* Scrollbar */
-// //   ::-webkit-scrollbar { width: 6px; }
-// //   ::-webkit-scrollbar-track { background: var(--bg2); }
-// //   ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
-
-// //   /* Layout */
-// //   .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-// //   .page { min-height: 100vh; padding-top: 72px; }
-
-// //   /* Navbar */
-// //   .navbar {
-// //     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-// //     background: rgba(10,11,20,0.92); backdrop-filter: blur(20px);
-// //     border-bottom: 1px solid var(--border);
-// //     height: 72px; display: flex; align-items: center;
-// //   }
-// //   .navbar .inner { display: flex; align-items: center; gap: 32px; width: 100%; }
-// //   .logo { display: flex; align-items: center; gap: 10px; font-family: var(--font2); font-size: 1.4rem; font-weight: 700; }
-// //   .logo-icon { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-// //   .logo-text { background: linear-gradient(135deg, #fff 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-// //   .nav-links { display: flex; gap: 4px; flex: 1; }
-// //   .nav-link { padding: 8px 16px; border-radius: var(--radius-sm); color: var(--text2); font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
-// //   .nav-link:hover, .nav-link.active { background: var(--surface); color: var(--text); }
-// //   .nav-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
-// //   .avatar-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; cursor: pointer; }
-
-// //   /* Buttons */
-// //   .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
-// //   .btn-primary { background: var(--primary); color: #fff; }
-// //   .btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); box-shadow: 0 4px 20px var(--primary-glow); }
-// //   .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
-// //   .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
-// //   .btn-sm { padding: 7px 14px; font-size: 0.82rem; }
-// //   .btn-lg { padding: 14px 32px; font-size: 1rem; border-radius: var(--radius); }
-// //   .btn-accent { background: var(--accent); color: #fff; }
-// //   .btn-accent:hover { opacity: 0.9; transform: translateY(-1px); }
-// //   .btn-green { background: var(--green); color: #0a0b14; }
-// //   .btn-danger { background: #ef4444; color: #fff; }
-
-// //   /* Cards */
-// //   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: all 0.25s; }
-// //   .card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow), 0 0 0 1px var(--primary-glow); }
-// //   .card-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: var(--text3); }
-// //   .card-body { padding: 16px; }
-// //   .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; line-height: 1.4; }
-// //   .card-desc { font-size: 0.83rem; color: var(--text2); line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-// //   .card-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-// //   .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-// //   .badge-primary { background: rgba(108,99,255,0.2); color: var(--primary-light); }
-// //   .badge-accent { background: rgba(255,107,107,0.2); color: #ff8a8a; }
-// //   .badge-green { background: rgba(107,203,119,0.2); color: var(--green); }
-// //   .badge-yellow { background: rgba(255,217,61,0.2); color: var(--accent2); }
-// //   .badge-cyan { background: rgba(78,205,196,0.2); color: var(--cyan); }
-// //   .price { font-size: 1.15rem; font-weight: 800; color: var(--primary-light); }
-// //   .price-free { color: var(--green); }
-// //   .price-old { font-size: 0.82rem; color: var(--text3); text-decoration: line-through; margin-left: 4px; }
-
-// //   /* Grid */
-// //   .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 24px; }
-// //   .grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-// //   .grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 24px; }
-
-// //   /* Hero */
-// //   .hero { padding: 80px 0 60px; position: relative; overflow: hidden; }
-// //   .hero::before { content: ''; position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%); pointer-events: none; }
-// //   .hero::after { content: ''; position: absolute; bottom: -100px; left: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,107,107,0.08) 0%, transparent 70%); pointer-events: none; }
-// //   .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 0.82rem; color: var(--text2); margin-bottom: 28px; }
-// //   .hero-title { font-family: var(--font2); font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 700; line-height: 1.15; margin-bottom: 20px; }
-// //   .hero-title .hl { color: var(--primary-light); }
-// //   .hero-sub { font-size: 1.1rem; color: var(--text2); max-width: 560px; line-height: 1.7; margin-bottom: 36px; }
-// //   .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
-// //   .hero-stats { display: flex; gap: 40px; margin-top: 56px; flex-wrap: wrap; }
-// //   .stat { display: flex; flex-direction: column; }
-// //   .stat-num { font-family: var(--font2); font-size: 2rem; font-weight: 700; color: var(--text); }
-// //   .stat-label { font-size: 0.82rem; color: var(--text2); margin-top: 2px; }
-
-// //   /* Section */
-// //   .section { padding: 56px 0; }
-// //   .section-header { margin-bottom: 36px; }
-// //   .section-eyebrow { font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--primary-light); margin-bottom: 10px; }
-// //   .section-title { font-family: var(--font2); font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; }
-// //   .section-sub { color: var(--text2); margin-top: 10px; font-size: 0.95rem; max-width: 600px; line-height: 1.6; }
-
-// //   /* Form */
-// //   .form-group { margin-bottom: 18px; }
-// //   .form-label { display: block; font-size: 0.83rem; font-weight: 600; color: var(--text2); margin-bottom: 7px; }
-// //   .form-input { width: 100%; padding: 11px 14px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.9rem; transition: border-color 0.2s; }
-// //   .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
-// //   .form-input::placeholder { color: var(--text3); }
-// //   .form-error { font-size: 0.78rem; color: #ff6b6b; margin-top: 5px; }
-
-// //   /* Modal */
-// //   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
-// //   .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 36px; max-width: 440px; width: 100%; position: relative; box-shadow: var(--shadow); }
-// //   .modal-close { position: absolute; top: 16px; right: 16px; background: var(--surface); border: none; color: var(--text2); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; }
-// //   .modal-close:hover { color: var(--text); }
-// //   .modal-title { font-family: var(--font2); font-size: 1.4rem; font-weight: 700; margin-bottom: 6px; }
-// //   .modal-sub { color: var(--text2); font-size: 0.88rem; margin-bottom: 28px; }
-
-// //   /* Toast */
-// //   .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
-// //   .toast { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; font-size: 0.88rem; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease; min-width: 260px; }
-// //   .toast.success { border-color: var(--green); }
-// //   .toast.error { border-color: var(--accent); }
-// //   @keyframes slideIn { from { opacity:0; transform: translateX(30px); } to { opacity:1; transform: translateX(0); } }
-
-// //   /* Loading */
-// //   .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 60px auto; }
-// //   @keyframes spin { to { transform: rotate(360deg); } }
-
-// //   /* Tabs */
-// //   .tabs { display: flex; gap: 4px; background: var(--surface); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 28px; }
-// //   .tab { flex: 1; padding: 9px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text2); background: transparent; border: none; cursor: pointer; transition: all 0.2s; text-align: center; }
-// //   .tab.active { background: var(--primary); color: #fff; }
-
-// //   /* Tags */
-// //   .tags { display: flex; flex-wrap: wrap; gap: 8px; }
-// //   .tag { padding: 4px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; font-size: 0.78rem; color: var(--text2); cursor: pointer; transition: all 0.2s; }
-// //   .tag:hover, .tag.active { border-color: var(--primary); color: var(--primary-light); background: rgba(108,99,255,0.1); }
-
-// //   /* Detail page */
-// //   .detail-header { background: linear-gradient(135deg, var(--bg2) 0%, var(--bg3) 100%); border-bottom: 1px solid var(--border); padding: 48px 0; }
-// //   .detail-breadcrumb { font-size: 0.82rem; color: var(--text3); margin-bottom: 16px; cursor: pointer; }
-// //   .detail-breadcrumb span { color: var(--text2); }
-// //   .detail-title { font-family: var(--font2); font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; margin-bottom: 12px; }
-// //   .detail-meta-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; color: var(--text2); font-size: 0.85rem; margin-bottom: 20px; }
-// //   .detail-layout { display: grid; grid-template-columns: 1fr 340px; gap: 32px; padding: 40px 0; align-items: start; }
-// //   .detail-sidebar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; position: sticky; top: 90px; }
-// //   .sidebar-price { font-family: var(--font2); font-size: 2rem; font-weight: 800; color: var(--primary-light); margin-bottom: 4px; }
-// //   .sidebar-price-old { font-size: 0.9rem; color: var(--text3); text-decoration: line-through; margin-bottom: 16px; }
-// //   .sidebar-btn { width: 100%; margin-bottom: 10px; justify-content: center; }
-// //   .sidebar-features { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
-// //   .sidebar-feature { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text2); }
-// //   .sidebar-feature .icon { font-size: 1rem; }
-
-// //   /* Video list */
-// //   .video-list { display: flex; flex-direction: column; gap: 6px; }
-// //   .video-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; }
-// //   .video-item:hover { border-color: var(--border); background: var(--surface2); }
-// //   .video-item.locked { opacity: 0.6; cursor: not-allowed; }
-// //   .video-num { width: 28px; height: 28px; background: var(--bg3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--text2); flex-shrink: 0; }
-// //   .video-info { flex: 1; min-width: 0; }
-// //   .video-title-text { font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-// //   .video-dur { font-size: 0.75rem; color: var(--text3); margin-top: 2px; }
-
-// //   /* Admin */
-// //   .admin-layout { display: grid; grid-template-columns: 220px 1fr; gap: 0; min-height: calc(100vh - 72px); }
-// //   .admin-sidebar { background: var(--bg2); border-right: 1px solid var(--border); padding: 24px 0; }
-// //   .admin-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--text2); font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
-// //   .admin-nav-item:hover { color: var(--text); background: var(--surface); }
-// //   .admin-nav-item.active { color: var(--primary-light); border-left-color: var(--primary); background: rgba(108,99,255,0.08); }
-// //   .admin-nav-icon { font-size: 1.1rem; }
-// //   .admin-content { padding: 32px; background: var(--bg); }
-// //   .admin-header { margin-bottom: 28px; }
-// //   .admin-title { font-family: var(--font2); font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
-// //   .admin-sub { color: var(--text2); font-size: 0.88rem; }
-
-// //   /* Stats cards */
-// //   .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
-// //   .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
-// //   .stat-card-icon { font-size: 1.8rem; margin-bottom: 12px; }
-// //   .stat-card-num { font-family: var(--font2); font-size: 1.8rem; font-weight: 700; }
-// //   .stat-card-label { font-size: 0.8rem; color: var(--text2); margin-top: 2px; }
-
-// //   /* Table */
-// //   .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-// //   table { width: 100%; border-collapse: collapse; }
-// //   th { background: var(--bg3); padding: 12px 16px; text-align: left; font-size: 0.78rem; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
-// //   td { padding: 13px 16px; font-size: 0.87rem; border-bottom: 1px solid rgba(108,99,255,0.08); }
-// //   tr:last-child td { border-bottom: none; }
-// //   tr:hover td { background: rgba(108,99,255,0.04); }
-
-// //   /* Misc */
-// //   .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
-// //   .empty-state .icon { font-size: 4rem; margin-bottom: 16px; }
-// //   .empty-state p { font-size: 0.9rem; }
-// //   .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
-// //   .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
-// //   .search-bar { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 16px; margin-bottom: 28px; }
-// //   .search-bar input { flex: 1; background: none; border: none; color: var(--text); font-size: 0.9rem; outline: none; }
-// //   .search-bar input::placeholder { color: var(--text3); }
-// //   .search-icon { color: var(--text3); font-size: 1rem; }
-// //   .progress-bar-wrap { width: 100%; background: var(--bg3); border-radius: 4px; height: 6px; overflow: hidden; }
-// //   .progress-bar { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.4s; }
-
-// //   /* Responsive */
-// //   @media (max-width: 900px) {
-// //     .detail-layout { grid-template-columns: 1fr; }
-// //     .admin-layout { grid-template-columns: 1fr; }
-// //     .admin-sidebar { display: none; }
-// //     .nav-links { display: none; }
-// //     .hero-stats { gap: 24px; }
-// //     .hero { padding: 48px 0 40px; }
-// //   }
-// //   @media (max-width: 600px) {
-// //     .grid-3, .grid-2 { grid-template-columns: 1fr; }
-// //     .grid-4 { grid-template-columns: repeat(2, 1fr); }
-// //     .modal { padding: 24px; }
-// //   }
-
-// //   /* COURSE mascot strip */
-// //   .mascot-strip { display: flex; gap: 20px; padding: 20px 0; overflow-x: auto; scrollbar-width: none; }
-// //   .mascot-strip::-webkit-scrollbar { display: none; }
-// //   .mascot-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; min-width: 130px; text-align: center; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
-// //   .mascot-card:hover { border-color: var(--primary); transform: translateY(-3px); }
-// //   .mascot-card.active { border-color: var(--primary); background: rgba(108,99,255,0.12); }
-// //   .mascot-emoji { font-size: 2.4rem; margin-bottom: 8px; }
-// //   .mascot-name { font-size: 0.8rem; font-weight: 600; color: var(--text2); }
-// //   .mascot-label { font-size: 0.7rem; color: var(--text3); margin-top: 2px; }
-
-// //   /* Feature highlights */
-// //   .features-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-// //   .feature-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; }
-// //   .feature-icon { font-size: 2rem; margin-bottom: 12px; }
-// //   .feature-title { font-weight: 700; margin-bottom: 6px; font-size: 0.95rem; }
-// //   .feature-desc { font-size: 0.82rem; color: var(--text2); line-height: 1.5; }
-
-// //   /* Live class card */
-// //   .live-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; background: rgba(255,107,107,0.2); border-radius: 20px; font-size: 0.72rem; font-weight: 700; color: #ff8a8a; }
-// //   .live-dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
-// //   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-// //   /* Gradient text */
-// //   .grad { background: linear-gradient(135deg, var(--primary-light), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-// //   /* User menu */
-// //   .user-menu { position: absolute; top: calc(100% + 10px); right: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; min-width: 200px; box-shadow: var(--shadow); z-index: 150; }
-// //   .user-menu-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; font-size: 0.87rem; color: var(--text2); cursor: pointer; transition: all 0.2s; }
-// //   .user-menu-item:hover { background: var(--surface); color: var(--text); }
-// //   .user-menu-divider { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
-// // `;
-
-// // // ─────────────────────────────────────────────
-// // // TOAST SYSTEM
-// // // ─────────────────────────────────────────────
-// // const ToastContext = createContext(null);
-// // function ToastProvider({ children }) {
-// //   const [toasts, setToasts] = useState([]);
-// //   const toast = (msg, type = "info") => {
-// //     const id = Date.now();
-// //     setToasts(p => [...p, { id, msg, type }]);
-// //     setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3500);
-// //   };
-// //   const icons = { success: "✅", error: "❌", info: "ℹ️" };
-// //   return (
-// //     <ToastContext.Provider value={toast}>
-// //       {children}
-// //       <div className="toast-container">
-// //         {toasts.map(t => (
-// //           <div key={t.id} className={`toast ${t.type}`}>{icons[t.type] || "💬"} {t.msg}</div>
-// //         ))}
-// //       </div>
-// //     </ToastContext.Provider>
-// //   );
-// // }
-// // const useToast = () => useContext(ToastContext);
-
-// // // ─────────────────────────────────────────────
-// // // ROUTER (minimal hash-based)
-// // // ─────────────────────────────────────────────
-// // function useRoute() {
-// //   const [path, setPath] = useState(window.location.hash.slice(1) || "/");
-// //   useEffect(() => {
-// //     const handler = () => setPath(window.location.hash.slice(1) || "/");
-// //     window.addEventListener("hashchange", handler);
-// //     return () => window.removeEventListener("hashchange", handler);
-// //   }, []);
-// //   const navigate = (to) => { window.location.hash = to; };
-// //   return { path, navigate };
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // AUTH MODAL
-// // // ─────────────────────────────────────────────
-// // function AuthModal({ onClose }) {
-// //   const [tab, setTab] = useState("login");
-// //   const [form, setForm] = useState({ name: "", email: "", password: "" });
-// //   const [err, setErr] = useState("");
-// //   const [loading, setLoading] = useState(false);
-// //   const { login, register } = useAuth();
-// //   const toast = useToast();
-
-// //   const submit = async () => {
-// //     setErr(""); setLoading(true);
-// //     const res = tab === "login"
-// //       ? await login(form.email, form.password)
-// //       : await register(form.name, form.email, form.password);
-// //     setLoading(false);
-// //     if (res.success) { toast("Welcome! 🎉", "success"); onClose(); }
-// //     else setErr(res.message || "Something went wrong");
-// //   };
-
-// //   return (
-// //     <div className="modal-overlay" onClick={onClose}>
-// //       <div className="modal" onClick={e => e.stopPropagation()}>
-// //         <button className="modal-close" onClick={onClose}>✕</button>
-// //         <div className="logo" style={{ marginBottom: 24 }}>
-          
-// //           <div className="logo-icon">💻</div>
-// //           <span className="logo-text">WhatNext</span>
-// //         </div>
-// //         <div className="tabs">
-// //           <button className={`tab ${tab === "login" ? "active" : ""}`} onClick={() => setTab("login")}>Login</button>
-// //           <button className={`tab ${tab === "register" ? "active" : ""}`} onClick={() => setTab("register")}>Sign Up</button>
-// //         </div>
-// //         {tab === "register" && (
-// //           <div className="form-group">
-// //             <label className="form-label">Full Name</label>
-// //             <input className="form-input" placeholder="Your name" value={form.name}
-// //               onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
-// //           </div>
-// //         )}
-// //         <div className="form-group">
-// //           <label className="form-label">Email</label>
-// //           <input className="form-input" type="email" placeholder="you@example.com" value={form.email}
-// //             onChange={e => setForm(p => ({ ...p, email: e.target.value }))} />
-// //         </div>
-// //         <div className="form-group">
-// //           <label className="form-label">Password</label>
-// //           <input className="form-input" type="password" placeholder="••••••••" value={form.password}
-// //             onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-// //             onKeyDown={e => e.key === "Enter" && submit()} />
-// //         </div>
-// //         {err && <div className="form-error" style={{ marginBottom: 12 }}>⚠️ {err}</div>}
-// //         <button className="btn btn-primary btn-lg" style={{ width: "100%", justifyContent: "center" }}
-// //           onClick={submit} disabled={loading}>
-// //           {loading ? "Please wait…" : tab === "login" ? "Login →" : "Create Account →"}
-// //         </button>
-// //         <p style={{ textAlign: "center", fontSize: "0.8rem", color: "var(--text3)", marginTop: 16 }}>
-// //           By continuing you agree to our Terms & Privacy Policy
-// //         </p>
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // NAVBAR
-// // // ─────────────────────────────────────────────
-// // function Navbar({ navigate, path, onAuth }) {
-// //   const { user, logout, isAdmin } = useAuth();
-// //   const [menu, setMenu] = useState(false);
-// //   const links = [
-// //     { label: "Home", to: "/" },
-// //     { label: "Courses", to: "/courses" },
-// //     { label: "Live Classes", to: "/live" },
-// //     { label: "Notes", to: "/notes" },
-// //   ];
-// //   if (isAdmin) links.push({ label: "Admin", to: "/admin" });
-
-// //   return (
-// //     <nav className="navbar">
-// //       <div className="container inner">
-// //         <div className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer", flexShrink: 0 }}>
-// //           {/* <div className="logo-icon">💻</div> */}
-// //           <div style={{ textAlign: "center", marginBottom: 24 }}>
-// //   <img
-// //     src="https://res.cloudinary.com/dfsimrqwi/image/upload/v1781005265/Screenshot_2026-06-09_164742-removebg-preview_hzpr3u.png"
-// //     alt="WhatNext"
-// //     style={{
-// //       maxWidth: "150px",
-// //       width: "100%",
-// //       height: "auto",
-// //       objectFit: "contain"
-// //     }}
-// //   />
-// // </div>
-// //           {/* <span className="logo-text">WhatNext</span> */}
-// //         </div>
-// //         <div className="nav-links">
-// //           {links.map(l => (
-// //             <span key={l.to} className={`nav-link ${path === l.to ? "active" : ""}`}
-// //               onClick={() => navigate(l.to)} style={{ cursor: "pointer" }}>{l.label}</span>
-// //           ))}
-// //         </div>
-// //         <div className="nav-actions">
-// //           {user ? (
-// //             <div style={{ position: "relative" }}>
-// //               <div className="avatar-btn" onClick={() => setMenu(p => !p)}>
-// //                 {user.name?.[0]?.toUpperCase() || "U"}
-// //               </div>
-// //               {menu && (
-// //                 <div className="user-menu">
-// //                   <div style={{ padding: "8px 12px 10px", borderBottom: "1px solid var(--border)" }}>
-// //                     <div style={{ fontWeight: 700, fontSize: "0.9rem" }}>{user.name}</div>
-// //                     <div style={{ fontSize: "0.78rem", color: "var(--text3)" }}>{user.email}</div>
-// //                   </div>
-// //                   <div className="user-menu-item" onClick={() => { navigate("/dashboard"); setMenu(false); }}>📚 My Learning</div>
-// //                   {isAdmin && <div className="user-menu-item" onClick={() => { navigate("/admin"); setMenu(false); }}>⚙️ Admin Panel</div>}
-// //                   <hr className="user-menu-divider" />
-// //                   <div className="user-menu-item" style={{ color: "var(--accent)" }} onClick={() => { logout(); setMenu(false); }}>🚪 Logout</div>
-// //                 </div>
-// //               )}
-// //             </div>
-// //           ) : (
-// //             <>
-// //               <button className="btn btn-outline btn-sm" onClick={onAuth}>Login</button>
-// //               <button className="btn btn-primary btn-sm" onClick={onAuth}>Sign Up Free</button>
-// //             </>
-// //           )}
-// //         </div>
-// //       </div>
-// //     </nav>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // ANIMAL CATEGORY STRIP
-// // // ─────────────────────────────────────────────
-// // const COURSE = [
-// //   { emoji: "💻", name: "MERN Stack", label: "Full Stack", level: "advanced" },
-// //   { emoji: "⚛️", name: "React.js", label: "Frontend", level: "intermediate" },
-// //   { emoji: "🟢", name: "Node.js", label: "Backend", level: "intermediate" },
-// //   { emoji: "📱", name: "Flutter", label: "Mobile App", level: "intermediate" },
-// //   { emoji: "🎨", name: "UI/UX Design", label: "Design", level: "beginner" },
-// //   { emoji: "🤖", name: "Artificial Intelligence", label: "AI", level: "advanced" },
-// //   { emoji: "📊", name: "Data Science", label: "Analytics", level: "advanced" },
-// //   { emoji: "☁️", name: "AWS Cloud", label: "Cloud", level: "advanced" },
-// //   { emoji: "🔒", name: "Cyber Security", label: "Security", level: "advanced" },
-// //   { emoji: "📈", name: "Digital Marketing", label: "Marketing", level: "beginner" }
-// // ];
-
-// // function COURSEtrip({ onSelect, selected }) {
-// //   return (
-// //     <div>
-// //       <div className="mascot-strip">
-// //         <div className={`mascot-card ${!selected ? "active" : ""}`} onClick={() => onSelect(null)}>
-// //           <div className="mascot-emoji">🌟</div>
-// //           <div className="mascot-name">All Courses</div>
-// //           <div className="mascot-label">View All</div>
-// //         </div>
-// //         {COURSE.map(a => (
-// //           <div key={a.level + a.name} className={`mascot-card ${selected === a.level ? "active" : ""}`}
-// //             onClick={() => onSelect(a.level)}>
-// //             <div className="mascot-emoji">{a.emoji}</div>
-// //             <div className="mascot-name">{a.name}</div>
-// //             <div className="mascot-label">{a.label}</div>
-// //           </div>
-// //         ))}
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // COURSE CARD
-// // // ─────────────────────────────────────────────
-// // function CourseCard({ course, onClick }) {
-// //   const price = course.isFree ? 0 : (course.discountPrice ?? course.price);
-// //   const courseEmojis = {
-// //   beginner: "🎨",       // UI/UX Design
-// //   intermediate: "⚛️",  // React.js
-// //   advanced: "💻",      // Full Stack Development
-// //   all: "📚"            // All Courses
-// // };
-// //   return (
-// //     <div className="card" onClick={() => onClick(course._id)} style={{ cursor: "pointer" }}>
-// //       <div className="card-thumb" style={{ background: "var(--bg3)" }}>
-// //         {course.thumbnail
-// //           ? <img src={course.thumbnail} alt={course.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-// //           : <div style={{ textAlign: "center" }}>
-// //               <div style={{ fontSize: "3rem" }}>{courseEmojis[course.level] || "📚"}</div>
-// //               <div style={{ fontSize: "0.75rem", color: "var(--text3)", marginTop: 8 }}>{course.category || "Course"}</div>
-// //             </div>
-// //         }
-// //       </div>
-// //       <div className="card-body">
-// //         <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
-// //           <span className="badge badge-primary">{course.level || "All"}</span>
-// //           {course.category && <span className="badge badge-cyan">{course.category}</span>}
-// //           {!course.isPublished && <span className="badge badge-yellow">Draft</span>}
-// //         </div>
-// //         <div className="card-title">{course.title}</div>
-// //         <div className="card-desc">{course.description}</div>
-// //         <div className="card-meta">
-// //           <span className={`price ${course.isFree ? "price-free" : ""}`}>
-// //             {course.isFree ? "FREE" : `₹${price}`}
-// //           </span>
-// //           {!course.isFree && course.discountPrice && <span className="price-old">₹{course.price}</span>}
-// //           <span style={{ marginLeft: "auto", fontSize: "0.78rem", color: "var(--text3)" }}>
-// //             🎬 {course.videos?.length || 0} videos
-// //           </span>
-// //         </div>
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // HOME PAGE
-// // // ─────────────────────────────────────────────
-// // function HomePage({ navigate, onAuth }) {
-// //   const { user } = useAuth();
-// //   const [courses, setCourses] = useState([]);
-// //   const [liveClasses, setLiveClasses] = useState([]);
-// //   const [loadingCourses, setLoadingCourses] = useState(true);
-
-// //   useEffect(() => {
-// //     fetch(`${API_BASE}/courses?limit=6`).then(r => r.json()).then(d => {
-// //       if (d.success) setCourses(d.data || d.courses || []);
-// //       setLoadingCourses(false);
-// //     }).catch(() => setLoadingCourses(false));
-// //     fetch(`${API_BASE}/live-classes?limit=4`).then(r => r.json()).then(d => {
-// //       if (d.success) setLiveClasses(d.data || d.liveClasses || []);
-// //     }).catch(() => {});
-// //   }, []);
-
-// //   return (
-// //     <div className="page">
-// //       {/* Hero */}
-// //       <section className="hero">
-// //         <div className="container">
-// //           <div className="hero-eyebrow">🎓 India's Most Affordable Learning Platform</div>
-// //           <h1 className="hero-title">
-// //             Learn From <span className="hl">Expert Tutors</span><br />
-// //             Anytime, Anywhere
-// //           </h1>
-// //           <p className="hero-sub">
-// //             Access 500+ courses, live interactive classes, and downloadable study notes—
-// //             all at prices that don't break the bank.
-// //           </p>
-// //           <div className="hero-ctas">
-// //             {user
-// //               ? <button className="btn btn-primary btn-lg" onClick={() => navigate("/courses")}>Browse Courses 🚀</button>
-// //               : <button className="btn btn-primary btn-lg" onClick={onAuth}>Get Started Free →</button>
-// //             }
-// //             <button className="btn btn-outline btn-lg" onClick={() => navigate("/live")}>View Live Classes 📡</button>
-// //           </div>
-// //           <div className="hero-stats">
-// //             {[["50K+", "Active Students"], ["500+", "Expert Courses"], ["1000+", "Live Classes"], ["4.8★", "Average Rating"]].map(([n, l]) => (
-// //               <div key={l} className="stat"><span className="stat-num">{n}</span><span className="stat-label">{l}</span></div>
-// //             ))}
-// //           </div>
-// //         </div>
-// //       </section>
-
-// //       {/* Animal mascots */}
-// //       <section className="section" style={{ paddingTop: 0 }}>
-// //         <div className="container">
-// //           <div className="section-header">
-// //             <div className="section-eyebrow">Choose Your Batch</div>
-// //             <h2 className="section-title">Find Your <span className="grad">Learning Tribe</span></h2>
-// //             <p className="section-sub">Pick a batch that matches your level and learning style</p>
-// //           </div>
-// //           <COURSEtrip onSelect={() => navigate("/courses")} selected={null} />
-// //         </div>
-// //       </section>
-
-// //       {/* Features */}
-// //       <section className="section" style={{ background: "var(--bg2)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
-// //         <div className="container">
-// //           <div className="section-header">
-// //             <div className="section-eyebrow">Why WhatNext</div>
-// //             <h2 className="section-title">Everything You Need to <span className="grad">Excel</span></h2>
-// //           </div>
-// //           <div className="features-row">
-// //             {[
-// //               ["📡", "Live Classes", "Interact with instructors in real-time. Ask questions, get instant answers."],
-// //               ["🎬", "Video Courses", "Learn at your pace with HD video lectures, available 24/7."],
-// //               ["📄", "Study Notes", "Curated PDF notes and resources to reinforce your learning."],
-// //               ["📊", "Track Progress", "Monitor your video progress and stay on top of your goals."],
-// //               ["💳", "Easy Payments", "Secure Razorpay checkout. Pay once, learn forever."],
-// //               ["🏆", "Certificates", "Earn certificates to showcase your achievements."],
-// //             ].map(([icon, title, desc]) => (
-// //               <div key={title} className="feature-item">
-// //                 <div className="feature-icon">{icon}</div>
-// //                 <div className="feature-title">{title}</div>
-// //                 <div className="feature-desc">{desc}</div>
-// //               </div>
-// //             ))}
-// //           </div>
-// //         </div>
-// //       </section>
-
-// //       {/* Featured courses */}
-// //       <section className="section">
-// //         <div className="container">
-// //           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
-// //             <div>
-// //               <div className="section-eyebrow">Popular Picks</div>
-// //               <h2 className="section-title">Featured <span className="grad">Courses</span></h2>
-// //             </div>
-// //             <button className="btn btn-outline btn-sm" onClick={() => navigate("/courses")}>View All →</button>
-// //           </div>
-// //           {loadingCourses
-// //             ? <div className="spinner" />
-// //             : courses.length === 0
-// //               ? <div className="empty-state"><div className="icon">📚</div><p>No courses yet. Check back soon!</p></div>
-// //               : <div className="grid-3">{courses.slice(0, 6).map(c => <CourseCard key={c._id} course={c} onClick={() => navigate(`/courses/${c._id}`)} />)}</div>
-// //           }
-// //         </div>
-// //       </section>
-
-// //       {/* Live classes teaser */}
-// //       {liveClasses.length > 0 && (
-// //         <section className="section" style={{ background: "var(--bg2)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
-// //           <div className="container">
-// //             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
-// //               <div>
-// //                 <div className="section-eyebrow">Coming Up</div>
-// //                 <h2 className="section-title">Upcoming <span className="grad">Live Classes</span></h2>
-// //               </div>
-// //               <button className="btn btn-outline btn-sm" onClick={() => navigate("/live")}>View All →</button>
-// //             </div>
-// //             <div className="grid-3">
-// //               {liveClasses.slice(0, 3).map(lc => <LiveClassCard key={lc._id} liveClass={lc} onClick={() => navigate(`/live/${lc._id}`)} />)}
-// //             </div>
-// //           </div>
-// //         </section>
-// //       )}
-
-// //       {/* CTA Banner */}
-// //       <section className="section">
-// //         <div className="container">
-// //           <div style={{ background: "linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%)", border: "1px solid var(--border)", borderRadius: 20, padding: "48px 40px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-// //             <div style={{ position: "absolute", top: -60, right: -60, width: 240, height: 240, background: "radial-gradient(circle, rgba(108,99,255,0.2) 0%, transparent 70%)", pointerEvents: "none" }} />
-// //             <div style={{ fontSize: "3rem", marginBottom: 16 }}>💻</div>
-// //             <h2 style={{ fontFamily: "var(--font2)", fontSize: "1.8rem", fontWeight: 700, marginBottom: 12 }}>Ready to join the pride?</h2>
-// //             <p style={{ color: "var(--text2)", marginBottom: 28, maxWidth: 480, margin: "0 auto 28px" }}>
-// //               Join 50,000+ students mastering their subjects with expert guidance.
-// //             </p>
-// //             <button className="btn btn-primary btn-lg" onClick={user ? () => navigate("/courses") : onAuth}>
-// //               {user ? "Browse Courses 🚀" : "Start Learning Free →"}
-// //             </button>
-// //           </div>
-// //         </div>
-// //       </section>
-// //     </div>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // COURSES PAGE
-// // // ─────────────────────────────────────────────
-// // function CoursesPage({ navigate }) {
-// //   const [courses, setCourses] = useState([]);
-// //   const [loading, setLoading] = useState(true);
-// //   const [search, setSearch] = useState("");
-// //   const [level, setLevel] = useState(null);
-// //   const [category, setCategory] = useState("");
-// //   const categories = ["Mathematics", "Science", "English", "Physics", "Chemistry", "Biology", "History", "Computer"];
-
-// //   useEffect(() => {
-// //     const params = new URLSearchParams();
-// //     if (search) params.set("search", search);
-// //     if (level) params.set("level", level);
-// //     if (category) params.set("category", category);
-// //     setLoading(true);
-// //     fetch(`${API_BASE}/courses?${params}`).then(r => r.json()).then(d => {
-// //       if (d.success) setCourses(d.data || d.courses || []);
-// //       setLoading(false);
-// //     }).catch(() => setLoading(false));
-// //   }, [search, level, category]);
-
-// //   return (
-// //     <div className="page">
-// //       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
-// //         <div className="container">
-// //           <h1 className="section-title" style={{ marginBottom: 8 }}>All <span className="grad">Courses</span></h1>
-// //           <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Explore our library of expert-taught courses</p>
-// //         </div>
-// //       </div>
-// //       <div className="container section">
-// //         {/* Animal filter strip */}
-// //         <COURSEtrip onSelect={setLevel} selected={level} />
-// //         {/* Search & category */}
-// //         <div className="search-bar" style={{ marginTop: 16 }}>
-// //           <span className="search-icon">🔍</span>
-// //           <input placeholder="Search courses…" value={search} onChange={e => setSearch(e.target.value)} />
-// //           {search && <button onClick={() => setSearch("")} style={{ background: "none", color: "var(--text3)", fontSize: "0.9rem" }}>✕</button>}
-// //         </div>
-// //         <div className="tag-row">
-// //           <span className={`tag ${!category ? "active" : ""}`} onClick={() => setCategory("")}>All</span>
-// //           {categories.map(c => (
-// //             <span key={c} className={`tag ${category === c ? "active" : ""}`} onClick={() => setCategory(c)}>{c}</span>
-// //           ))}
-// //         </div>
-// //         {loading
-// //           ? <div className="spinner" />
-// //           : courses.length === 0
-// //             ? <div className="empty-state"><div className="icon">🔎</div><p>No courses found. Try adjusting filters.</p></div>
-// //             : <div className="grid-3">{courses.map(c => <CourseCard key={c._id} course={c} onClick={() => navigate(`/courses/${c._id}`)} />)}</div>
-// //         }
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // COURSE DETAIL PAGE
-// // // ─────────────────────────────────────────────
-// // function CourseDetailPage({ id, navigate, onAuth }) {
-// //   const { user, authFetch, token } = useAuth();
-// //   const toast = useToast();
-// //   const [course, setCourse] = useState(null);
-// //   const [loading, setLoading] = useState(true);
-// //   const [paying, setPaying] = useState(false);
-
-// //   useEffect(() => {
-// //     const headers = token ? { Authorization: `Bearer ${token}` } : {};
-// //     fetch(`${API_BASE}/courses/${id}`, { headers }).then(r => r.json()).then(d => {
-// //       if (d.success) setCourse(d.data || d.course);
-// //       setLoading(false);
-// //     }).catch(() => setLoading(false));
-// //   }, [id, token]);
-
-// //   const hasPurchased = user?.purchasedCourses?.some(p => p.course?.toString() === id || p.course === id);
-// //   const price = course?.isFree ? 0 : (course?.discountPrice ?? course?.price ?? 0);
-// //   const animalEmoji = { beginner: "🦅", intermediate: "🦊", advanced: "💻", all: "🐬" };
-
-// //   const handleBuy = async () => {
-// //     if (!user) { onAuth(); return; }
-// //     if (course.isFree || price === 0) {
-// //       toast("Course is free! Enrol via payment flow.", "info"); return;
-// //     }
-// //     setPaying(true);
-// //     try {
-// //       const order = await authFetch("/payments/create-order", {
-// //         method: "POST",
-// //         body: JSON.stringify({ itemType: "course", itemId: id })
-// //       });
-// //       if (!order.success) { toast(order.message || "Order failed", "error"); setPaying(false); return; }
-// //       const options = {
-// //         key: order.razorpayKeyId || "",
-// //         amount: order.order?.amount,
-// //         currency: order.order?.currency || "INR",
-// //         name: "WhatNext",
-// //           image: "https://res.cloudinary.com/dfsimrqwi/image/upload/v1781005265/Screenshot_2026-06-09_164742-removebg-preview_hzpr3u.png", // Your logo URL
-// //         description: course.title,
-// //         order_id: order.order?.id,
-// //         handler: async (res) => {
-// //           const verify = await authFetch("/payments/verify", {
-// //             method: "POST",
-// //             body: JSON.stringify({ razorpayOrderId: res.razorpay_order_id, razorpayPaymentId: res.razorpay_payment_id, razorpaySignature: res.razorpay_signature, itemType: "course", itemId: id })
-// //           });
-// //           if (verify.success) { toast("Purchase successful! 🎉", "success"); navigate(`/dashboard`); }
-// //           else toast(verify.message || "Verification failed", "error");
-// //         },
-// //         prefill: { name: user.name, email: user.email }
-// //       };
-// //       if (window.Razorpay) { const rz = new window.Razorpay(options); rz.open(); }
-// //       else toast("Payment gateway not loaded", "error");
-// //     } catch { toast("Payment error", "error"); }
-// //     setPaying(false);
-// //   };
-
-// //   if (loading) return <div className="page"><div className="spinner" /></div>;
-// //   if (!course) return <div className="page"><div className="container" style={{ padding: "80px 24px", textAlign: "center" }}><h2>Course not found</h2></div></div>;
-
-// //   return (
-// //     <div className="page">
-// //       <div className="detail-header">
-// //         <div className="container">
-// //           <div className="detail-breadcrumb" onClick={() => navigate("/courses")}>← Back to <span>Courses</span></div>
-// //           <div style={{ display: "flex", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
-// //             <span className="badge badge-primary">{course.level}</span>
-// //             {course.category && <span className="badge badge-cyan">{course.category}</span>}
-// //             {course.isFree && <span className="badge badge-green">FREE</span>}
-// //           </div>
-// //           <h1 className="detail-title">{course.title}</h1>
-// //           <div className="detail-meta-row">
-// //             <span>{animalEmoji[course.level] || "📚"} {course.level} level</span>
-// //             <span>🎬 {course.videos?.length || 0} videos</span>
-// //             <span>👥 {course.totalStudents || 0} students</span>
-// //             <span>🌐 {course.language || "English"}</span>
-// //           </div>
-// //           <p style={{ color: "var(--text2)", maxWidth: 700, lineHeight: 1.6 }}>{course.description}</p>
-// //         </div>
-// //       </div>
-
-// //       <div className="container">
-// //         <div className="detail-layout">
-// //           {/* Main content */}
-// //           <div>
-// //             {hasPurchased && (
-// //               <div style={{ background: "rgba(107,203,119,0.12)", border: "1px solid var(--green)", borderRadius: 12, padding: "14px 18px", marginBottom: 24, display: "flex", alignItems: "center", gap: 10, fontSize: "0.9rem" }}>
-// //                 ✅ You have access to this course!
-// //               </div>
-// //             )}
-
-// //             {course.outcomes?.length > 0 && (
-// //               <div style={{ marginBottom: 28 }}>
-// //                 <h3 style={{ fontWeight: 700, marginBottom: 14 }}>🎯 What You'll Learn</h3>
-// //                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-// //                   {course.outcomes.map((o, i) => (
-// //                     <div key={i} style={{ display: "flex", gap: 8, fontSize: "0.87rem", color: "var(--text2)" }}>
-// //                       <span style={{ color: "var(--green)", flexShrink: 0 }}>✓</span> {o}
-// //                     </div>
-// //                   ))}
-// //                 </div>
-// //               </div>
-// //             )}
-
-// //             {course.requirements?.length > 0 && (
-// //               <div style={{ marginBottom: 28 }}>
-// //                 <h3 style={{ fontWeight: 700, marginBottom: 14 }}>📋 Requirements</h3>
-// //                 {course.requirements.map((r, i) => (
-// //                   <div key={i} style={{ fontSize: "0.87rem", color: "var(--text2)", marginBottom: 6, display: "flex", gap: 8 }}>
-// //                     <span>•</span> {r}
-// //                   </div>
-// //                 ))}
-// //               </div>
-// //             )}
-
-// //             {/* Video list */}
-// //             <div>
-// //               <h3 style={{ fontWeight: 700, marginBottom: 14 }}>🎬 Course Content</h3>
-// //               {(!course.videos || course.videos.length === 0)
-// //                 ? <div style={{ color: "var(--text3)", fontSize: "0.87rem" }}>No videos added yet.</div>
-// //                 : <div className="video-list">
-// //                     {course.videos.map((v, i) => (
-// //                       <div key={v._id || i} className={`video-item ${!hasPurchased && !v.isPreview ? "locked" : ""}`}>
-// //                         <div className="video-num">{i + 1}</div>
-// //                         <div className="video-info">
-// //                           <div className="video-title-text">{v.title}</div>
-// //                           {v.duration > 0 && <div className="video-dur">{Math.floor(v.duration / 60)}m {v.duration % 60}s</div>}
-// //                         </div>
-// //                         {v.isPreview ? <span className="badge badge-green">Preview</span>
-// //                           : hasPurchased ? <span style={{ color: "var(--text3)", fontSize: "1rem" }}>▶</span>
-// //                           : <span style={{ color: "var(--text3)", fontSize: "1rem" }}>🔒</span>}
-// //                       </div>
-// //                     ))}
-// //                   </div>
-// //               }
-// //             </div>
-// //           </div>
-
-// //           {/* Sidebar */}
-// //           <div className="detail-sidebar">
-// //             <div className="sidebar-price">{course.isFree ? "FREE" : `₹${price}`}</div>
-// //             {!course.isFree && course.discountPrice && <div className="sidebar-price-old">₹{course.price}</div>}
-// //             {hasPurchased
-// //               ? <button className="btn btn-green btn-lg sidebar-btn" onClick={() => navigate("/dashboard")}>Go to My Learning →</button>
-// //               : <button className="btn btn-primary btn-lg sidebar-btn" onClick={handleBuy} disabled={paying}>
-// //                   {paying ? "Processing…" : course.isFree ? "Enrol Free →" : `Buy for ₹${price} →`}
-// //                 </button>
-// //             }
-// //             <div className="sidebar-features">
-// //               {[["📱", "Access on all devices"], ["♾️", "Lifetime access"], ["🎬", `${course.videos?.length || 0} video lectures`], ["📄", "Downloadable resources"], ["🏆", "Certificate of completion"]].map(([icon, label]) => (
-// //                 <div key={label} className="sidebar-feature"><span className="icon">{icon}</span> {label}</div>
-// //               ))}
-// //             </div>
-// //           </div>
-// //         </div>
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // LIVE CLASS CARD
-// // // ─────────────────────────────────────────────
-// // function LiveClassCard({ liveClass, onClick }) {
-// //   const isLive = liveClass.status === "live";
-// //   const date = new Date(liveClass.scheduledAt);
-// //   return (
-// //     <div className="card" onClick={onClick} style={{ cursor: "pointer" }}>
-// //       <div className="card-thumb" style={{ background: "var(--bg3)", position: "relative" }}>
-// //         {liveClass.thumbnail
-// //           ? <img src={liveClass.thumbnail} alt={liveClass.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-// //           : <div style={{ textAlign: "center" }}>
-// //               <div style={{ fontSize: "3rem" }}>📡</div>
-// //               <div style={{ fontSize: "0.75rem", color: "var(--text3)", marginTop: 8 }}>Live Class</div>
-// //             </div>
-// //         }
-// //         {isLive && (
-// //           <div style={{ position: "absolute", top: 12, left: 12 }}>
-// //             <div className="live-badge"><div className="live-dot" />LIVE</div>
-// //           </div>
-// //         )}
-// //       </div>
-// //       <div className="card-body">
-// //         <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-// //           <span className={`badge ${isLive ? "badge-accent" : liveClass.status === "upcoming" ? "badge-cyan" : "badge-primary"}`}>
-// //             {liveClass.status}
-// //           </span>
-// //           {liveClass.isFree && <span className="badge badge-green">FREE</span>}
-// //         </div>
-// //         <div className="card-title">{liveClass.title}</div>
-// //         <div style={{ fontSize: "0.82rem", color: "var(--text2)", marginBottom: 12 }}>
-// //           🗓 {date.toLocaleDateString("en-IN", { day: "numeric", month: "short" })} · {date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
-// //           · {liveClass.duration || 60} mins
-// //         </div>
-// //         <div className="card-meta">
-// //           <span className={`price ${liveClass.isFree ? "price-free" : ""}`}>
-// //             {liveClass.isFree ? "FREE" : `₹${liveClass.price}`}
-// //           </span>
-// //           <span style={{ marginLeft: "auto", fontSize: "0.78rem", color: "var(--text3)" }}>
-// //             👥 {liveClass.registrations?.length || 0} registered
-// //           </span>
-// //         </div>
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // LIVE CLASSES PAGE
-// // // ─────────────────────────────────────────────
-// // function LiveClassesPage({ navigate }) {
-// //   const [classes, setClasses] = useState([]);
-// //   const [loading, setLoading] = useState(true);
-// //   const [status, setStatus] = useState("all");
-
-// //   useEffect(() => {
-// //     const params = new URLSearchParams();
-// //     if (status !== "all") params.set("status", status);
-// //     fetch(`${API_BASE}/live-classes?${params}`).then(r => r.json()).then(d => {
-// //       if (d.success) setClasses(d.data || d.liveClasses || []);
-// //       setLoading(false);
-// //     }).catch(() => setLoading(false));
-// //   }, [status]);
-
-// //   const filtered = status === "all" ? classes : classes.filter(c => c.status === status);
-
-// //   return (
-// //     <div className="page">
-// //       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
-// //         <div className="container">
-// //           <h1 className="section-title" style={{ marginBottom: 8 }}>Live <span className="grad">Classes</span></h1>
-// //           <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Join interactive sessions with expert instructors in real time</p>
-// //         </div>
-// //       </div>
-// //       <div className="container section">
-// //         <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
-// //           {["all", "upcoming", "live", "completed"].map(s => (
-// //             <button key={s} className={`btn ${status === s ? "btn-primary" : "btn-outline"} btn-sm`}
-// //               onClick={() => setStatus(s)} style={{ textTransform: "capitalize" }}>
-// //               {s === "live" && "🔴 "}{s}
-// //             </button>
-// //           ))}
-// //         </div>
-// //         {loading ? <div className="spinner" />
-// //           : filtered.length === 0
-// //             ? <div className="empty-state"><div className="icon">📡</div><p>No live classes found.</p></div>
-// //             : <div className="grid-3">{filtered.map(lc => <LiveClassCard key={lc._id} liveClass={lc} onClick={() => navigate(`/live/${lc._id}`)} />)}</div>
-// //         }
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // LIVE CLASS DETAIL
-// // // ─────────────────────────────────────────────
-// // function LiveClassDetailPage({ id, navigate, onAuth }) {
-// //   const { user, authFetch, token } = useAuth();
-// //   const toast = useToast();
-// //   const [lc, setLc] = useState(null);
-// //   const [loading, setLoading] = useState(true);
-// //   const [registering, setRegistering] = useState(false);
-
-// //   useEffect(() => {
-// //     const headers = token ? { Authorization: `Bearer ${token}` } : {};
-// //     fetch(`${API_BASE}/live-classes/${id}`, { headers }).then(r => r.json()).then(d => {
-// //       if (d.success) setLc(d.data || d.liveClass);
-// //       setLoading(false);
-// //     }).catch(() => setLoading(false));
-// //   }, [id, token]);
-
-// //   const isRegistered = user?.liveClassRegistrations?.some(r => r.liveClass?.toString() === id || r.liveClass === id);
-
-// //   const handleRegister = async () => {
-// //     if (!user) { onAuth(); return; }
-// //     setRegistering(true);
-// //     try {
-// //       const res = await authFetch(`/live-classes/${id}/register`, { method: "POST", body: JSON.stringify({}) });
-// //       if (res.success) { toast("Registered! You'll receive the link before the class. 🎉", "success"); }
-// //       else toast(res.message || "Registration failed", "error");
-// //     } catch { toast("Error registering", "error"); }
-// //     setRegistering(false);
-// //   };
-
-// //   if (loading) return <div className="page"><div className="spinner" /></div>;
-// //   if (!lc) return <div className="page"><div className="container" style={{ padding: "80px 24px", textAlign: "center" }}><h2>Class not found</h2></div></div>;
-
-// //   const date = new Date(lc.scheduledAt);
-// //   const isLive = lc.status === "live";
-
-// //   return (
-// //     <div className="page">
-// //       <div className="detail-header">
-// //         <div className="container">
-// //           <div className="detail-breadcrumb" onClick={() => navigate("/live")}>← Back to <span>Live Classes</span></div>
-// //           <div style={{ display: "flex", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
-// //             {isLive && <div className="live-badge"><div className="live-dot" />LIVE NOW</div>}
-// //             <span className={`badge ${lc.isFree ? "badge-green" : "badge-primary"}`}>{lc.isFree ? "FREE" : `₹${lc.price}`}</span>
-// //             <span className="badge badge-cyan">{lc.platform}</span>
-// //           </div>
-// //           <h1 className="detail-title">{lc.title}</h1>
-// //           <div className="detail-meta-row">
-// //             <span>🗓 {date.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}</span>
-// //             <span>🕐 {date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
-// //             <span>⏱ {lc.duration} mins</span>
-// //             <span>👥 {lc.registrations?.length || 0} / {lc.maxParticipants}</span>
-// //           </div>
-// //           {lc.description && <p style={{ color: "var(--text2)", maxWidth: 700, lineHeight: 1.6 }}>{lc.description}</p>}
-// //         </div>
-// //       </div>
-// //       <div className="container">
-// //         <div className="detail-layout">
-// //           <div>
-// //             {isRegistered && (
-// //               <div style={{ background: "rgba(107,203,119,0.12)", border: "1px solid var(--green)", borderRadius: 12, padding: "14px 18px", marginBottom: 24, fontSize: "0.9rem" }}>
-// //                 ✅ You're registered! Meeting link will be sent {lc.urlSendMinutesBefore || 30} minutes before the class.
-// //               </div>
-// //             )}
-// //             <div style={{ background: "var(--surface)", borderRadius: 14, padding: 24, marginBottom: 24 }}>
-// //               <h3 style={{ fontWeight: 700, marginBottom: 16 }}>📋 Class Details</h3>
-// //               {[["Platform", lc.platform], ["Duration", `${lc.duration} minutes`], ["Max Participants", lc.maxParticipants], ["Registered", lc.registrations?.length || 0], ["Seats Left", Math.max(0, lc.maxParticipants - (lc.registrations?.length || 0))]].map(([k, v]) => (
-// //                 <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)", fontSize: "0.87rem" }}>
-// //                   <span style={{ color: "var(--text2)" }}>{k}</span>
-// //                   <span style={{ fontWeight: 600 }}>{v}</span>
-// //                 </div>
-// //               ))}
-// //             </div>
-// //           </div>
-// //           <div className="detail-sidebar">
-// //             <div className="sidebar-price">{lc.isFree ? "FREE" : `₹${lc.price}`}</div>
-// //             {isRegistered
-// //               ? <button className="btn btn-green btn-lg sidebar-btn" disabled>✅ Registered</button>
-// //               : lc.status === "completed" || lc.status === "cancelled"
-// //                 ? <button className="btn btn-outline btn-lg sidebar-btn" disabled>Class {lc.status}</button>
-// //                 : <button className="btn btn-primary btn-lg sidebar-btn" onClick={handleRegister} disabled={registering || lc.isFull}>
-// //                     {registering ? "Registering…" : lc.isFull ? "Class Full" : "Register Now →"}
-// //                   </button>
-// //             }
-// //             <div className="sidebar-features">
-// //               {[["📡", lc.platform + " meeting"], ["📧", "Link sent via email"], ["⏱", `${lc.duration} min session`], ["👥", `Max ${lc.maxParticipants} participants`]].map(([icon, label]) => (
-// //                 <div key={label} className="sidebar-feature"><span className="icon">{icon}</span> {label}</div>
-// //               ))}
-// //             </div>
-// //           </div>
-// //         </div>
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // NOTES PAGE
-// // // ─────────────────────────────────────────────
-// // function NotesCard({ note, onClick }) {
-// //   const price = note.isFree ? 0 : (note.discountPrice ?? note.price);
-// //   return (
-// //     <div className="card" onClick={onClick} style={{ cursor: "pointer" }}>
-// //       <div className="card-thumb" style={{ background: "var(--bg3)" }}>
-// //         {note.thumbnail
-// //           ? <img src={note.thumbnail} alt={note.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-// //           : <div style={{ textAlign: "center" }}>
-// //               <div style={{ fontSize: "3rem" }}>📄</div>
-// //               <div style={{ fontSize: "0.75rem", color: "var(--text3)", marginTop: 8 }}>{note.fileType?.toUpperCase() || "PDF"}</div>
-// //             </div>
-// //         }
-// //       </div>
-// //       <div className="card-body">
-// //         <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-// //           <span className="badge badge-yellow">{note.fileType?.toUpperCase() || "PDF"}</span>
-// //           {note.isFree && <span className="badge badge-green">FREE</span>}
-// //           {note.category && <span className="badge badge-primary">{note.category}</span>}
-// //         </div>
-// //         <div className="card-title">{note.title}</div>
-// //         <div className="card-desc">{note.description}</div>
-// //         <div className="card-meta">
-// //           <span className={`price ${note.isFree ? "price-free" : ""}`}>{note.isFree ? "FREE" : `₹${price}`}</span>
-// //           {!note.isFree && note.discountPrice && <span className="price-old">₹{note.price}</span>}
-// //           <span style={{ marginLeft: "auto", fontSize: "0.78rem", color: "var(--text3)" }}>
-// //             📥 {note.totalPurchases || 0} downloads
-// //           </span>
-// //         </div>
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // function NotesPage({ navigate }) {
-// //   const [notes, setNotes] = useState([]);
-// //   const [loading, setLoading] = useState(true);
-// //   const [search, setSearch] = useState("");
-
-// //   useEffect(() => {
-// //     const params = new URLSearchParams();
-// //     if (search) params.set("search", search);
-// //     fetch(`${API_BASE}/notes?${params}`).then(r => r.json()).then(d => {
-// //       if (d.success) setNotes(d.data || d.notes || []);
-// //       setLoading(false);
-// //     }).catch(() => setLoading(false));
-// //   }, [search]);
-
-// //   return (
-// //     <div className="page">
-// //       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
-// //         <div className="container">
-// //           <h1 className="section-title" style={{ marginBottom: 8 }}>Study <span className="grad">Notes</span></h1>
-// //           <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Curated PDFs and study material for focused learning</p>
-// //         </div>
-// //       </div>
-// //       <div className="container section">
-// //         <div className="search-bar">
-// //           <span className="search-icon">🔍</span>
-// //           <input placeholder="Search notes…" value={search} onChange={e => setSearch(e.target.value)} />
-// //           {search && <button onClick={() => setSearch("")} style={{ background: "none", color: "var(--text3)" }}>✕</button>}
-// //         </div>
-// //         {loading ? <div className="spinner" />
-// //           : notes.length === 0
-// //             ? <div className="empty-state"><div className="icon">📄</div><p>No notes found.</p></div>
-// //             : <div className="grid-3">{notes.map(n => <NotesCard key={n._id} note={n} onClick={() => navigate(`/notes/${n._id}`)} />)}</div>
-// //         }
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // NOTES DETAIL
-// // // ─────────────────────────────────────────────
-// // function NoteDetailPage({ id, navigate, onAuth }) {
-// //   const { user, authFetch, token } = useAuth();
-// //   const toast = useToast();
-// //   const [note, setNote] = useState(null);
-// //   const [loading, setLoading] = useState(true);
-
-// //   useEffect(() => {
-// //     const headers = token ? { Authorization: `Bearer ${token}` } : {};
-// //     fetch(`${API_BASE}/notes/${id}`, { headers }).then(r => r.json()).then(d => {
-// //       if (d.success) setNote(d.data || d.note);
-// //       setLoading(false);
-// //     }).catch(() => setLoading(false));
-// //   }, [id, token]);
-
-// //   const hasPurchased = user?.purchasedNotes?.some(p => p.notes?.toString() === id || p.notes === id);
-// //   const price = note?.isFree ? 0 : (note?.discountPrice ?? note?.price ?? 0);
-
-// //   const handleDownload = async () => {
-// //     if (!user) { onAuth(); return; }
-// //     if (!hasPurchased && !note?.isFree) { toast("Please purchase to download", "error"); return; }
-// //     window.open(`${API_BASE}/notes/${id}/download?token=${token}`, "_blank");
-// //   };
-
-// //   if (loading) return <div className="page"><div className="spinner" /></div>;
-// //   if (!note) return <div className="page"><div className="container" style={{ padding: "80px 24px", textAlign: "center" }}><h2>Note not found</h2></div></div>;
-
-// //   return (
-// //     <div className="page">
-// //       <div className="detail-header">
-// //         <div className="container">
-// //           <div className="detail-breadcrumb" onClick={() => navigate("/notes")}>← Back to <span>Notes</span></div>
-// //           <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-// //             <span className="badge badge-yellow">{note.fileType?.toUpperCase()}</span>
-// //             {note.isFree && <span className="badge badge-green">FREE</span>}
-// //           </div>
-// //           <h1 className="detail-title">{note.title}</h1>
-// //           <div className="detail-meta-row">
-// //             <span>📄 {note.fileType?.toUpperCase()}</span>
-// //             {note.fileSizeBytes > 0 && <span>💾 {(note.fileSizeBytes / 1024 / 1024).toFixed(1)} MB</span>}
-// //             {note.previewPages > 0 && <span>👀 {note.previewPages} preview pages</span>}
-// //             <span>📥 {note.totalPurchases || 0} downloads</span>
-// //           </div>
-// //           {note.description && <p style={{ color: "var(--text2)", maxWidth: 700, lineHeight: 1.6 }}>{note.description}</p>}
-// //         </div>
-// //       </div>
-// //       <div className="container">
-// //         <div className="detail-layout">
-// //           <div>
-// //             {hasPurchased && (
-// //               <div style={{ background: "rgba(107,203,119,0.12)", border: "1px solid var(--green)", borderRadius: 12, padding: "14px 18px", marginBottom: 24, fontSize: "0.9rem" }}>
-// //                 ✅ You own this — click Download to access your file!
-// //               </div>
-// //             )}
-// //             <div style={{ background: "var(--surface)", borderRadius: 14, padding: 24 }}>
-// //               <h3 style={{ fontWeight: 700, marginBottom: 16 }}>📋 Document Details</h3>
-// //               {[["File Type", note.fileType?.toUpperCase()], ["Category", note.category || "General"], ["Downloads", note.totalPurchases || 0], ...(note.previewPages > 0 ? [["Free Preview", `${note.previewPages} pages`]] : [])].map(([k, v]) => (
-// //                 <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)", fontSize: "0.87rem" }}>
-// //                   <span style={{ color: "var(--text2)" }}>{k}</span><span style={{ fontWeight: 600 }}>{v}</span>
-// //                 </div>
-// //               ))}
-// //             </div>
-// //           </div>
-// //           <div className="detail-sidebar">
-// //             <div className="sidebar-price">{note.isFree ? "FREE" : `₹${price}`}</div>
-// //             {!note.isFree && note.discountPrice && <div className="sidebar-price-old">₹{note.price}</div>}
-// //             {(hasPurchased || note.isFree)
-// //               ? <button className="btn btn-green btn-lg sidebar-btn" onClick={handleDownload}>⬇️ Download Now</button>
-// //               : <button className="btn btn-primary btn-lg sidebar-btn" onClick={() => toast("Buy flow — coming soon!", "info")}>
-// //                   Buy for ₹{price} →
-// //                 </button>
-// //             }
-// //           </div>
-// //         </div>
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // DASHBOARD (My Learning)
-// // // ─────────────────────────────────────────────
-// // function DashboardPage({ navigate }) {
-// //   const { user, authFetch } = useAuth();
-// //   const [payments, setPayments] = useState([]);
-// //   const [tab, setTab] = useState("courses");
-
-// //   useEffect(() => {
-// //     authFetch("/payments/my").then(d => { if (d.success) setPayments(d.data || d.payments || []); }).catch(() => {});
-// //   }, [authFetch]);
-
-// //   if (!user) return <div className="page"><div className="container" style={{ padding: 80, textAlign: "center" }}><h2>Please login to view your dashboard</h2></div></div>;
-
-// //   const courses = user.purchasedCourses || [];
-// //   const notes = user.purchasedNotes || [];
-// //   const liveRegs = user.liveClassRegistrations || [];
-
-// //   return (
-// //     <div className="page">
-// //       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
-// //         <div className="container">
-// //           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
-// //             <div className="avatar-btn" style={{ width: 52, height: 52, fontSize: "1.2rem" }}>
-// //               {user.name?.[0]?.toUpperCase()}
-// //             </div>
-// //             <div>
-// //               <h1 style={{ fontFamily: "var(--font2)", fontSize: "1.6rem", fontWeight: 700 }}>Welcome, {user.name}! 👋</h1>
-// //               <p style={{ color: "var(--text2)", fontSize: "0.88rem" }}>{user.email} · {user.role}</p>
-// //             </div>
-// //           </div>
-// //         </div>
-// //       </div>
-// //       <div className="container section">
-// //         <div className="stats-grid" style={{ marginBottom: 32 }}>
-// //           {[["📚", courses.length, "Courses Enrolled"], ["📄", notes.length, "Notes Purchased"], ["📡", liveRegs.length, "Classes Registered"], ["💳", payments.filter(p => p.status === "paid").length, "Successful Payments"]].map(([icon, num, label]) => (
-// //             <div key={label} className="stat-card">
-// //               <div className="stat-card-icon">{icon}</div>
-// //               <div className="stat-card-num">{num}</div>
-// //               <div className="stat-card-label">{label}</div>
-// //             </div>
-// //           ))}
-// //         </div>
-
-// //         <div className="tabs">
-// //           {[["courses", "📚 My Courses"], ["notes", "📄 My Notes"], ["live", "📡 Live Classes"], ["payments", "💳 Payments"]].map(([key, label]) => (
-// //             <button key={key} className={`tab ${tab === key ? "active" : ""}`} onClick={() => setTab(key)}>{label}</button>
-// //           ))}
-// //         </div>
-
-// //         {tab === "courses" && (
-// //           courses.length === 0
-// //             ? <div className="empty-state"><div className="icon">📚</div><p>No courses yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => navigate("/courses")}>Browse courses →</span></p></div>
-// //             : <div className="grid-3">
-// //                 {courses.map(p => (
-// //                   <div key={p._id || p.course} className="card" onClick={() => navigate(`/courses/${p.course?._id || p.course}`)} style={{ cursor: "pointer" }}>
-// //                     <div className="card-thumb" style={{ background: "var(--bg3)" }}>
-// //                       {p.course?.thumbnail ? <img src={p.course.thumbnail} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ fontSize: "3rem" }}>📚</div>}
-// //                     </div>
-// //                     <div className="card-body">
-// //                       <div className="card-title">{p.course?.title || "Course"}</div>
-// //                       <div style={{ fontSize: "0.8rem", color: "var(--text3)", marginTop: 6 }}>Purchased {new Date(p.purchasedAt).toLocaleDateString()}</div>
-// //                       <div style={{ marginTop: 10 }}>
-// //                         <div className="progress-bar-wrap"><div className="progress-bar" style={{ width: "35%" }} /></div>
-// //                         <div style={{ fontSize: "0.75rem", color: "var(--text3)", marginTop: 4 }}>35% completed</div>
-// //                       </div>
-// //                     </div>
-// //                   </div>
-// //                 ))}
-// //               </div>
-// //         )}
-
-// //         {tab === "notes" && (
-// //           notes.length === 0
-// //             ? <div className="empty-state"><div className="icon">📄</div><p>No notes yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => navigate("/notes")}>Browse notes →</span></p></div>
-// //             : <div className="grid-3">
-// //                 {notes.map(p => (
-// //                   <div key={p._id || p.notes} className="card">
-// //                     <div className="card-body">
-// //                       <div style={{ fontSize: "2rem", marginBottom: 10 }}>📄</div>
-// //                       <div className="card-title">{p.notes?.title || "Notes"}</div>
-// //                       <div style={{ fontSize: "0.8rem", color: "var(--text3)", marginTop: 6 }}>Purchased {new Date(p.purchasedAt).toLocaleDateString()}</div>
-// //                       <button className="btn btn-green btn-sm" style={{ marginTop: 12 }} onClick={() => navigate(`/notes/${p.notes?._id || p.notes}`)}>⬇️ Download</button>
-// //                     </div>
-// //                   </div>
-// //                 ))}
-// //               </div>
-// //         )}
-
-// //         {tab === "live" && (
-// //           liveRegs.length === 0
-// //             ? <div className="empty-state"><div className="icon">📡</div><p>No classes registered. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => navigate("/live")}>Browse classes →</span></p></div>
-// //             : <div className="grid-3">
-// //                 {liveRegs.map((r, i) => (
-// //                   <div key={i} className="card">
-// //                     <div className="card-body">
-// //                       <div style={{ fontSize: "2rem", marginBottom: 10 }}>📡</div>
-// //                       <div className="card-title">Live Class Registration</div>
-// //                       <div style={{ fontSize: "0.8rem", color: "var(--text3)", marginTop: 6 }}>Registered {new Date(r.registeredAt).toLocaleDateString()}</div>
-// //                       <span className={`badge ${r.urlSent ? "badge-green" : "badge-yellow"}`} style={{ marginTop: 10, display: "inline-flex" }}>
-// //                         {r.urlSent ? "✅ Link Sent" : "⏳ Link Pending"}
-// //                       </span>
-// //                     </div>
-// //                   </div>
-// //                 ))}
-// //               </div>
-// //         )}
-
-// //         {tab === "payments" && (
-// //           payments.length === 0
-// //             ? <div className="empty-state"><div className="icon">💳</div><p>No payment history.</p></div>
-// //             : <div className="table-wrap">
-// //                 <table>
-// //                   <thead><tr><th>Item</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
-// //                   <tbody>
-// //                     {payments.map(p => (
-// //                       <tr key={p._id}>
-// //                         <td>{p.itemTitle || "—"}</td>
-// //                         <td><span className="badge badge-primary">{p.itemType}</span></td>
-// //                         <td style={{ fontWeight: 700 }}>₹{p.amountInRupees}</td>
-// //                         <td><span className={`badge ${p.status === "paid" ? "badge-green" : p.status === "failed" ? "badge-accent" : "badge-yellow"}`}>{p.status}</span></td>
-// //                         <td style={{ color: "var(--text3)" }}>{new Date(p.createdAt).toLocaleDateString()}</td>
-// //                       </tr>
-// //                     ))}
-// //                   </tbody>
-// //                 </table>
-// //               </div>
-// //         )}
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // ADMIN PANEL
-// // // ─────────────────────────────────────────────
-// // function AdminPage({ navigate }) {
-// //   const { user, authFetch, isAdmin } = useAuth();
-// //   const toast = useToast();
-// //   const [section, setSection] = useState("dashboard");
-// //   const [stats, setStats] = useState(null);
-// //   const [courses, setCourses] = useState([]);
-// //   const [liveClasses, setLiveClasses] = useState([]);
-// //   const [notes, setNotes] = useState([]);
-// //   const [users, setUsers] = useState([]);
-// //   const [payments, setPayments] = useState([]);
-// //   const [showCourseForm, setShowCourseForm] = useState(false);
-// //   const [showLiveForm, setShowLiveForm] = useState(false);
-// //   const [courseForm, setCourseForm] = useState({ title: "", description: "", price: "", level: "beginner", category: "", isFree: false });
-// //   const [liveForm, setLiveForm] = useState({ title: "", description: "", scheduledAt: "", duration: 60, price: 0, isFree: true, platform: "zoom", maxParticipants: 100 });
-// //   const [creating, setCreating] = useState(false);
-
-// //   useEffect(() => {
-// //     if (!isAdmin) return;
-// //     authFetch("/admin/stats").then(d => { if (d.success) setStats(d.data || d.stats); }).catch(() => {});
-// //   }, [isAdmin, authFetch]);
-
-// //   const loadSection = (s) => {
-// //     setSection(s);
-// //     if (s === "courses") authFetch("/courses/admin/all").then(d => { if (d.success) setCourses(d.data || d.courses || []); });
-// //     if (s === "live") authFetch("/live-classes/admin/all").then(d => { if (d.success) setLiveClasses(d.data || d.liveClasses || []); });
-// //     if (s === "notes") authFetch("/notes/admin/all").then(d => { if (d.success) setNotes(d.data || d.notes || []); });
-// //     if (s === "users") authFetch("/admin/users").then(d => { if (d.success) setUsers(d.data || d.users || []); });
-// //     if (s === "payments") authFetch("/payments/admin/all").then(d => { if (d.success) setPayments(d.data || d.payments || []); });
-// //   };
-
-// //   const createCourse = async () => {
-// //     if (!courseForm.title || !courseForm.description || !courseForm.price) { toast("Fill all required fields", "error"); return; }
-// //     setCreating(true);
-// //     const res = await authFetch("/courses", { method: "POST", body: JSON.stringify(courseForm) });
-// //     setCreating(false);
-// //     if (res.success) { toast("Course created! ✅", "success"); setShowCourseForm(false); setCourseForm({ title: "", description: "", price: "", level: "beginner", category: "", isFree: false }); loadSection("courses"); }
-// //     else toast(res.message || "Failed", "error");
-// //   };
-
-// //   const createLive = async () => {
-// //     if (!liveForm.title || !liveForm.scheduledAt) { toast("Fill all required fields", "error"); return; }
-// //     setCreating(true);
-// //     const res = await authFetch("/live-classes", { method: "POST", body: JSON.stringify(liveForm) });
-// //     setCreating(false);
-// //     if (res.success) { toast("Live class created! ✅", "success"); setShowLiveForm(false); loadSection("live"); }
-// //     else toast(res.message || "Failed", "error");
-// //   };
-
-// //   const togglePublish = async (courseId, current) => {
-// //     await authFetch(`/courses/${courseId}/publish`, { method: "PATCH" });
-// //     loadSection("courses");
-// //     toast(`Course ${current ? "unpublished" : "published"}`, "success");
-// //   };
-
-// //   const deleteCourse = async (id) => {
-// //     if (!window.confirm("Delete this course?")) return;
-// //     await authFetch(`/courses/${id}`, { method: "DELETE" });
-// //     loadSection("courses");
-// //     toast("Course deleted", "success");
-// //   };
-
-// //   const toggleUser = async (userId) => {
-// //     await authFetch(`/admin/users/${userId}/status`, { method: "PATCH" });
-// //     loadSection("users");
-// //   };
-
-// //   if (!isAdmin) return (
-// //     <div className="page"><div className="container" style={{ padding: 80, textAlign: "center" }}>
-// //       <div style={{ fontSize: "4rem" }}>🚫</div>
-// //       <h2 style={{ margin: "16px 0 8px" }}>Access Denied</h2>
-// //       <p style={{ color: "var(--text2)" }}>Admin access required</p>
-// //       <button className="btn btn-primary" style={{ marginTop: 20 }} onClick={() => navigate("/")}>Go Home</button>
-// //     </div></div>
-// //   );
-
-// //   const navItems = [
-// //     { key: "dashboard", icon: "📊", label: "Dashboard" },
-// //     { key: "courses", icon: "📚", label: "Courses" },
-// //     { key: "live", icon: "📡", label: "Live Classes" },
-// //     { key: "notes", icon: "📄", label: "Notes" },
-// //     { key: "users", icon: "👥", label: "Users" },
-// //     { key: "payments", icon: "💳", label: "Payments" },
-// //   ];
-
-// //   return (
-// //     <div className="page">
-// //       <div className="admin-layout">
-// //         <div className="admin-sidebar">
-// //           <div style={{ padding: "0 20px 20px", borderBottom: "1px solid var(--border)", marginBottom: 8 }}>
-// //             <div style={{ fontWeight: 700, fontSize: "0.8rem", color: "var(--text3)", textTransform: "uppercase", letterSpacing: 1 }}>Admin Panel</div>
-// //           </div>
-// //           {navItems.map(n => (
-// //             <div key={n.key} className={`admin-nav-item ${section === n.key ? "active" : ""}`} onClick={() => loadSection(n.key)}>
-// //               <span className="admin-nav-icon">{n.icon}</span> {n.label}
-// //             </div>
-// //           ))}
-// //         </div>
-
-// //         <div className="admin-content">
-// //           {/* Dashboard */}
-// //           {section === "dashboard" && (
-// //             <>
-// //               <div className="admin-header">
-// //                 <div className="admin-title">Platform Overview</div>
-// //                 <div className="admin-sub">Welcome back, {user?.name}</div>
-// //               </div>
-// //               {stats ? (
-// //                 <div className="stats-grid">
-// //                   {[["👥", stats.totalUsers || 0, "Total Users"], ["📚", stats.totalCourses || 0, "Courses"], ["📡", stats.totalLiveClasses || 0, "Live Classes"], ["📄", stats.totalNotes || 0, "Notes"], ["💳", stats.totalPayments || 0, "Payments"], ["💰", `₹${(stats.totalRevenue || 0).toLocaleString()}`, "Revenue"]].map(([icon, num, label]) => (
-// //                     <div key={label} className="stat-card">
-// //                       <div className="stat-card-icon">{icon}</div>
-// //                       <div className="stat-card-num">{num}</div>
-// //                       <div className="stat-card-label">{label}</div>
-// //                     </div>
-// //                   ))}
-// //                 </div>
-// //               ) : <div className="spinner" />}
-// //               <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 24 }}>
-// //                 <h3 style={{ fontWeight: 700, marginBottom: 16 }}>⚡ Quick Actions</h3>
-// //                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-// //                   <button className="btn btn-primary" onClick={() => { setShowCourseForm(true); loadSection("courses"); }}>+ New Course</button>
-// //                   <button className="btn btn-outline" onClick={() => { setShowLiveForm(true); loadSection("live"); }}>+ New Live Class</button>
-// //                   <button className="btn btn-outline" onClick={() => loadSection("users")}>View Users</button>
-// //                   <button className="btn btn-outline" onClick={() => loadSection("payments")}>View Payments</button>
-// //                 </div>
-// //               </div>
-// //             </>
-// //           )}
-// // {/* Courses */}
-// // {section === "courses" && (
-// //   <>
-// //     <div
-// //       className="admin-header"
-// //       style={{
-// //         display: "flex",
-// //         alignItems: "center",
-// //         justifyContent: "space-between",
-// //       }}
-// //     >
-// //       <div>
-// //         <div className="admin-title">Courses</div>
-// //         <div className="admin-sub">
-// //           {courses.length} total courses
-// //         </div>
-// //       </div>
-
-// //       <button
-// //         className="btn btn-primary"
-// //         onClick={() => setShowCourseForm((p) => !p)}
-// //       >
-// //         + New Course
-// //       </button>
-// //     </div>
-
-// //     {/* Create Course Form */}
-// //     {showCourseForm && (
-// //       <div
-// //         style={{
-// //           background: "var(--surface)",
-// //           border: "1px solid var(--border)",
-// //           borderRadius: 14,
-// //           padding: 24,
-// //           marginBottom: 24,
-// //         }}
-// //       >
-// //         <h3
-// //           style={{
-// //             fontWeight: 700,
-// //             marginBottom: 20,
-// //           }}
-// //         >
-// //           Create New Course
-// //         </h3>
-
-// //         <div
-// //           style={{
-// //             display: "grid",
-// //             gridTemplateColumns: "1fr 1fr",
-// //             gap: 16,
-// //           }}
-// //         >
-// //           <div
-// //             className="form-group"
-// //             style={{ gridColumn: "1 / -1" }}
-// //           >
-// //             <label className="form-label">
-// //               Course Title *
-// //             </label>
-
-// //             <input
-// //               className="form-input"
-// //               value={courseForm.title}
-// //               onChange={(e) =>
-// //                 setCourseForm((p) => ({
-// //                   ...p,
-// //                   title: e.target.value,
-// //                 }))
-// //               }
-// //             />
-// //           </div>
-
-// //           <div
-// //             className="form-group"
-// //             style={{ gridColumn: "1 / -1" }}
-// //           >
-// //             <label className="form-label">
-// //               Description *
-// //             </label>
-
-// //             <textarea
-// //               rows={4}
-// //               className="form-input"
-// //               value={courseForm.description}
-// //               onChange={(e) =>
-// //                 setCourseForm((p) => ({
-// //                   ...p,
-// //                   description: e.target.value,
-// //                 }))
-// //               }
-// //             />
-// //           </div>
-
-// //           <div className="form-group">
-// //             <label className="form-label">
-// //               Price (₹)
-// //             </label>
-
-// //             <input
-// //               type="number"
-// //               className="form-input"
-// //               value={courseForm.price}
-// //               onChange={(e) =>
-// //                 setCourseForm((p) => ({
-// //                   ...p,
-// //                   price: e.target.value,
-// //                 }))
-// //               }
-// //             />
-// //           </div>
-
-// //           <div className="form-group">
-// //             <label className="form-label">
-// //               Discount Price
-// //             </label>
-
-// //             <input
-// //               type="number"
-// //               className="form-input"
-// //               value={courseForm.discountPrice}
-// //               onChange={(e) =>
-// //                 setCourseForm((p) => ({
-// //                   ...p,
-// //                   discountPrice: e.target.value,
-// //                 }))
-// //               }
-// //             />
-// //           </div>
-
-// //           <div className="form-group">
-// //             <label className="form-label">
-// //               Category
-// //             </label>
-
-// //             <input
-// //               className="form-input"
-// //               value={courseForm.category}
-// //               onChange={(e) =>
-// //                 setCourseForm((p) => ({
-// //                   ...p,
-// //                   category: e.target.value,
-// //                 }))
-// //               }
-// //             />
-// //           </div>
-
-// //           <div className="form-group">
-// //             <label className="form-label">
-// //               Level
-// //             </label>
-
-// //             <select
-// //               className="form-input"
-// //               value={courseForm.level}
-// //               onChange={(e) =>
-// //                 setCourseForm((p) => ({
-// //                   ...p,
-// //                   level: e.target.value,
-// //                 }))
-// //               }
-// //             >
-// //               {[
-// //                 "beginner",
-// //                 "intermediate",
-// //                 "advanced",
-// //                 "all",
-// //               ].map((level) => (
-// //                 <option
-// //                   key={level}
-// //                   value={level}
-// //                 >
-// //                   {level}
-// //                 </option>
-// //               ))}
-// //             </select>
-// //           </div>
-
-// //           <div className="form-group">
-// //             <label className="form-label">
-// //               Language
-// //             </label>
-
-// //             <input
-// //               className="form-input"
-// //               value={courseForm.language}
-// //               onChange={(e) =>
-// //                 setCourseForm((p) => ({
-// //                   ...p,
-// //                   language: e.target.value,
-// //                 }))
-// //               }
-// //             />
-// //           </div>
-
-// //           <div className="form-group">
-// //             <label className="form-label">
-// //               Tags
-// //             </label>
-
-// //             <input
-// //               className="form-input"
-// //               placeholder="react,node,mongodb"
-// //               value={courseForm.tags}
-// //               onChange={(e) =>
-// //                 setCourseForm((p) => ({
-// //                   ...p,
-// //                   tags: e.target.value,
-// //                 }))
-// //               }
-// //             />
-// //           </div>
-
-// //           <div
-// //             className="form-group"
-// //             style={{
-// //               display: "flex",
-// //               alignItems: "center",
-// //               gap: 10,
-// //               paddingTop: 30,
-// //             }}
-// //           >
-// //             <input
-// //               type="checkbox"
-// //               checked={courseForm.isFree}
-// //               onChange={(e) =>
-// //                 setCourseForm((p) => ({
-// //                   ...p,
-// //                   isFree: e.target.checked,
-// //                 }))
-// //               }
-// //             />
-
-// //             <label>Free Course</label>
-// //           </div>
-// //         </div>
-
-// //         <div
-// //           style={{
-// //             display: "flex",
-// //             gap: 10,
-// //             marginTop: 20,
-// //           }}
-// //         >
-// //           <button
-// //             className="btn btn-primary"
-// //             onClick={createCourse}
-// //             disabled={creating}
-// //           >
-// //             {creating
-// //               ? "Creating..."
-// //               : "Create Course"}
-// //           </button>
-
-// //           <button
-// //             className="btn btn-outline"
-// //             onClick={() =>
-// //               setShowCourseForm(false)
-// //             }
-// //           >
-// //             Cancel
-// //           </button>
-// //         </div>
-// //       </div>
-// //     )}
-
-// //     {/* Courses Table */}
-// //     <div className="table-wrap">
-// //       <table>
-// //         <thead>
-// //           <tr>
-// //             <th>Title</th>
-// //             <th>Category</th>
-// //             <th>Level</th>
-// //             <th>Price</th>
-// //             <th>Videos</th>
-// //             <th>Students</th>
-// //             <th>Status</th>
-// //             <th>Actions</th>
-// //           </tr>
-// //         </thead>
-
-// //         <tbody>
-// //           {courses.map((course) => (
-// //             <tr key={course._id}>
-// //               <td>
-// //                 <div
-// //                   style={{
-// //                     fontWeight: 600,
-// //                   }}
-// //                 >
-// //                   {course.title}
-// //                 </div>
-// //               </td>
-
-// //               <td>
-// //                 {course.category || "-"}
-// //               </td>
-
-// //               <td>
-// //                 <span className="badge badge-primary">
-// //                   {course.level}
-// //                 </span>
-// //               </td>
-
-// //               <td>
-// //                 {course.isFree ? (
-// //                   <span className="badge badge-green">
-// //                     FREE
-// //                   </span>
-// //                 ) : (
-// //                   `₹${
-// //                     course.discountPrice ??
-// //                     course.price
-// //                   }`
-// //                 )}
-// //               </td>
-
-// //               <td>
-// //                 {course.videos?.length || 0}
-// //               </td>
-
-// //               <td>
-// //                 {course.totalStudents || 0}
-// //               </td>
-
-// //               <td>
-// //                 <span
-// //                   className={`badge ${
-// //                     course.isPublished
-// //                       ? "badge-green"
-// //                       : "badge-yellow"
-// //                   }`}
-// //                 >
-// //                   {course.isPublished
-// //                     ? "Published"
-// //                     : "Draft"}
-// //                 </span>
-// //               </td>
-
-// //               <td>
-// //                 <div
-// //                   style={{
-// //                     display: "flex",
-// //                     gap: 6,
-// //                     flexWrap: "wrap",
-// //                   }}
-// //                 >
-// //                   <button
-// //                     className="btn btn-primary btn-sm"
-// //                     // onClick={() => openVideoManager(course)}
-// //                   >
-// //                     Videos
-// //                   </button>
-
-// //                   <button
-// //                     className="btn btn-outline btn-sm"
-// //                     onClick={() =>
-// //                       togglePublish(
-// //                         course._id,
-// //                         course.isPublished
-// //                       )
-// //                     }
-// //                   >
-// //                     {course.isPublished
-// //                       ? "Unpublish"
-// //                       : "Publish"}
-// //                   </button>
-
-// //                   <button
-// //                     className="btn btn-danger btn-sm"
-// //                     onClick={() =>
-// //                       deleteCourse(course._id)
-// //                     }
-// //                   >
-// //                     Delete
-// //                   </button>
-// //                 </div>
-// //               </td>
-// //             </tr>
-// //           ))}
-
-// //           {courses.length === 0 && (
-// //             <tr>
-// //               <td
-// //                 colSpan={8}
-// //                 style={{
-// //                   textAlign: "center",
-// //                   padding: 30,
-// //                   color: "var(--text3)",
-// //                 }}
-// //               >
-// //                 No courses found
-// //               </td>
-// //             </tr>
-// //           )}
-// //         </tbody>
-// //       </table>
-// //     </div>
-// //   </>
-// // )}
-// //           {/* Courses
-// //           {section === "courses" && (
-// //             <>
-// //               <div className="admin-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-// //                 <div>
-// //                   <div className="admin-title">Courses</div>
-// //                   <div className="admin-sub">{courses.length} total courses</div>
-// //                 </div>
-// //                 <button className="btn btn-primary" onClick={() => setShowCourseForm(p => !p)}>+ New Course</button>
-// //               </div>
-// //               {showCourseForm && (
-// //                 <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 24, marginBottom: 24 }}>
-// //                   <h3 style={{ fontWeight: 700, marginBottom: 20 }}>Create New Course</h3>
-// //                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-// //                     {[["title", "Course Title *"], ["description", "Description *"], ["price", "Price (₹) *"], ["category", "Category"]].map(([key, label]) => (
-// //                       <div key={key} className="form-group" style={{ gridColumn: key === "description" ? "1/-1" : "auto" }}>
-// //                         <label className="form-label">{label}</label>
-// //                         <input className="form-input" value={courseForm[key]} onChange={e => setCourseForm(p => ({ ...p, [key]: e.target.value }))} />
-// //                       </div>
-// //                     ))}
-// //                     <div className="form-group">
-// //                       <label className="form-label">Level</label>
-// //                       <select className="form-input" value={courseForm.level} onChange={e => setCourseForm(p => ({ ...p, level: e.target.value }))}>
-// //                         {["beginner", "intermediate", "advanced", "all"].map(l => <option key={l} value={l}>{l}</option>)}
-// //                       </select>
-// //                     </div>
-// //                     <div className="form-group" style={{ display: "flex", alignItems: "center", gap: 10, paddingTop: 24 }}>
-// //                       <input type="checkbox" id="isFree" checked={courseForm.isFree} onChange={e => setCourseForm(p => ({ ...p, isFree: e.target.checked }))} style={{ width: 18, height: 18 }} />
-// //                       <label htmlFor="isFree" style={{ fontWeight: 600, fontSize: "0.9rem" }}>Free Course</label>
-// //                     </div>
-// //                   </div>
-// //                   <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
-// //                     <button className="btn btn-primary" onClick={createCourse} disabled={creating}>{creating ? "Creating…" : "Create Course"}</button>
-// //                     <button className="btn btn-outline" onClick={() => setShowCourseForm(false)}>Cancel</button>
-// //                   </div>
-// //                 </div>
-// //               )}
-// //               <div className="table-wrap">
-// //                 <table>
-// //                   <thead><tr><th>Title</th><th>Level</th><th>Price</th><th>Students</th><th>Status</th><th>Actions</th></tr></thead>
-// //                   <tbody>
-// //                     {courses.map(c => (
-// //                       <tr key={c._id}>
-// //                         <td style={{ fontWeight: 600 }}>{c.title}</td>
-// //                         <td><span className="badge badge-primary">{c.level}</span></td>
-// //                         <td>{c.isFree ? <span className="badge badge-green">FREE</span> : `₹${c.discountPrice ?? c.price}`}</td>
-// //                         <td>{c.totalStudents || 0}</td>
-// //                         <td><span className={`badge ${c.isPublished ? "badge-green" : "badge-yellow"}`}>{c.isPublished ? "Published" : "Draft"}</span></td>
-// //                         <td>
-// //                           <div style={{ display: "flex", gap: 6 }}>
-// //                             <button className="btn btn-outline btn-sm" onClick={() => togglePublish(c._id, c.isPublished)}>{c.isPublished ? "Unpublish" : "Publish"}</button>
-// //                             <button className="btn btn-danger btn-sm" onClick={() => deleteCourse(c._id)}>Delete</button>
-// //                           </div>
-// //                         </td>
-// //                       </tr>
-// //                     ))}
-// //                     {courses.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text3)", padding: 32 }}>No courses yet</td></tr>}
-// //                   </tbody>
-// //                 </table>
-// //               </div>
-// //             </>
-// //           )} */}
-
-// //           {/* Live Classes */}
-// //           {section === "live" && (
-// //             <>
-// //               <div className="admin-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-// //                 <div>
-// //                   <div className="admin-title">Live Classes</div>
-// //                   <div className="admin-sub">{liveClasses.length} total classes</div>
-// //                 </div>
-// //                 <button className="btn btn-primary" onClick={() => setShowLiveForm(p => !p)}>+ New Live Class</button>
-// //               </div>
-// //               {showLiveForm && (
-// //                 <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 24, marginBottom: 24 }}>
-// //                   <h3 style={{ fontWeight: 700, marginBottom: 20 }}>Create Live Class</h3>
-// //                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-// //                     {[["title", "Title *", "text"], ["scheduledAt", "Schedule *", "datetime-local"], ["duration", "Duration (mins)", "number"], ["maxParticipants", "Max Participants", "number"], ["price", "Price (₹)", "number"]].map(([key, label, type]) => (
-// //                       <div key={key} className="form-group">
-// //                         <label className="form-label">{label}</label>
-// //                         <input type={type} className="form-input" value={liveForm[key]} onChange={e => setLiveForm(p => ({ ...p, [key]: type === "number" ? Number(e.target.value) : e.target.value }))} />
-// //                       </div>
-// //                     ))}
-// //                     <div className="form-group">
-// //                       <label className="form-label">Platform</label>
-// //                       <select className="form-input" value={liveForm.platform} onChange={e => setLiveForm(p => ({ ...p, platform: e.target.value }))}>
-// //                         {["zoom", "google_meet", "teams", "youtube_live", "other"].map(p => <option key={p} value={p}>{p}</option>)}
-// //                       </select>
-// //                     </div>
-// //                     <div className="form-group" style={{ display: "flex", alignItems: "center", gap: 10, paddingTop: 24 }}>
-// //                       <input type="checkbox" id="lcFree" checked={liveForm.isFree} onChange={e => setLiveForm(p => ({ ...p, isFree: e.target.checked }))} style={{ width: 18, height: 18 }} />
-// //                       <label htmlFor="lcFree" style={{ fontWeight: 600, fontSize: "0.9rem" }}>Free Class</label>
-// //                     </div>
-// //                   </div>
-// //                   <div className="form-group" style={{ gridColumn: "1/-1" }}>
-// //                     <label className="form-label">Description</label>
-// //                     <textarea className="form-input" rows={3} value={liveForm.description} onChange={e => setLiveForm(p => ({ ...p, description: e.target.value }))} />
-// //                   </div>
-// //                   <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
-// //                     <button className="btn btn-primary" onClick={createLive} disabled={creating}>{creating ? "Creating…" : "Create"}</button>
-// //                     <button className="btn btn-outline" onClick={() => setShowLiveForm(false)}>Cancel</button>
-// //                   </div>
-// //                 </div>
-// //               )}
-// //               <div className="table-wrap">
-// //                 <table>
-// //                   <thead><tr><th>Title</th><th>Scheduled</th><th>Platform</th><th>Registered</th><th>Status</th></tr></thead>
-// //                   <tbody>
-// //                     {liveClasses.map(lc => (
-// //                       <tr key={lc._id}>
-// //                         <td style={{ fontWeight: 600 }}>{lc.title}</td>
-// //                         <td style={{ color: "var(--text2)", fontSize: "0.82rem" }}>{new Date(lc.scheduledAt).toLocaleString("en-IN")}</td>
-// //                         <td><span className="badge badge-cyan">{lc.platform}</span></td>
-// //                         <td>{lc.registrations?.length || 0} / {lc.maxParticipants}</td>
-// //                         <td><span className={`badge ${lc.status === "live" ? "badge-accent" : lc.status === "upcoming" ? "badge-cyan" : lc.status === "completed" ? "badge-green" : "badge-yellow"}`}>{lc.status}</span></td>
-// //                       </tr>
-// //                     ))}
-// //                     {liveClasses.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text3)", padding: 32 }}>No live classes yet</td></tr>}
-// //                   </tbody>
-// //                 </table>
-// //               </div>
-// //             </>
-// //           )}
-
-// //           {/* Notes */}
-// //           {section === "notes" && (
-// //             <>
-// //               <div className="admin-header">
-// //                 <div className="admin-title">Notes</div>
-// //                 <div className="admin-sub">{notes.length} total notes</div>
-// //               </div>
-// //               <div className="table-wrap">
-// //                 <table>
-// //                   <thead><tr><th>Title</th><th>Type</th><th>Price</th><th>Downloads</th><th>Status</th></tr></thead>
-// //                   <tbody>
-// //                     {notes.map(n => (
-// //                       <tr key={n._id}>
-// //                         <td style={{ fontWeight: 600 }}>{n.title}</td>
-// //                         <td><span className="badge badge-yellow">{n.fileType?.toUpperCase()}</span></td>
-// //                         <td>{n.isFree ? <span className="badge badge-green">FREE</span> : `₹${n.discountPrice ?? n.price}`}</td>
-// //                         <td>{n.totalPurchases || 0}</td>
-// //                         <td><span className={`badge ${n.isPublished ? "badge-green" : "badge-yellow"}`}>{n.isPublished ? "Published" : "Draft"}</span></td>
-// //                       </tr>
-// //                     ))}
-// //                     {notes.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text3)", padding: 32 }}>No notes yet. Upload via API.</td></tr>}
-// //                   </tbody>
-// //                 </table>
-// //               </div>
-// //             </>
-// //           )}
-
-// //           {/* Users */}
-// //           {section === "users" && (
-// //             <>
-// //               <div className="admin-header">
-// //                 <div className="admin-title">Users</div>
-// //                 <div className="admin-sub">{users.length} registered users</div>
-// //               </div>
-// //               <div className="table-wrap">
-// //                 <table>
-// //                   <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Courses</th><th>Status</th><th>Actions</th></tr></thead>
-// //                   <tbody>
-// //                     {users.map(u => (
-// //                       <tr key={u._id}>
-// //                         <td style={{ fontWeight: 600 }}>{u.name}</td>
-// //                         <td style={{ color: "var(--text2)" }}>{u.email}</td>
-// //                         <td><span className={`badge ${u.role === "admin" ? "badge-accent" : "badge-primary"}`}>{u.role}</span></td>
-// //                         <td>{u.purchasedCourses?.length || 0}</td>
-// //                         <td><span className={`badge ${u.isActive ? "badge-green" : "badge-accent"}`}>{u.isActive ? "Active" : "Banned"}</span></td>
-// //                         <td><button className="btn btn-outline btn-sm" onClick={() => toggleUser(u._id)}>{u.isActive ? "Ban" : "Activate"}</button></td>
-// //                       </tr>
-// //                     ))}
-// //                     {users.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text3)", padding: 32 }}>No users yet</td></tr>}
-// //                   </tbody>
-// //                 </table>
-// //               </div>
-// //             </>
-// //           )}
-
-// //           {/* Payments */}
-// //           {section === "payments" && (
-// //             <>
-// //               <div className="admin-header">
-// //                 <div className="admin-title">All Payments</div>
-// //                 <div className="admin-sub">Complete transaction history</div>
-// //               </div>
-// //               <div className="table-wrap">
-// //                 <table>
-// //                   <thead><tr><th>User</th><th>Item</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
-// //                   <tbody>
-// //                     {payments.map(p => (
-// //                       <tr key={p._id}>
-// //                         <td style={{ fontWeight: 600 }}>{p.user?.name || p.user || "—"}</td>
-// //                         <td style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.itemTitle || "—"}</td>
-// //                         <td><span className="badge badge-primary">{p.itemType}</span></td>
-// //                         <td style={{ fontWeight: 700, color: "var(--primary-light)" }}>₹{p.amountInRupees}</td>
-// //                         <td><span className={`badge ${p.status === "paid" ? "badge-green" : p.status === "failed" ? "badge-accent" : "badge-yellow"}`}>{p.status}</span></td>
-// //                         <td style={{ color: "var(--text3)", fontSize: "0.82rem" }}>{new Date(p.createdAt).toLocaleDateString()}</td>
-// //                       </tr>
-// //                     ))}
-// //                     {payments.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text3)", padding: 32 }}>No payments yet</td></tr>}
-// //                   </tbody>
-// //                 </table>
-// //               </div>
-// //             </>
-// //           )}
-// //         </div>
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // FOOTER
-// // // ─────────────────────────────────────────────
-// // function Footer({ navigate }) {
-// //   return (
-// //     <footer style={{ background: "var(--bg2)", borderTop: "1px solid var(--border)", padding: "48px 0 24px", marginTop: 60 }}>
-// //       <div className="container">
-// //         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 32, marginBottom: 40 }}>
-// //           <div>
-// //             <div className="logo" style={{ marginBottom: 14 }}>
-// //               {/* <div className="logo-icon">💻</div> */}
-// //               <div style={{ marginBottom: 14 }}>
-// //   <img
-// //     src="https://res.cloudinary.com/dfsimrqwi/image/upload/v1781005265/Screenshot_2026-06-09_164742-removebg-preview_hzpr3u.png"
-// //     alt="WhatNext Logo"
-// //     style={{
-// //       height: "60px",
-// //       width: "auto",
-// //       objectFit: "contain"
-// //     }}
-// //   />
-// // </div>
-// //               {/* <span className="logo-text">WhatNext</span> */}
-// //             </div>
-// //             <p style={{ fontSize: "0.83rem", color: "var(--text3)", lineHeight: 1.6 }}>India's most affordable online learning platform. Powered by expert instructors.</p>
-// //           </div>
-// //           {[["Quick Links", [["Home", "/"], ["Courses", "/courses"], ["Live Classes", "/live"], ["Notes", "/notes"]]],
-// //             ["Support", [["FAQ", "/"], ["Contact", "/"], ["Privacy Policy", "/"], ["Terms", "/"]]],
-// //             ["COURSE 🐾", COURSE.slice(0, 4).map(a => [a.emoji + " " + a.name, "/courses"])]
-// //           ].map(([title, links]) => (
-// //             <div key={title}>
-// //               <div style={{ fontWeight: 700, fontSize: "0.88rem", marginBottom: 14, color: "var(--text)" }}>{title}</div>
-// //               {links.map(([label, to]) => (
-// //                 <div key={label} style={{ fontSize: "0.82rem", color: "var(--text3)", marginBottom: 8, cursor: "pointer" }} onClick={() => navigate(to)}
-// //                   onMouseEnter={e => e.target.style.color = "var(--text2)"} onMouseLeave={e => e.target.style.color = "var(--text3)"}>
-// //                   {label}
-// //                 </div>
-// //               ))}
-// //             </div>
-// //           ))}
-// //         </div>
-// //         <hr style={{ border: "none", borderTop: "1px solid var(--border)", marginBottom: 20 }} />
-// //         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-// //           <p style={{ fontSize: "0.78rem", color: "var(--text3)" }}>© {new Date().getFullYear()} WhatNext. All rights reserved.</p>
-// //           <p style={{ fontSize: "0.78rem", color: "var(--text3)" }}>Made with 💻 for learners everywhere</p>
-// //         </div>
-// //       </div>
-// //     </footer>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // APP ROUTER
-// // // ─────────────────────────────────────────────
-// // function AppRouter() {
-// //   const { path, navigate } = useRoute();
-// //   const { loading } = useAuth();
-// //   const [showAuth, setShowAuth] = useState(false);
-
-// //   if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}><div className="spinner" /></div>;
-
-// //   // Parse route
-// //   const segments = path.split("/").filter(Boolean);
-// //   const root = "/" + (segments[0] || "");
-// //   const param = segments[1];
-
-// //   const renderPage = () => {
-// //     if (root === "/" || path === "/") return <HomePage navigate={navigate} onAuth={() => setShowAuth(true)} />;
-// //     if (root === "/courses" && !param) return <CoursesPage navigate={navigate} />;
-// //     if (root === "/courses" && param) return <CourseDetailPage id={param} navigate={navigate} onAuth={() => setShowAuth(true)} />;
-// //     if (root === "/live" && !param) return <LiveClassesPage navigate={navigate} />;
-// //     if (root === "/live" && param) return <LiveClassDetailPage id={param} navigate={navigate} onAuth={() => setShowAuth(true)} />;
-// //     if (root === "/notes" && !param) return <NotesPage navigate={navigate} />;
-// //     if (root === "/notes" && param) return <NoteDetailPage id={param} navigate={navigate} onAuth={() => setShowAuth(true)} />;
-// //     if (root === "/dashboard") return <DashboardPage navigate={navigate} />;
-// //     if (root === "/admin") return <AdminPage navigate={navigate} />;
-// //     return (
-// //       <div className="page">
-// //         <div style={{ textAlign: "center", padding: "100px 24px" }}>
-// //           <div style={{ fontSize: "5rem", marginBottom: 20 }}>💻</div>
-// //           <h2 style={{ fontFamily: "var(--font2)", marginBottom: 12 }}>404 — Page not found</h2>
-// //           <button className="btn btn-primary" onClick={() => navigate("/")}>Go Home</button>
-// //         </div>
-// //       </div>
-// //     );
-// //   };
-
-// //   return (
-// //     <>
-// //       <style>{css}</style>
-// //       <Navbar navigate={navigate} path={root} onAuth={() => setShowAuth(true)} />
-// //       {renderPage()}
-// //       <Footer navigate={navigate} />
-// //       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
-// //     </>
-// //   );
-// // }
-
-// // // ─────────────────────────────────────────────
-// // // ROOT
-// // // ─────────────────────────────────────────────
-// // export default function App() {
-// //   return (
-// //     <AuthProvider>
-// //       <ToastProvider>
-// //         <AppRouter />
-// //       </ToastProvider>
-// //     </AuthProvider>
-// //   );
-// // }
 // import { useState, useEffect, createContext, useContext, useCallback, useRef } from "react";
 
 // // ─────────────────────────────────────────────
 // // CONFIG
 // // ─────────────────────────────────────────────
 // const API_BASE = "http://localhost:5000/api";
+
+// // ─────────────────────────────────────────────
+// // SCROLL REVEAL HOOK
+// // ─────────────────────────────────────────────
+// function useScrollReveal(options = {}) {
+//   const ref = useRef(null);
+//   const [visible, setVisible] = useState(false);
+
+//   useEffect(() => {
+//     const el = ref.current;
+//     if (!el) return;
+
+//     // Respect reduced-motion preference
+//     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+//       setVisible(true);
+//       return;
+//     }
+
+//     const observer = new IntersectionObserver(
+//       ([entry]) => {
+//         if (entry.isIntersecting) {
+//           setVisible(true);
+//           observer.unobserve(el);
+//         }
+//       },
+//       { threshold: options.threshold || 0.12, rootMargin: options.rootMargin || "0px 0px -40px 0px" }
+//     );
+//     observer.observe(el);
+//     return () => observer.disconnect();
+//   }, []);
+
+//   return [ref, visible];
+// }
+
+// // Reveal wrapper component — fade + slide up
+// function Reveal({ children, delay = 0, className = "", style = {} }) {
+//   const [ref, visible] = useScrollReveal();
+//   return (
+//     <div
+//       ref={ref}
+//       className={className}
+//       style={{
+//         opacity: visible ? 1 : 0,
+//         transform: visible ? "translateY(0)" : "translateY(28px)",
+//         transition: `opacity 0.55s ease ${delay}ms, transform 0.55s ease ${delay}ms`,
+//         ...style,
+//       }}
+//     >
+//       {children}
+//     </div>
+//   );
+// }
+
+// // Staggered children reveal — wraps each child in a Reveal with increasing delay
+// function RevealList({ children, baseDelay = 0, step = 80, className = "", style = {} }) {
+//   return (
+//     <div className={className} style={style}>
+//       {Array.isArray(children)
+//         ? children.map((child, i) => (
+//             <Reveal key={i} delay={baseDelay + i * step}>
+//               {child}
+//             </Reveal>
+//           ))
+//         : <Reveal delay={baseDelay}>{children}</Reveal>
+//       }
+//     </div>
+//   );
+// }
 
 // // ─────────────────────────────────────────────
 // // AUTH CONTEXT
@@ -2332,10 +116,8 @@
 
 //   const logout = () => { setUser(null); setToken(null); localStorage.removeItem("token"); };
 
-//   // JSON fetch (with Authorization header, no Content-Type override for FormData)
 //   const authFetch = useCallback((url, opts = {}) => {
 //     const headers = { Authorization: `Bearer ${token}`, ...(opts.headers || {}) };
-//     // Only set Content-Type for JSON; FormData sets its own boundary
 //     if (!(opts.body instanceof FormData)) {
 //       headers["Content-Type"] = "application/json";
 //     }
@@ -2350,7 +132,7 @@
 // }
 
 // // ─────────────────────────────────────────────
-// // DESIGN TOKENS
+// // DESIGN TOKENS + SCROLL ANIMATION CSS
 // // ─────────────────────────────────────────────
 // const css = `
 //   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
@@ -2395,12 +177,50 @@
 //   .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 //   .page { min-height: 100vh; padding-top: 72px; }
 
+//   /* ── SCROLL ANIMATIONS ── */
+//   @keyframes heroFadeIn {
+//     from { opacity: 0; transform: translateY(40px); }
+//     to   { opacity: 1; transform: translateY(0); }
+//   }
+//   @keyframes heroSlideRight {
+//     from { opacity: 0; transform: translateX(-30px); }
+//     to   { opacity: 1; transform: translateX(0); }
+//   }
+//   @keyframes countUp {
+//     from { opacity: 0; transform: translateY(16px); }
+//     to   { opacity: 1; transform: translateY(0); }
+//   }
+//   @keyframes shimmer {
+//     0%   { background-position: -200% center; }
+//     100% { background-position: 200% center; }
+//   }
+
+//   /* Hero entrance animations */
+//   .hero-eyebrow  { animation: heroFadeIn 0.6s ease 0.1s both; }
+//   .hero-title    { animation: heroFadeIn 0.7s ease 0.25s both; }
+//   .hero-sub      { animation: heroFadeIn 0.7s ease 0.4s both; }
+//   .hero-ctas     { animation: heroFadeIn 0.7s ease 0.55s both; }
+//   .hero-stats    { animation: heroFadeIn 0.7s ease 0.7s both; }
+
+//   /* Stat counter shimmer */
+//   .stat-num {
+//     background: linear-gradient(90deg, var(--text) 0%, var(--primary-light) 50%, var(--text) 100%);
+//     background-size: 200% auto;
+//     -webkit-background-clip: text;
+//     -webkit-text-fill-color: transparent;
+//     animation: shimmer 3s linear infinite;
+//     font-family: var(--font2);
+//     font-size: 2rem;
+//     font-weight: 700;
+//   }
+
 //   /* Navbar */
 //   .navbar {
 //     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
 //     background: rgba(10,11,20,0.92); backdrop-filter: blur(20px);
 //     border-bottom: 1px solid var(--border);
 //     height: 72px; display: flex; align-items: center;
+//     animation: heroFadeIn 0.5s ease both;
 //   }
 //   .navbar .inner { display: flex; align-items: center; gap: 32px; width: 100%; }
 //   .logo { display: flex; align-items: center; gap: 10px; font-family: var(--font2); font-size: 1.4rem; font-weight: 700; }
@@ -2415,10 +235,10 @@
 //   /* Buttons */
 //   .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
 //   .btn-primary { background: var(--primary); color: #fff; }
-//   .btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); box-shadow: 0 4px 20px var(--primary-glow); }
+//   .btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 6px 24px var(--primary-glow); }
 //   .btn-primary:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
 //   .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
-//   .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+//   .btn-outline:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
 //   .btn-sm { padding: 7px 14px; font-size: 0.82rem; }
 //   .btn-lg { padding: 14px 32px; font-size: 1rem; border-radius: var(--radius); }
 //   .btn-accent { background: var(--accent); color: #fff; }
@@ -2429,10 +249,23 @@
 //   .btn-danger:hover { background: #dc2626; }
 //   .btn-yellow { background: var(--accent2); color: #0a0b14; }
 
-//   /* Cards */
-//   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: all 0.25s; }
-//   .card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow), 0 0 0 1px var(--primary-glow); }
-//   .card-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: var(--text3); }
+//   /* Cards — hover lift + glow */
+//   .card {
+//     background: var(--surface);
+//     border: 1px solid var(--border);
+//     border-radius: var(--radius);
+//     overflow: hidden;
+//     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+//     will-change: transform;
+//   }
+//   .card:hover {
+//     border-color: var(--primary);
+//     transform: translateY(-6px) scale(1.01);
+//     box-shadow: var(--shadow), 0 0 0 1px var(--primary-glow), 0 20px 40px rgba(108,99,255,0.15);
+//   }
+//   .card-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: var(--text3); overflow: hidden; }
+//   .card-thumb img { transition: transform 0.4s ease; }
+//   .card:hover .card-thumb img { transform: scale(1.04); }
 //   .card-body { padding: 16px; }
 //   .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; line-height: 1.4; }
 //   .card-desc { font-size: 0.83rem; color: var(--text2); line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -2454,7 +287,7 @@
 
 //   /* Hero */
 //   .hero { padding: 80px 0 60px; position: relative; overflow: hidden; }
-//   .hero::before { content: ''; position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%); pointer-events: none; }
+//   .hero::before { content: ''; position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%); pointer-events: none; animation: heroFadeIn 1.2s ease both; }
 //   .hero::after { content: ''; position: absolute; bottom: -100px; left: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,107,107,0.08) 0%, transparent 70%); pointer-events: none; }
 //   .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 0.82rem; color: var(--text2); margin-bottom: 28px; }
 //   .hero-title { font-family: var(--font2); font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 700; line-height: 1.15; margin-bottom: 20px; }
@@ -2463,7 +296,6 @@
 //   .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
 //   .hero-stats { display: flex; gap: 40px; margin-top: 56px; flex-wrap: wrap; }
 //   .stat { display: flex; flex-direction: column; }
-//   .stat-num { font-family: var(--font2); font-size: 2rem; font-weight: 700; color: var(--text); }
 //   .stat-label { font-size: 0.82rem; color: var(--text2); margin-top: 2px; }
 
 //   /* Section */
@@ -2476,7 +308,7 @@
 //   /* Form */
 //   .form-group { margin-bottom: 18px; }
 //   .form-label { display: block; font-size: 0.83rem; font-weight: 600; color: var(--text2); margin-bottom: 7px; }
-//   .form-input { width: 100%; padding: 11px 14px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.9rem; transition: border-color 0.2s; }
+//   .form-input { width: 100%; padding: 11px 14px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.9rem; transition: border-color 0.2s, box-shadow 0.2s; }
 //   .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
 //   .form-input::placeholder { color: var(--text3); }
 //   select.form-input option { background: var(--bg2); color: var(--text); }
@@ -2501,11 +333,11 @@
 //   .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--cyan)); border-radius: 4px; transition: width 0.3s; }
 
 //   /* Modal */
-//   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
-//   .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 36px; max-width: 540px; width: 100%; position: relative; box-shadow: var(--shadow); margin: auto; }
+//   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; animation: heroFadeIn 0.2s ease both; }
+//   .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 36px; max-width: 540px; width: 100%; position: relative; box-shadow: var(--shadow); margin: auto; animation: heroFadeIn 0.3s ease 0.05s both; }
 //   .modal-lg { max-width: 760px; }
-//   .modal-close { position: absolute; top: 16px; right: 16px; background: var(--surface); border: none; color: var(--text2); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; flex-shrink: 0; }
-//   .modal-close:hover { color: var(--text); background: var(--surface2); }
+//   .modal-close { position: absolute; top: 16px; right: 16px; background: var(--surface); border: none; color: var(--text2); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; flex-shrink: 0; transition: all 0.2s; }
+//   .modal-close:hover { color: var(--text); background: var(--surface2); transform: rotate(90deg); }
 //   .modal-title { font-family: var(--font2); font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; padding-right: 40px; }
 //   .modal-sub { color: var(--text2); font-size: 0.88rem; margin-bottom: 24px; }
 
@@ -2533,12 +365,14 @@
 
 //   /* Detail page */
 //   .detail-header { background: linear-gradient(135deg, var(--bg2) 0%, var(--bg3) 100%); border-bottom: 1px solid var(--border); padding: 48px 0; }
-//   .detail-breadcrumb { font-size: 0.82rem; color: var(--text3); margin-bottom: 16px; cursor: pointer; }
+//   .detail-breadcrumb { font-size: 0.82rem; color: var(--text3); margin-bottom: 16px; cursor: pointer; transition: color 0.2s; }
+//   .detail-breadcrumb:hover { color: var(--text2); }
 //   .detail-breadcrumb span { color: var(--text2); }
 //   .detail-title { font-family: var(--font2); font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; margin-bottom: 12px; }
 //   .detail-meta-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; color: var(--text2); font-size: 0.85rem; margin-bottom: 20px; }
 //   .detail-layout { display: grid; grid-template-columns: 1fr 340px; gap: 32px; padding: 40px 0; align-items: start; }
-//   .detail-sidebar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; position: sticky; top: 90px; }
+//   .detail-sidebar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; position: sticky; top: 90px; transition: box-shadow 0.3s; }
+//   .detail-sidebar:hover { box-shadow: 0 8px 32px rgba(108,99,255,0.15); }
 //   .sidebar-price { font-family: var(--font2); font-size: 2rem; font-weight: 800; color: var(--primary-light); margin-bottom: 4px; }
 //   .sidebar-price-old { font-size: 0.9rem; color: var(--text3); text-decoration: line-through; margin-bottom: 16px; }
 //   .sidebar-btn { width: 100%; margin-bottom: 10px; justify-content: center; }
@@ -2548,7 +382,7 @@
 //   /* Video list */
 //   .video-list { display: flex; flex-direction: column; gap: 6px; }
 //   .video-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; }
-//   .video-item:hover { border-color: var(--border); background: var(--surface2); }
+//   .video-item:hover { border-color: var(--border); background: var(--surface2); transform: translateX(4px); }
 //   .video-item.locked { opacity: 0.6; cursor: not-allowed; }
 //   .video-num { width: 28px; height: 28px; background: var(--bg3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--text2); flex-shrink: 0; }
 //   .video-info { flex: 1; min-width: 0; }
@@ -2569,7 +403,8 @@
 
 //   /* Stats cards */
 //   .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
-//   .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+//   .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; transition: transform 0.25s, box-shadow 0.25s; }
+//   .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(108,99,255,0.2); }
 //   .stat-card-icon { font-size: 1.8rem; margin-bottom: 12px; }
 //   .stat-card-num { font-family: var(--font2); font-size: 1.8rem; font-weight: 700; }
 //   .stat-card-label { font-size: 0.8rem; color: var(--text2); margin-top: 2px; }
@@ -2580,6 +415,7 @@
 //   th { background: var(--bg3); padding: 12px 16px; text-align: left; font-size: 0.78rem; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); white-space: nowrap; }
 //   td { padding: 13px 16px; font-size: 0.87rem; border-bottom: 1px solid rgba(108,99,255,0.08); vertical-align: middle; }
 //   tr:last-child td { border-bottom: none; }
+//   tr { transition: background 0.15s; }
 //   tr:hover td { background: rgba(108,99,255,0.04); }
 
 //   /* Misc */
@@ -2588,9 +424,58 @@
 //   .empty-state p { font-size: 0.9rem; }
 //   .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
 //   .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
-//   .search-bar { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 16px; margin-bottom: 28px; }
+//   .search-bar { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 16px; margin-bottom: 28px; transition: border-color 0.2s, box-shadow 0.2s; }
+//   .search-bar:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
 //   .search-bar input { flex: 1; background: none; border: none; color: var(--text); font-size: 0.9rem; outline: none; }
 //   .search-bar input::placeholder { color: var(--text3); }
+
+//   /* Category strip */
+//   .mascot-strip { display: flex; gap: 20px; padding: 20px 0; overflow-x: auto; scrollbar-width: none; }
+//   .mascot-strip::-webkit-scrollbar { display: none; }
+//   .mascot-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; min-width: 130px; text-align: center; cursor: pointer; transition: all 0.25s; flex-shrink: 0; }
+//   .mascot-card:hover { border-color: var(--primary); transform: translateY(-5px) scale(1.03); box-shadow: 0 8px 24px rgba(108,99,255,0.2); }
+//   .mascot-card.active { border-color: var(--primary); background: rgba(108,99,255,0.12); }
+//   .mascot-emoji { font-size: 2.4rem; margin-bottom: 8px; transition: transform 0.3s; }
+//   .mascot-card:hover .mascot-emoji { transform: scale(1.15) rotate(-5deg); }
+//   .mascot-name { font-size: 0.8rem; font-weight: 600; color: var(--text2); }
+//   .mascot-label { font-size: 0.7rem; color: var(--text3); margin-top: 2px; }
+
+//   /* Features */
+//   .features-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+//   .feature-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; transition: all 0.3s; }
+//   .feature-item:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(108,99,255,0.15); }
+//   .feature-icon { font-size: 2rem; margin-bottom: 12px; transition: transform 0.3s; }
+//   .feature-item:hover .feature-icon { transform: scale(1.2); }
+//   .feature-title { font-weight: 700; margin-bottom: 6px; font-size: 0.95rem; }
+//   .feature-desc { font-size: 0.82rem; color: var(--text2); line-height: 1.5; }
+
+//   /* Live */
+//   .live-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; background: rgba(255,107,107,0.2); border-radius: 20px; font-size: 0.72rem; font-weight: 700; color: #ff8a8a; }
+//   .live-dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+//   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+//   .grad { background: linear-gradient(135deg, var(--primary-light), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+//   /* User menu */
+//   .user-menu { position: absolute; top: calc(100% + 10px); right: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; min-width: 200px; box-shadow: var(--shadow); z-index: 150; animation: heroFadeIn 0.2s ease both; }
+//   .user-menu-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; font-size: 0.87rem; color: var(--text2); cursor: pointer; transition: all 0.2s; }
+//   .user-menu-item:hover { background: var(--surface); color: var(--text); }
+//   .user-menu-divider { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
+
+//   /* Video manager */
+//   .video-manager-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; transition: all 0.2s; }
+//   .video-manager-item:hover { border-color: var(--primary); }
+//   .video-manager-info { flex: 1; min-width: 0; }
+//   .video-manager-title { font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+//   .video-manager-meta { font-size: 0.75rem; color: var(--text3); margin-top: 2px; display: flex; gap: 12px; }
+//   .video-type-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+//   .video-type-tab { flex: 1; padding: 10px; background: var(--bg3); border: 2px solid var(--border); border-radius: var(--radius-sm); text-align: center; cursor: pointer; font-size: 0.88rem; font-weight: 600; color: var(--text2); transition: all 0.2s; }
+//   .video-type-tab.active { border-color: var(--primary); color: var(--primary-light); background: rgba(108,99,255,0.1); }
+
+//   /* Info boxes */
+//   .info-box { background: rgba(108,99,255,0.08); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.84rem; color: var(--text2); margin-bottom: 16px; }
+//   .success-box { background: rgba(107,203,119,0.1); border: 1px solid rgba(107,203,119,0.3); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.87rem; }
+//   .warning-box { background: rgba(255,217,61,0.1); border: 1px solid rgba(255,217,61,0.3); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.87rem; color: var(--accent2); }
 
 //   /* Responsive */
 //   @media (max-width: 900px) {
@@ -2610,49 +495,13 @@
 //     .admin-content { padding: 16px; }
 //   }
 
-//   /* Category strip */
-//   .mascot-strip { display: flex; gap: 20px; padding: 20px 0; overflow-x: auto; scrollbar-width: none; }
-//   .mascot-strip::-webkit-scrollbar { display: none; }
-//   .mascot-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; min-width: 130px; text-align: center; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
-//   .mascot-card:hover { border-color: var(--primary); transform: translateY(-3px); }
-//   .mascot-card.active { border-color: var(--primary); background: rgba(108,99,255,0.12); }
-//   .mascot-emoji { font-size: 2.4rem; margin-bottom: 8px; }
-//   .mascot-name { font-size: 0.8rem; font-weight: 600; color: var(--text2); }
-//   .mascot-label { font-size: 0.7rem; color: var(--text3); margin-top: 2px; }
-
-//   /* Features */
-//   .features-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-//   .feature-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; }
-//   .feature-icon { font-size: 2rem; margin-bottom: 12px; }
-//   .feature-title { font-weight: 700; margin-bottom: 6px; font-size: 0.95rem; }
-//   .feature-desc { font-size: 0.82rem; color: var(--text2); line-height: 1.5; }
-
-//   /* Live */
-//   .live-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; background: rgba(255,107,107,0.2); border-radius: 20px; font-size: 0.72rem; font-weight: 700; color: #ff8a8a; }
-//   .live-dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
-//   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-//   .grad { background: linear-gradient(135deg, var(--primary-light), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-//   /* User menu */
-//   .user-menu { position: absolute; top: calc(100% + 10px); right: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; min-width: 200px; box-shadow: var(--shadow); z-index: 150; }
-//   .user-menu-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; font-size: 0.87rem; color: var(--text2); cursor: pointer; transition: all 0.2s; }
-//   .user-menu-item:hover { background: var(--surface); color: var(--text); }
-//   .user-menu-divider { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
-
-//   /* Video manager */
-//   .video-manager-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; }
-//   .video-manager-info { flex: 1; min-width: 0; }
-//   .video-manager-title { font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-//   .video-manager-meta { font-size: 0.75rem; color: var(--text3); margin-top: 2px; display: flex; gap: 12px; }
-//   .video-type-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
-//   .video-type-tab { flex: 1; padding: 10px; background: var(--bg3); border: 2px solid var(--border); border-radius: var(--radius-sm); text-align: center; cursor: pointer; font-size: 0.88rem; font-weight: 600; color: var(--text2); transition: all 0.2s; }
-//   .video-type-tab.active { border-color: var(--primary); color: var(--primary-light); background: rgba(108,99,255,0.1); }
-
-//   /* Info box */
-//   .info-box { background: rgba(108,99,255,0.08); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.84rem; color: var(--text2); margin-bottom: 16px; }
-//   .success-box { background: rgba(107,203,119,0.1); border: 1px solid rgba(107,203,119,0.3); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.87rem; }
-//   .warning-box { background: rgba(255,217,61,0.1); border: 1px solid rgba(255,217,61,0.3); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.87rem; color: var(--accent2); }
+//   /* Reduced motion */
+//   @media (prefers-reduced-motion: reduce) {
+//     *, *::before, *::after {
+//       animation-duration: 0.01ms !important;
+//       transition-duration: 0.01ms !important;
+//     }
+//   }
 // `;
 
 // // ─────────────────────────────────────────────
@@ -2700,7 +549,6 @@
 // function FileUploadArea({ accept, onFile, file, label, hint, icon = "📁" }) {
 //   const inputRef = useRef();
 //   const [drag, setDrag] = useState(false);
-
 //   const handleFile = (f) => { if (f) onFile(f); };
 
 //   return (
@@ -3008,7 +856,7 @@
 // }
 
 // // ─────────────────────────────────────────────
-// // HOME PAGE
+// // HOME PAGE  ← scroll animations applied here
 // // ─────────────────────────────────────────────
 // function HomePage({ navigate, onAuth }) {
 //   const { user } = useAuth();
@@ -3028,6 +876,7 @@
 
 //   return (
 //     <div className="page">
+//       {/* ── Hero (CSS-animated, no IntersectionObserver needed — always in view) */}
 //       <section className="hero">
 //         <div className="container">
 //           <div className="hero-eyebrow">🎓 India's Most Affordable Learning Platform</div>
@@ -3047,93 +896,129 @@
 //           </div>
 //           <div className="hero-stats">
 //             {[["50K+", "Active Students"], ["500+", "Expert Courses"], ["1000+", "Live Classes"], ["4.8★", "Average Rating"]].map(([n, l]) => (
-//               <div key={l} className="stat"><span className="stat-num">{n}</span><span className="stat-label">{l}</span></div>
+//               <div key={l} className="stat">
+//                 <span className="stat-num">{n}</span>
+//                 <span className="stat-label">{l}</span>
+//               </div>
 //             ))}
 //           </div>
 //         </div>
 //       </section>
 
+//       {/* ── Category strip */}
 //       <section className="section" style={{ paddingTop: 0 }}>
 //         <div className="container">
-//           <div className="section-header">
-//             <div className="section-eyebrow">Choose Your Batch</div>
-//             <h2 className="section-title">Find Your <span className="grad">Learning Tribe</span></h2>
-//           </div>
-//           <CategoryStrip onSelect={() => navigate("/courses")} selected={null} />
+//           <Reveal>
+//             <div className="section-header">
+//               <div className="section-eyebrow">Choose Your Batch</div>
+//               <h2 className="section-title">Find Your <span className="grad">Learning Tribe</span></h2>
+//             </div>
+//           </Reveal>
+//           <Reveal delay={100}>
+//             <CategoryStrip onSelect={() => navigate("/courses")} selected={null} />
+//           </Reveal>
 //         </div>
 //       </section>
 
+//       {/* ── Features */}
 //       <section className="section" style={{ background: "var(--bg2)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
 //         <div className="container">
-//           <div className="section-header">
-//             <div className="section-eyebrow">Why WhatNext</div>
-//             <h2 className="section-title">Everything You Need to <span className="grad">Excel</span></h2>
-//           </div>
+//           <Reveal>
+//             <div className="section-header">
+//               <div className="section-eyebrow">Why WhatNext</div>
+//               <h2 className="section-title">Everything You Need to <span className="grad">Excel</span></h2>
+//             </div>
+//           </Reveal>
+//           {/* Staggered feature cards */}
 //           <div className="features-row">
-//             {[["📡", "Live Classes", "Interact with instructors in real-time."],
+//             {[
+//               ["📡", "Live Classes", "Interact with instructors in real-time."],
 //               ["🎬", "Video Courses", "Learn at your pace with HD video lectures."],
 //               ["📄", "Study Notes", "Curated PDF notes to reinforce your learning."],
 //               ["📊", "Track Progress", "Monitor video progress and stay on goals."],
 //               ["💳", "Easy Payments", "Secure Razorpay checkout. Pay once, learn forever."],
 //               ["🏆", "Certificates", "Earn certificates to showcase achievements."]
-//             ].map(([icon, title, desc]) => (
-//               <div key={title} className="feature-item">
-//                 <div className="feature-icon">{icon}</div>
-//                 <div className="feature-title">{title}</div>
-//                 <div className="feature-desc">{desc}</div>
-//               </div>
+//             ].map(([icon, title, desc], i) => (
+//               <Reveal key={title} delay={i * 80}>
+//                 <div className="feature-item">
+//                   <div className="feature-icon">{icon}</div>
+//                   <div className="feature-title">{title}</div>
+//                   <div className="feature-desc">{desc}</div>
+//                 </div>
+//               </Reveal>
 //             ))}
 //           </div>
 //         </div>
 //       </section>
 
+//       {/* ── Featured courses */}
 //       <section className="section">
 //         <div className="container">
-//           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
-//             <div>
-//               <div className="section-eyebrow">Popular Picks</div>
-//               <h2 className="section-title">Featured <span className="grad">Courses</span></h2>
+//           <Reveal>
+//             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
+//               <div>
+//                 <div className="section-eyebrow">Popular Picks</div>
+//                 <h2 className="section-title">Featured <span className="grad">Courses</span></h2>
+//               </div>
+//               <button className="btn btn-outline btn-sm" onClick={() => navigate("/courses")}>View All →</button>
 //             </div>
-//             <button className="btn btn-outline btn-sm" onClick={() => navigate("/courses")}>View All →</button>
-//           </div>
+//           </Reveal>
 //           {loadingCourses
 //             ? <div className="spinner" />
 //             : courses.length === 0
 //               ? <div className="empty-state"><div className="icon">📚</div><p>No courses yet.</p></div>
-//               : <div className="grid-3">{courses.slice(0, 6).map(c => <CourseCard key={c._id} course={c} onClick={() => navigate(`/courses/${c._id}`)} />)}</div>
+//               : (
+//                 <div className="grid-3">
+//                   {courses.slice(0, 6).map((c, i) => (
+//                     <Reveal key={c._id} delay={i * 70}>
+//                       <CourseCard course={c} onClick={() => navigate(`/courses/${c._id}`)} />
+//                     </Reveal>
+//                   ))}
+//                 </div>
+//               )
 //           }
 //         </div>
 //       </section>
 
+//       {/* ── Live classes teaser */}
 //       {liveClasses.length > 0 && (
 //         <section className="section" style={{ background: "var(--bg2)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
 //           <div className="container">
-//             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
-//               <div>
-//                 <div className="section-eyebrow">Coming Up</div>
-//                 <h2 className="section-title">Upcoming <span className="grad">Live Classes</span></h2>
+//             <Reveal>
+//               <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
+//                 <div>
+//                   <div className="section-eyebrow">Coming Up</div>
+//                   <h2 className="section-title">Upcoming <span className="grad">Live Classes</span></h2>
+//                 </div>
+//                 <button className="btn btn-outline btn-sm" onClick={() => navigate("/live")}>View All →</button>
 //               </div>
-//               <button className="btn btn-outline btn-sm" onClick={() => navigate("/live")}>View All →</button>
-//             </div>
+//             </Reveal>
 //             <div className="grid-3">
-//               {liveClasses.slice(0, 3).map(lc => <LiveClassCard key={lc._id} liveClass={lc} onClick={() => navigate(`/live/${lc._id}`)} />)}
+//               {liveClasses.slice(0, 3).map((lc, i) => (
+//                 <Reveal key={lc._id} delay={i * 80}>
+//                   <LiveClassCard liveClass={lc} onClick={() => navigate(`/live/${lc._id}`)} />
+//                 </Reveal>
+//               ))}
 //             </div>
 //           </div>
 //         </section>
 //       )}
 
+//       {/* ── CTA Banner */}
 //       <section className="section">
 //         <div className="container">
-//           <div style={{ background: "linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%)", border: "1px solid var(--border)", borderRadius: 20, padding: "48px 40px", textAlign: "center" }}>
-//             <div style={{ fontSize: "3rem", marginBottom: 16 }}>💻</div>
-//             <h2 style={{ fontFamily: "var(--font2)", fontSize: "1.8rem", fontWeight: 700, marginBottom: 12 }}>Ready to start learning?</h2>
-//             <p style={{ color: "var(--text2)", marginBottom: 28, maxWidth: 480, margin: "0 auto 28px" }}>
-//               Join 50,000+ students mastering their subjects with expert guidance.
-//             </p>
-//             <button className="btn btn-primary btn-lg" onClick={user ? () => navigate("/courses") : onAuth}>
-//               {user ? "Browse Courses 🚀" : "Start Learning Free →"}
-//             </button>
-//           </div>
+//           <Reveal>
+//             <div style={{ background: "linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%)", border: "1px solid var(--border)", borderRadius: 20, padding: "48px 40px", textAlign: "center" }}>
+//               <div style={{ fontSize: "3rem", marginBottom: 16 }}>💻</div>
+//               <h2 style={{ fontFamily: "var(--font2)", fontSize: "1.8rem", fontWeight: 700, marginBottom: 12 }}>Ready to start learning?</h2>
+//               <p style={{ color: "var(--text2)", marginBottom: 28, maxWidth: 480, margin: "0 auto 28px" }}>
+//                 Join 50,000+ students mastering their subjects with expert guidance.
+//               </p>
+//               <button className="btn btn-primary btn-lg" onClick={user ? () => navigate("/courses") : onAuth}>
+//                 {user ? "Browse Courses 🚀" : "Start Learning Free →"}
+//               </button>
+//             </div>
+//           </Reveal>
 //         </div>
 //       </section>
 //     </div>
@@ -3167,28 +1052,42 @@
 //     <div className="page">
 //       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
 //         <div className="container">
-//           <h1 className="section-title" style={{ marginBottom: 8 }}>All <span className="grad">Courses</span></h1>
-//           <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Explore our library of expert-taught courses</p>
+//           <Reveal>
+//             <h1 className="section-title" style={{ marginBottom: 8 }}>All <span className="grad">Courses</span></h1>
+//             <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Explore our library of expert-taught courses</p>
+//           </Reveal>
 //         </div>
 //       </div>
 //       <div className="container section">
-//         <CategoryStrip onSelect={setLevel} selected={level} />
-//         <div className="search-bar" style={{ marginTop: 16 }}>
-//           <span style={{ color: "var(--text3)" }}>🔍</span>
-//           <input placeholder="Search courses…" value={search} onChange={e => setSearch(e.target.value)} />
-//           {search && <button onClick={() => setSearch("")} style={{ background: "none", color: "var(--text3)" }}>✕</button>}
-//         </div>
-//         <div className="tag-row">
-//           <span className={`tag ${!category ? "active" : ""}`} onClick={() => setCategory("")}>All</span>
-//           {categories.map(c => (
-//             <span key={c} className={`tag ${category === c ? "active" : ""}`} onClick={() => setCategory(c)}>{c}</span>
-//           ))}
-//         </div>
+//         <Reveal><CategoryStrip onSelect={setLevel} selected={level} /></Reveal>
+//         <Reveal delay={80}>
+//           <div className="search-bar" style={{ marginTop: 16 }}>
+//             <span style={{ color: "var(--text3)" }}>🔍</span>
+//             <input placeholder="Search courses…" value={search} onChange={e => setSearch(e.target.value)} />
+//             {search && <button onClick={() => setSearch("")} style={{ background: "none", color: "var(--text3)" }}>✕</button>}
+//           </div>
+//         </Reveal>
+//         <Reveal delay={120}>
+//           <div className="tag-row">
+//             <span className={`tag ${!category ? "active" : ""}`} onClick={() => setCategory("")}>All</span>
+//             {categories.map(c => (
+//               <span key={c} className={`tag ${category === c ? "active" : ""}`} onClick={() => setCategory(c)}>{c}</span>
+//             ))}
+//           </div>
+//         </Reveal>
 //         {loading
 //           ? <div className="spinner" />
 //           : courses.length === 0
 //             ? <div className="empty-state"><div className="icon">🔎</div><p>No courses found. Try adjusting filters.</p></div>
-//             : <div className="grid-3">{courses.map(c => <CourseCard key={c._id} course={c} onClick={() => navigate(`/courses/${c._id}`)} />)}</div>
+//             : (
+//               <div className="grid-3">
+//                 {courses.map((c, i) => (
+//                   <Reveal key={c._id} delay={i * 60}>
+//                     <CourseCard course={c} onClick={() => navigate(`/courses/${c._id}`)} />
+//                   </Reveal>
+//                 ))}
+//               </div>
+//             )
 //         }
 //       </div>
 //     </div>
@@ -3218,10 +1117,7 @@
 
 //   const handleBuy = async () => {
 //     if (!user) { onAuth(); return; }
-//     if (course.isFree || price === 0) {
-//       toast("Enrolling…", "info");
-//       return;
-//     }
+//     if (course.isFree || price === 0) { toast("Enrolling…", "info"); return; }
 //     setPaying(true);
 //     try {
 //       const order = await authFetch("/payments/create-order", {
@@ -3259,85 +1155,95 @@
 //     <div className="page">
 //       <div className="detail-header">
 //         <div className="container">
-//           <div className="detail-breadcrumb" onClick={() => navigate("/courses")}>← Back to <span>Courses</span></div>
-//           <div style={{ display: "flex", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
-//             <span className="badge badge-primary">{course.level}</span>
-//             {course.category && <span className="badge badge-cyan">{course.category}</span>}
-//             {course.isFree && <span className="badge badge-green">FREE</span>}
-//           </div>
-//           <h1 className="detail-title">{course.title}</h1>
-//           <div className="detail-meta-row">
-//             <span>🎬 {course.videos?.length || 0} videos</span>
-//             <span>👥 {course.totalStudents || 0} students</span>
-//             <span>🌐 {course.language || "English"}</span>
-//           </div>
-//           <p style={{ color: "var(--text2)", maxWidth: 700, lineHeight: 1.6 }}>{course.description}</p>
+//           <Reveal>
+//             <div className="detail-breadcrumb" onClick={() => navigate("/courses")}>← Back to <span>Courses</span></div>
+//             <div style={{ display: "flex", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
+//               <span className="badge badge-primary">{course.level}</span>
+//               {course.category && <span className="badge badge-cyan">{course.category}</span>}
+//               {course.isFree && <span className="badge badge-green">FREE</span>}
+//             </div>
+//             <h1 className="detail-title">{course.title}</h1>
+//             <div className="detail-meta-row">
+//               <span>🎬 {course.videos?.length || 0} videos</span>
+//               <span>👥 {course.totalStudents || 0} students</span>
+//               <span>🌐 {course.language || "English"}</span>
+//             </div>
+//             <p style={{ color: "var(--text2)", maxWidth: 700, lineHeight: 1.6 }}>{course.description}</p>
+//           </Reveal>
 //         </div>
 //       </div>
 //       <div className="container">
 //         <div className="detail-layout">
 //           <div>
 //             {hasPurchased && (
-//               <div className="success-box" style={{ marginBottom: 24 }}>✅ You have access to this course!</div>
+//               <Reveal><div className="success-box" style={{ marginBottom: 24 }}>✅ You have access to this course!</div></Reveal>
 //             )}
 //             {course.outcomes?.length > 0 && (
-//               <div style={{ marginBottom: 28 }}>
-//                 <h3 style={{ fontWeight: 700, marginBottom: 14 }}>🎯 What You'll Learn</h3>
-//                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-//                   {course.outcomes.map((o, i) => (
-//                     <div key={i} style={{ display: "flex", gap: 8, fontSize: "0.87rem", color: "var(--text2)" }}>
-//                       <span style={{ color: "var(--green)", flexShrink: 0 }}>✓</span> {o}
-//                     </div>
-//                   ))}
-//                 </div>
-//               </div>
-//             )}
-//             {course.requirements?.length > 0 && (
-//               <div style={{ marginBottom: 28 }}>
-//                 <h3 style={{ fontWeight: 700, marginBottom: 14 }}>📋 Requirements</h3>
-//                 {course.requirements.map((r, i) => (
-//                   <div key={i} style={{ fontSize: "0.87rem", color: "var(--text2)", marginBottom: 6, display: "flex", gap: 8 }}>
-//                     <span>•</span> {r}
-//                   </div>
-//                 ))}
-//               </div>
-//             )}
-//             <div>
-//               <h3 style={{ fontWeight: 700, marginBottom: 14 }}>🎬 Course Content</h3>
-//               {(!course.videos || course.videos.length === 0)
-//                 ? <div style={{ color: "var(--text3)", fontSize: "0.87rem" }}>No videos added yet.</div>
-//                 : <div className="video-list">
-//                     {course.videos.map((v, i) => (
-//                       <div key={v._id || i} className={`video-item ${!hasPurchased && !v.isPreview ? "locked" : ""}`}>
-//                         <div className="video-num">{i + 1}</div>
-//                         <div className="video-info">
-//                           <div className="video-title-text">{v.title}</div>
-//                           {v.duration > 0 && <div className="video-dur">{Math.floor(v.duration / 60)}m {v.duration % 60}s</div>}
-//                         </div>
-//                         {v.isPreview ? <span className="badge badge-green">Preview</span>
-//                           : hasPurchased ? <span style={{ color: "var(--text3)" }}>▶</span>
-//                           : <span style={{ color: "var(--text3)" }}>🔒</span>}
+//               <Reveal>
+//                 <div style={{ marginBottom: 28 }}>
+//                   <h3 style={{ fontWeight: 700, marginBottom: 14 }}>🎯 What You'll Learn</h3>
+//                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+//                     {course.outcomes.map((o, i) => (
+//                       <div key={i} style={{ display: "flex", gap: 8, fontSize: "0.87rem", color: "var(--text2)" }}>
+//                         <span style={{ color: "var(--green)", flexShrink: 0 }}>✓</span> {o}
 //                       </div>
 //                     ))}
 //                   </div>
+//                 </div>
+//               </Reveal>
+//             )}
+//             {course.requirements?.length > 0 && (
+//               <Reveal>
+//                 <div style={{ marginBottom: 28 }}>
+//                   <h3 style={{ fontWeight: 700, marginBottom: 14 }}>📋 Requirements</h3>
+//                   {course.requirements.map((r, i) => (
+//                     <div key={i} style={{ fontSize: "0.87rem", color: "var(--text2)", marginBottom: 6, display: "flex", gap: 8 }}>
+//                       <span>•</span> {r}
+//                     </div>
+//                   ))}
+//                 </div>
+//               </Reveal>
+//             )}
+//             <Reveal>
+//               <div>
+//                 <h3 style={{ fontWeight: 700, marginBottom: 14 }}>🎬 Course Content</h3>
+//                 {(!course.videos || course.videos.length === 0)
+//                   ? <div style={{ color: "var(--text3)", fontSize: "0.87rem" }}>No videos added yet.</div>
+//                   : <div className="video-list">
+//                       {course.videos.map((v, i) => (
+//                         <div key={v._id || i} className={`video-item ${!hasPurchased && !v.isPreview ? "locked" : ""}`}>
+//                           <div className="video-num">{i + 1}</div>
+//                           <div className="video-info">
+//                             <div className="video-title-text">{v.title}</div>
+//                             {v.duration > 0 && <div className="video-dur">{Math.floor(v.duration / 60)}m {v.duration % 60}s</div>}
+//                           </div>
+//                           {v.isPreview ? <span className="badge badge-green">Preview</span>
+//                             : hasPurchased ? <span style={{ color: "var(--text3)" }}>▶</span>
+//                             : <span style={{ color: "var(--text3)" }}>🔒</span>}
+//                         </div>
+//                       ))}
+//                     </div>
+//                 }
+//               </div>
+//             </Reveal>
+//           </div>
+//           <Reveal>
+//             <div className="detail-sidebar">
+//               <div className="sidebar-price">{course.isFree ? "FREE" : `₹${price}`}</div>
+//               {!course.isFree && course.discountPrice && <div className="sidebar-price-old">₹{course.price}</div>}
+//               {hasPurchased
+//                 ? <button className="btn btn-green btn-lg sidebar-btn" onClick={() => navigate("/dashboard")}>Go to My Learning →</button>
+//                 : <button className="btn btn-primary btn-lg sidebar-btn" onClick={handleBuy} disabled={paying}>
+//                     {paying ? "Processing…" : course.isFree ? "Enrol Free →" : `Buy for ₹${price} →`}
+//                   </button>
 //               }
+//               <div className="sidebar-features">
+//                 {[["📱", "Access on all devices"], ["♾️", "Lifetime access"], ["🎬", `${course.videos?.length || 0} video lectures`], ["📄", "Downloadable resources"], ["🏆", "Certificate of completion"]].map(([icon, label]) => (
+//                   <div key={label} className="sidebar-feature"><span>{icon}</span> {label}</div>
+//                 ))}
+//               </div>
 //             </div>
-//           </div>
-//           <div className="detail-sidebar">
-//             <div className="sidebar-price">{course.isFree ? "FREE" : `₹${price}`}</div>
-//             {!course.isFree && course.discountPrice && <div className="sidebar-price-old">₹{course.price}</div>}
-//             {hasPurchased
-//               ? <button className="btn btn-green btn-lg sidebar-btn" onClick={() => navigate("/dashboard")}>Go to My Learning →</button>
-//               : <button className="btn btn-primary btn-lg sidebar-btn" onClick={handleBuy} disabled={paying}>
-//                   {paying ? "Processing…" : course.isFree ? "Enrol Free →" : `Buy for ₹${price} →`}
-//                 </button>
-//             }
-//             <div className="sidebar-features">
-//               {[["📱", "Access on all devices"], ["♾️", "Lifetime access"], ["🎬", `${course.videos?.length || 0} video lectures`], ["📄", "Downloadable resources"], ["🏆", "Certificate of completion"]].map(([icon, label]) => (
-//                 <div key={label} className="sidebar-feature"><span>{icon}</span> {label}</div>
-//               ))}
-//             </div>
-//           </div>
+//           </Reveal>
 //         </div>
 //       </div>
 //     </div>
@@ -3347,49 +1253,120 @@
 // // ─────────────────────────────────────────────
 // // LIVE CLASSES PAGE
 // // ─────────────────────────────────────────────
+// // function LiveClassesPage({ navigate }) {
+// //   const [classes, setClasses] = useState([]);
+// //   const [loading, setLoading] = useState(true);
+// //   const [status, setStatus] = useState("all");
+
+// //   useEffect(() => {
+// //     const params = new URLSearchParams();
+// //     if (status !== "all") params.set("status", status);
+// //     fetch(`${API_BASE}/live-classes?${params}`).then(r => r.json()).then(d => {
+// //       if (d.success) setClasses(d.data || d.liveClasses || []);
+// //       setLoading(false);
+// //     }).catch(() => setLoading(false));
+// //   }, [status]);
+
+// //   const filtered = status === "all" ? classes : classes.filter(c => c.status === status);
+
+// //   return (
+// //     <div className="page">
+// //       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
+// //         <div className="container">
+// //           <Reveal>
+// //             <h1 className="section-title" style={{ marginBottom: 8 }}>Live <span className="grad">Classes</span></h1>
+// //             <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Join interactive sessions with expert instructors in real time</p>
+// //           </Reveal>
+// //         </div>
+// //       </div>
+// //       <div className="container section">
+// //         <Reveal>
+// //           <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
+// //             {["all", "upcoming", "live", "completed"].map(s => (
+// //               <button key={s} className={`btn ${status === s ? "btn-primary" : "btn-outline"} btn-sm`}
+// //                 onClick={() => setStatus(s)} style={{ textTransform: "capitalize" }}>
+// //                 {s === "live" && "🔴 "}{s}
+// //               </button>
+// //             ))}
+// //           </div>
+// //         </Reveal>
+// //         {loading ? <div className="spinner" />
+// //           : filtered.length === 0
+// //             ? <div className="empty-state"><div className="icon">📡</div><p>No live classes found.</p></div>
+// //             : (
+// //               <div className="grid-3">
+// //                 {filtered.map((lc, i) => (
+// //                   <Reveal key={lc._id} delay={i * 70}>
+// //                     <LiveClassCard liveClass={lc} onClick={() => navigate(`/live/${lc._id}`)} />
+// //                   </Reveal>
+// //                 ))}
+// //               </div>
+// //             )
+// //         }
+// //       </div>
+// //     </div>
+// //   );
+// // }
 // function LiveClassesPage({ navigate }) {
 //   const [classes, setClasses] = useState([]);
 //   const [loading, setLoading] = useState(true);
 //   const [status, setStatus] = useState("all");
 
 //   useEffect(() => {
+//     setLoading(true);
 //     const params = new URLSearchParams();
 //     if (status !== "all") params.set("status", status);
-//     fetch(`${API_BASE}/live-classes?${params}`).then(r => r.json()).then(d => {
-//       if (d.success) setClasses(d.data || d.liveClasses || []);
-//       setLoading(false);
-//     }).catch(() => setLoading(false));
+//     fetch(`${API_BASE}/live-classes?${params}`)
+//       .then(r => r.json())
+//       .then(d => {
+//         if (d.success) {
+//           // Handle all possible response shapes
+//           setClasses(d.data || d.liveClasses || d.classes || []);
+//         }
+//         setLoading(false);
+//       })
+//       .catch(() => setLoading(false));
 //   }, [status]);
-
-//   const filtered = status === "all" ? classes : classes.filter(c => c.status === status);
 
 //   return (
 //     <div className="page">
 //       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
 //         <div className="container">
-//           <h1 className="section-title" style={{ marginBottom: 8 }}>Live <span className="grad">Classes</span></h1>
-//           <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Join interactive sessions with expert instructors in real time</p>
+//           <Reveal>
+//             <h1 className="section-title" style={{ marginBottom: 8 }}>Live <span className="grad">Classes</span></h1>
+//             <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Join interactive sessions with expert instructors in real time</p>
+//           </Reveal>
 //         </div>
 //       </div>
 //       <div className="container section">
-//         <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
-//           {["all", "upcoming", "live", "completed"].map(s => (
-//             <button key={s} className={`btn ${status === s ? "btn-primary" : "btn-outline"} btn-sm`}
-//               onClick={() => setStatus(s)} style={{ textTransform: "capitalize" }}>
-//               {s === "live" && "🔴 "}{s}
-//             </button>
-//           ))}
-//         </div>
-//         {loading ? <div className="spinner" />
-//           : filtered.length === 0
+//         <Reveal>
+//           <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
+//             {["all", "upcoming", "live", "completed"].map(s => (
+//               <button key={s} className={`btn ${status === s ? "btn-primary" : "btn-outline"} btn-sm`}
+//                 onClick={() => setStatus(s)} style={{ textTransform: "capitalize" }}>
+//                 {s === "live" && "🔴 "}{s}
+//               </button>
+//             ))}
+//           </div>
+//         </Reveal>
+//         {loading
+//           ? <div className="spinner" />
+//           : classes.length === 0
 //             ? <div className="empty-state"><div className="icon">📡</div><p>No live classes found.</p></div>
-//             : <div className="grid-3">{filtered.map(lc => <LiveClassCard key={lc._id} liveClass={lc} onClick={() => navigate(`/live/${lc._id}`)} />)}</div>
+//             : (
+//               <div className="grid-3">
+//                 {classes.map((lc, i) => (
+//                   <Reveal key={lc._id} delay={i * 70}>
+//                     <LiveClassCard liveClass={lc} onClick={() => navigate(`/live/${lc._id}`)} />
+//                   </Reveal>
+//                 ))}
+//               </div>
+//             )
 //         }
 //       </div>
 //     </div>
 //   );
 // }
-
 // // ─────────────────────────────────────────────
 // // LIVE CLASS DETAIL
 // // ─────────────────────────────────────────────
@@ -3409,17 +1386,106 @@
 //   }, [id, token]);
 
 //   const isRegistered = lc?.registered || user?.liveClassRegistrations?.some(r => r.liveClass?.toString() === id || r.liveClass === id);
+// const handleRegister = async () => {
+//   if (!user) { onAuth(); return; }
 
-//   const handleRegister = async () => {
-//     if (!user) { onAuth(); return; }
-//     setRegistering(true);
+//   // ── PAID class → go through Razorpay ──────────────────────
+//   if (!lc.isFree && lc.price > 0) {
 //     try {
-//       const res = await authFetch(`/live-classes/${id}/register`, { method: "POST", body: JSON.stringify({}) });
-//       if (res.success) { toast("Registered! You'll receive the link before the class. 🎉", "success"); }
-//       else toast(res.message || "Registration failed", "error");
-//     } catch { toast("Error registering", "error"); }
-//     setRegistering(false);
-//   };
+//       const order = await authFetch('/payments/create-order', {
+//         method: 'POST',
+//         body: JSON.stringify({ itemType: 'liveClass', itemId: id })
+//       });
+
+//       if (!order.success) {
+//         toast(order.message || 'Could not create order', 'error');
+//         return;
+//       }
+
+//       const options = {
+//         key: order.razorpayKeyId || '',
+//         amount: order.order?.amount,
+//         currency: order.order?.currency || 'INR',
+//         name: 'WhatNext',
+//         description: lc.title,
+//         order_id: order.order?.id,
+//         handler: async (razorpayRes) => {
+//           const verify = await authFetch('/payments/verify', {
+//             method: 'POST',
+//             body: JSON.stringify({
+//               razorpayOrderId:   razorpayRes.razorpay_order_id,
+//               razorpayPaymentId: razorpayRes.razorpay_payment_id,
+//               razorpaySignature: razorpayRes.razorpay_signature,
+//               itemType: 'liveClass',
+//               itemId: id
+//             })
+//           });
+//           if (verify.success) {
+//             toast('Payment successful! You\'re registered 🎉', 'success');
+//             // Refresh the class so isRegistered flips to true
+//             const headers = token ? { Authorization: `Bearer ${token}` } : {};
+//             fetch(`${API_BASE}/live-classes/${id}`, { headers })
+//               .then(r => r.json())
+//               .then(d => { if (d.success) setLc(d.data || d.liveClass); });
+//           } else {
+//             toast(verify.message || 'Payment verification failed', 'error');
+//           }
+//         },
+//         prefill: { name: user.name, email: user.email },
+//         modal: { ondismiss: () => toast('Payment cancelled', 'info') }
+//       };
+
+//       if (window.Razorpay) {
+//         const rz = new window.Razorpay(options);
+//         rz.open();
+//       } else {
+//         toast('Payment gateway not loaded', 'error');
+//       }
+//     } catch {
+//       toast('Payment error', 'error');
+//     }
+//     return; // ← stop here; Razorpay handler takes over
+//   }
+
+//   // ── FREE class → direct register ──────────────────────────
+//   setRegistering(true);
+//   try {
+//     const res = await authFetch(`/live-classes/${id}/register`, {
+//       method: 'POST',
+//       body: JSON.stringify({})
+//     });
+
+//     if (res.success) {
+//       toast('Registered! 🎉 Meeting link will be sent before class starts.', 'success');
+//       // Refresh so the sidebar shows "Registered" button
+//       const headers = token ? { Authorization: `Bearer ${token}` } : {};
+//       fetch(`${API_BASE}/live-classes/${id}`, { headers })
+//         .then(r => r.json())
+//         .then(d => { if (d.success) setLc(d.data || d.liveClass); });
+//     } else {
+//       toast(res.message || 'Registration failed', 'error');
+//     }
+//   } catch {
+//     toast('Error registering', 'error');
+//   }
+//   setRegistering(false);
+// };
+// //   const handleRegister = async () => {
+// //     if (!user) { onAuth(); return; }
+// //     setRegistering(true);
+// //     try {
+// //       const res = await authFetch(
+// //   `/live-classes/${id}/register`,
+// //   {
+// //     method: "POST",
+// //     body: JSON.stringify({})
+// //   }
+// // );
+// //       if (res.success) { toast("Registered! You'll receive the link before the class. 🎉", "success"); }
+// //       else toast(res.message || "Registration failed", "error");
+// //     } catch { toast("Error registering", "error"); }
+// //     setRegistering(false);
+// //   };
 
 //   if (loading) return <div className="page"><div className="spinner" /></div>;
 //   if (!lc) return <div className="page"><div className="container" style={{ padding: "80px 24px", textAlign: "center" }}><h2>Class not found</h2></div></div>;
@@ -3431,56 +1497,65 @@
 //     <div className="page">
 //       <div className="detail-header">
 //         <div className="container">
-//           <div className="detail-breadcrumb" onClick={() => navigate("/live")}>← Back to <span>Live Classes</span></div>
-//           <div style={{ display: "flex", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
-//             {isLive && <div className="live-badge"><div className="live-dot" />LIVE NOW</div>}
-//             <span className={`badge ${lc.isFree ? "badge-green" : "badge-primary"}`}>{lc.isFree ? "FREE" : `₹${lc.price}`}</span>
-//             <span className="badge badge-cyan">{lc.platform}</span>
-//           </div>
-//           <h1 className="detail-title">{lc.title}</h1>
-//           <div className="detail-meta-row">
-//             <span>🗓 {date.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}</span>
-//             <span>🕐 {date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
-//             <span>⏱ {lc.duration} mins</span>
-//             <span>👥 {lc.registrations?.length || 0} / {lc.maxParticipants}</span>
-//           </div>
-//           {lc.description && <p style={{ color: "var(--text2)", maxWidth: 700, lineHeight: 1.6 }}>{lc.description}</p>}
+//           <Reveal>
+//             <div className="detail-breadcrumb" onClick={() => navigate("/live")}>← Back to <span>Live Classes</span></div>
+//             <div style={{ display: "flex", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
+//               {isLive && <div className="live-badge"><div className="live-dot" />LIVE NOW</div>}
+//               <span className={`badge ${lc.isFree ? "badge-green" : "badge-primary"}`}>{lc.isFree ? "FREE" : `₹${lc.price}`}</span>
+//               <span className="badge badge-cyan">{lc.platform}</span>
+//             </div>
+//             <h1 className="detail-title">{lc.title}</h1>
+//             <div className="detail-meta-row">
+//               <span>🗓 {date.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}</span>
+//               <span>🕐 {date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
+//               <span>⏱ {lc.duration} mins</span>
+//               <span>👥 {lc.registrations?.length || 0} / {lc.maxParticipants}</span>
+//             </div>
+//             {lc.description && <p style={{ color: "var(--text2)", maxWidth: 700, lineHeight: 1.6 }}>{lc.description}</p>}
+//           </Reveal>
 //         </div>
 //       </div>
 //       <div className="container">
 //         <div className="detail-layout">
 //           <div>
 //             {isRegistered && (
-//               <div className="success-box" style={{ marginBottom: 24 }}>
-//                 ✅ You're registered! Meeting link will be sent {lc.urlSendMinutesBefore || 30} minutes before the class.
-//               </div>
-//             )}
-//             <div style={{ background: "var(--surface)", borderRadius: 14, padding: 24 }}>
-//               <h3 style={{ fontWeight: 700, marginBottom: 16 }}>📋 Class Details</h3>
-//               {[["Platform", lc.platform], ["Duration", `${lc.duration} minutes`], ["Max Participants", lc.maxParticipants], ["Registered", lc.registrations?.length || 0], ["Seats Left", lc.availableSeats ?? Math.max(0, lc.maxParticipants - (lc.registrations?.length || 0))]].map(([k, v]) => (
-//                 <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)", fontSize: "0.87rem" }}>
-//                   <span style={{ color: "var(--text2)" }}>{k}</span>
-//                   <span style={{ fontWeight: 600 }}>{v}</span>
+//               <Reveal>
+//                 <div className="success-box" style={{ marginBottom: 24 }}>
+                 
+//                   ✅ You're registered! Meeting link will be sent {lc.urlSendMinutesBefore || 30} minutes before the class.
 //                 </div>
-//               ))}
-//             </div>
+//               </Reveal>
+//             )}
+//             <Reveal delay={60}>
+//               <div style={{ background: "var(--surface)", borderRadius: 14, padding: 24 }}>
+//                 <h3 style={{ fontWeight: 700, marginBottom: 16 }}>📋 Class Details</h3>
+//                 {[["Platform", lc.platform], ["Duration", `${lc.duration} minutes`], ["Max Participants", lc.maxParticipants], ["Registered", lc.registrations?.length || 0], ["Seats Left", lc.availableSeats ?? Math.max(0, lc.maxParticipants - (lc.registrations?.length || 0))]].map(([k, v]) => (
+//                   <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)", fontSize: "0.87rem" }}>
+//                     <span style={{ color: "var(--text2)" }}>{k}</span>
+//                     <span style={{ fontWeight: 600 }}>{v}</span>
+//                   </div>
+//                 ))}
+//               </div>
+//             </Reveal>
 //           </div>
-//           <div className="detail-sidebar">
-//             <div className="sidebar-price">{lc.isFree ? "FREE" : `₹${lc.price}`}</div>
-//             {isRegistered
-//               ? <button className="btn btn-green btn-lg sidebar-btn" disabled>✅ Registered</button>
-//               : lc.status === "completed" || lc.status === "cancelled"
-//                 ? <button className="btn btn-outline btn-lg sidebar-btn" disabled>Class {lc.status}</button>
-//                 : <button className="btn btn-primary btn-lg sidebar-btn" onClick={handleRegister} disabled={registering || lc.isFull}>
-//                     {registering ? "Registering…" : lc.isFull ? "Class Full" : "Register Now →"}
-//                   </button>
-//             }
-//             <div className="sidebar-features">
-//               {[["📡", lc.platform + " meeting"], ["📧", "Link sent via email"], ["⏱", `${lc.duration} min session`], ["👥", `Max ${lc.maxParticipants} participants`]].map(([icon, label]) => (
-//                 <div key={label} className="sidebar-feature"><span>{icon}</span> {label}</div>
-//               ))}
+//           <Reveal>
+//             <div className="detail-sidebar">
+//               <div className="sidebar-price">{lc.isFree ? "FREE" : `₹${lc.price}`}</div>
+//               {isRegistered
+//                 ? <button className="btn btn-green btn-lg sidebar-btn" disabled>✅ Registered</button>
+//                 : lc.status === "completed" || lc.status === "cancelled"
+//                   ? <button className="btn btn-outline btn-lg sidebar-btn" disabled>Class {lc.status}</button>
+//                   : <button className="btn btn-primary btn-lg sidebar-btn" onClick={handleRegister} disabled={registering || lc.isFull}>
+//                       {registering ? "Registering…" : lc.isFull ? "Class Full" : "Register Now →"}
+//                     </button>
+//               }
+//               <div className="sidebar-features">
+//                 {[["📡", lc.platform + " meeting"], ["📧", "Link sent via email"], ["⏱", `${lc.duration} min session`], ["👥", `Max ${lc.maxParticipants} participants`]].map(([icon, label]) => (
+//                   <div key={label} className="sidebar-feature"><span>{icon}</span> {label}</div>
+//                 ))}
+//               </div>
 //             </div>
-//           </div>
+//           </Reveal>
 //         </div>
 //       </div>
 //     </div>
@@ -3508,20 +1583,32 @@
 //     <div className="page">
 //       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
 //         <div className="container">
-//           <h1 className="section-title" style={{ marginBottom: 8 }}>Study <span className="grad">Notes</span></h1>
-//           <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Curated PDFs and study material for focused learning</p>
+//           <Reveal>
+//             <h1 className="section-title" style={{ marginBottom: 8 }}>Study <span className="grad">Notes</span></h1>
+//             <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Curated PDFs and study material for focused learning</p>
+//           </Reveal>
 //         </div>
 //       </div>
 //       <div className="container section">
-//         <div className="search-bar">
-//           <span style={{ color: "var(--text3)" }}>🔍</span>
-//           <input placeholder="Search notes…" value={search} onChange={e => setSearch(e.target.value)} />
-//           {search && <button onClick={() => setSearch("")} style={{ background: "none", color: "var(--text3)" }}>✕</button>}
-//         </div>
+//         <Reveal>
+//           <div className="search-bar">
+//             <span style={{ color: "var(--text3)" }}>🔍</span>
+//             <input placeholder="Search notes…" value={search} onChange={e => setSearch(e.target.value)} />
+//             {search && <button onClick={() => setSearch("")} style={{ background: "none", color: "var(--text3)" }}>✕</button>}
+//           </div>
+//         </Reveal>
 //         {loading ? <div className="spinner" />
 //           : notes.length === 0
 //             ? <div className="empty-state"><div className="icon">📄</div><p>No notes found.</p></div>
-//             : <div className="grid-3">{notes.map(n => <NotesCard key={n._id} note={n} onClick={() => navigate(`/notes/${n._id}`)} />)}</div>
+//             : (
+//               <div className="grid-3">
+//                 {notes.map((n, i) => (
+//                   <Reveal key={n._id} delay={i * 65}>
+//                     <NotesCard note={n} onClick={() => navigate(`/notes/${n._id}`)} />
+//                   </Reveal>
+//                 ))}
+//               </div>
+//             )
 //         }
 //       </div>
 //     </div>
@@ -3594,46 +1681,52 @@
 //     <div className="page">
 //       <div className="detail-header">
 //         <div className="container">
-//           <div className="detail-breadcrumb" onClick={() => navigate("/notes")}>← Back to <span>Notes</span></div>
-//           <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-//             <span className="badge badge-yellow">{note.fileType?.toUpperCase()}</span>
-//             {note.isFree && <span className="badge badge-green">FREE</span>}
-//           </div>
-//           <h1 className="detail-title">{note.title}</h1>
-//           <div className="detail-meta-row">
-//             <span>📄 {note.fileType?.toUpperCase()}</span>
-//             {note.fileSizeBytes > 0 && <span>💾 {(note.fileSizeBytes / 1024 / 1024).toFixed(1)} MB</span>}
-//             {note.previewPages > 0 && <span>👀 {note.previewPages} preview pages</span>}
-//             <span>📥 {note.totalPurchases || 0} downloads</span>
-//           </div>
-//           {note.description && <p style={{ color: "var(--text2)", maxWidth: 700, lineHeight: 1.6 }}>{note.description}</p>}
+//           <Reveal>
+//             <div className="detail-breadcrumb" onClick={() => navigate("/notes")}>← Back to <span>Notes</span></div>
+//             <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+//               <span className="badge badge-yellow">{note.fileType?.toUpperCase()}</span>
+//               {note.isFree && <span className="badge badge-green">FREE</span>}
+//             </div>
+//             <h1 className="detail-title">{note.title}</h1>
+//             <div className="detail-meta-row">
+//               <span>📄 {note.fileType?.toUpperCase()}</span>
+//               {note.fileSizeBytes > 0 && <span>💾 {(note.fileSizeBytes / 1024 / 1024).toFixed(1)} MB</span>}
+//               {note.previewPages > 0 && <span>👀 {note.previewPages} preview pages</span>}
+//               <span>📥 {note.totalPurchases || 0} downloads</span>
+//             </div>
+//             {note.description && <p style={{ color: "var(--text2)", maxWidth: 700, lineHeight: 1.6 }}>{note.description}</p>}
+//           </Reveal>
 //         </div>
 //       </div>
 //       <div className="container">
 //         <div className="detail-layout">
 //           <div>
 //             {hasPurchased && (
-//               <div className="success-box" style={{ marginBottom: 24 }}>✅ You own this — click Download to access your file!</div>
+//               <Reveal><div className="success-box" style={{ marginBottom: 24 }}>✅ You own this — click Download to access your file!</div></Reveal>
 //             )}
-//             <div style={{ background: "var(--surface)", borderRadius: 14, padding: 24 }}>
-//               <h3 style={{ fontWeight: 700, marginBottom: 16 }}>📋 Document Details</h3>
-//               {[["File Type", note.fileType?.toUpperCase()], ["Category", note.category || "General"], ["Downloads", note.totalPurchases || 0], ...(note.previewPages > 0 ? [["Free Preview", `${note.previewPages} pages`]] : [])].map(([k, v]) => (
-//                 <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)", fontSize: "0.87rem" }}>
-//                   <span style={{ color: "var(--text2)" }}>{k}</span><span style={{ fontWeight: 600 }}>{v}</span>
-//                 </div>
-//               ))}
+//             <Reveal delay={60}>
+//               <div style={{ background: "var(--surface)", borderRadius: 14, padding: 24 }}>
+//                 <h3 style={{ fontWeight: 700, marginBottom: 16 }}>📋 Document Details</h3>
+//                 {[["File Type", note.fileType?.toUpperCase()], ["Category", note.category || "General"], ["Downloads", note.totalPurchases || 0], ...(note.previewPages > 0 ? [["Free Preview", `${note.previewPages} pages`]] : [])].map(([k, v]) => (
+//                   <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)", fontSize: "0.87rem" }}>
+//                     <span style={{ color: "var(--text2)" }}>{k}</span><span style={{ fontWeight: 600 }}>{v}</span>
+//                   </div>
+//                 ))}
+//               </div>
+//             </Reveal>
+//           </div>
+//           <Reveal>
+//             <div className="detail-sidebar">
+//               <div className="sidebar-price">{note.isFree ? "FREE" : `₹${price}`}</div>
+//               {!note.isFree && note.discountPrice && <div className="sidebar-price-old">₹{note.price}</div>}
+//               {(hasPurchased || note.isFree)
+//                 ? <button className="btn btn-green btn-lg sidebar-btn" onClick={handleDownload}>⬇️ Download Now</button>
+//                 : <button className="btn btn-primary btn-lg sidebar-btn" onClick={handleBuy} disabled={paying}>
+//                     {paying ? "Processing…" : `Buy for ₹${price} →`}
+//                   </button>
+//               }
 //             </div>
-//           </div>
-//           <div className="detail-sidebar">
-//             <div className="sidebar-price">{note.isFree ? "FREE" : `₹${price}`}</div>
-//             {!note.isFree && note.discountPrice && <div className="sidebar-price-old">₹{note.price}</div>}
-//             {(hasPurchased || note.isFree)
-//               ? <button className="btn btn-green btn-lg sidebar-btn" onClick={handleDownload}>⬇️ Download Now</button>
-//               : <button className="btn btn-primary btn-lg sidebar-btn" onClick={handleBuy} disabled={paying}>
-//                   {paying ? "Processing…" : `Buy for ₹${price} →`}
-//                 </button>
-//             }
-//           </div>
+//           </Reveal>
 //         </div>
 //       </div>
 //     </div>
@@ -3666,51 +1759,59 @@
 //     <div className="page">
 //       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
 //         <div className="container">
-//           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-//             <div className="avatar-btn" style={{ width: 52, height: 52, fontSize: "1.2rem", flexShrink: 0 }}>
-//               {user.name?.[0]?.toUpperCase()}
+//           <Reveal>
+//             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+//               <div className="avatar-btn" style={{ width: 52, height: 52, fontSize: "1.2rem", flexShrink: 0 }}>
+//                 {user.name?.[0]?.toUpperCase()}
+//               </div>
+//               <div>
+//                 <h1 style={{ fontFamily: "var(--font2)", fontSize: "1.6rem", fontWeight: 700 }}>Welcome, {user.name}! 👋</h1>
+//                 <p style={{ color: "var(--text2)", fontSize: "0.88rem" }}>{user.email} · {user.role}</p>
+//               </div>
 //             </div>
-//             <div>
-//               <h1 style={{ fontFamily: "var(--font2)", fontSize: "1.6rem", fontWeight: 700 }}>Welcome, {user.name}! 👋</h1>
-//               <p style={{ color: "var(--text2)", fontSize: "0.88rem" }}>{user.email} · {user.role}</p>
-//             </div>
-//           </div>
+//           </Reveal>
 //         </div>
 //       </div>
 //       <div className="container section">
 //         <div className="stats-grid" style={{ marginBottom: 32 }}>
-//           {[["📚", courses.length, "Courses Enrolled"], ["📄", notes.length, "Notes Purchased"], ["📡", liveRegs.length, "Classes Registered"], ["💳", payments.filter(p => p.status === "paid").length, "Successful Payments"]].map(([icon, num, label]) => (
-//             <div key={label} className="stat-card">
-//               <div className="stat-card-icon">{icon}</div>
-//               <div className="stat-card-num">{num}</div>
-//               <div className="stat-card-label">{label}</div>
-//             </div>
+//           {[["📚", courses.length, "Courses Enrolled"], ["📄", notes.length, "Notes Purchased"], ["📡", liveRegs.length, "Classes Registered"], ["💳", payments.filter(p => p.status === "paid").length, "Successful Payments"]].map(([icon, num, label], i) => (
+//             <Reveal key={label} delay={i * 80}>
+//               <div className="stat-card">
+//                 <div className="stat-card-icon">{icon}</div>
+//                 <div className="stat-card-num">{num}</div>
+//                 <div className="stat-card-label">{label}</div>
+//               </div>
+//             </Reveal>
 //           ))}
 //         </div>
-//         <div className="tabs">
-//           {[["courses", "📚 My Courses"], ["notes", "📄 My Notes"], ["live", "📡 Live Classes"], ["payments", "💳 Payments"]].map(([key, label]) => (
-//             <button key={key} className={`tab ${tab === key ? "active" : ""}`} onClick={() => setTab(key)}>{label}</button>
-//           ))}
-//         </div>
+//         <Reveal>
+//           <div className="tabs">
+//             {[["courses", "📚 My Courses"], ["notes", "📄 My Notes"], ["live", "📡 Live Classes"], ["payments", "💳 Payments"]].map(([key, label]) => (
+//               <button key={key} className={`tab ${tab === key ? "active" : ""}`} onClick={() => setTab(key)}>{label}</button>
+//             ))}
+//           </div>
+//         </Reveal>
 
 //         {tab === "courses" && (
 //           courses.length === 0
 //             ? <div className="empty-state"><div className="icon">📚</div><p>No courses yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => navigate("/courses")}>Browse courses →</span></p></div>
 //             : <div className="grid-3">
-//                 {courses.map(p => (
-//                   <div key={p._id || p.course} className="card" onClick={() => navigate(`/courses/${p.course?._id || p.course}`)} style={{ cursor: "pointer" }}>
-//                     <div className="card-thumb" style={{ background: "var(--bg3)" }}>
-//                       {p.course?.thumbnail ? <img src={p.course.thumbnail} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt="" /> : <div style={{ fontSize: "3rem" }}>📚</div>}
-//                     </div>
-//                     <div className="card-body">
-//                       <div className="card-title">{p.course?.title || "Course"}</div>
-//                       <div style={{ fontSize: "0.8rem", color: "var(--text3)", marginTop: 6 }}>Purchased {new Date(p.purchasedAt).toLocaleDateString()}</div>
-//                       <div style={{ marginTop: 10 }}>
-//                         <div className="progress-bar-wrap"><div className="progress-bar" style={{ width: "35%" }} /></div>
-//                         <div style={{ fontSize: "0.75rem", color: "var(--text3)", marginTop: 4 }}>35% completed</div>
+//                 {courses.map((p, i) => (
+//                   <Reveal key={p._id || p.course} delay={i * 70}>
+//                     <div className="card" onClick={() => navigate(`/courses/${p.course?._id || p.course}`)} style={{ cursor: "pointer" }}>
+//                       <div className="card-thumb" style={{ background: "var(--bg3)" }}>
+//                         {p.course?.thumbnail ? <img src={p.course.thumbnail} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt="" /> : <div style={{ fontSize: "3rem" }}>📚</div>}
+//                       </div>
+//                       <div className="card-body">
+//                         <div className="card-title">{p.course?.title || "Course"}</div>
+//                         <div style={{ fontSize: "0.8rem", color: "var(--text3)", marginTop: 6 }}>Purchased {new Date(p.purchasedAt).toLocaleDateString()}</div>
+//                         <div style={{ marginTop: 10 }}>
+//                           <div className="progress-bar-wrap"><div className="progress-bar" style={{ width: "35%" }} /></div>
+//                           <div style={{ fontSize: "0.75rem", color: "var(--text3)", marginTop: 4 }}>35% completed</div>
+//                         </div>
 //                       </div>
 //                     </div>
-//                   </div>
+//                   </Reveal>
 //                 ))}
 //               </div>
 //         )}
@@ -3719,15 +1820,17 @@
 //           notes.length === 0
 //             ? <div className="empty-state"><div className="icon">📄</div><p>No notes yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => navigate("/notes")}>Browse notes →</span></p></div>
 //             : <div className="grid-3">
-//                 {notes.map(p => (
-//                   <div key={p._id || p.notes} className="card">
-//                     <div className="card-body">
-//                       <div style={{ fontSize: "2rem", marginBottom: 10 }}>📄</div>
-//                       <div className="card-title">{p.notes?.title || "Notes"}</div>
-//                       <div style={{ fontSize: "0.8rem", color: "var(--text3)", marginTop: 6 }}>Purchased {new Date(p.purchasedAt).toLocaleDateString()}</div>
-//                       <button className="btn btn-green btn-sm" style={{ marginTop: 12 }} onClick={() => navigate(`/notes/${p.notes?._id || p.notes}`)}>⬇️ Download</button>
+//                 {notes.map((p, i) => (
+//                   <Reveal key={p._id || p.notes} delay={i * 70}>
+//                     <div className="card">
+//                       <div className="card-body">
+//                         <div style={{ fontSize: "2rem", marginBottom: 10 }}>📄</div>
+//                         <div className="card-title">{p.notes?.title || "Notes"}</div>
+//                         <div style={{ fontSize: "0.8rem", color: "var(--text3)", marginTop: 6 }}>Purchased {new Date(p.purchasedAt).toLocaleDateString()}</div>
+//                         <button className="btn btn-green btn-sm" style={{ marginTop: 12 }} onClick={() => navigate(`/notes/${p.notes?._id || p.notes}`)}>⬇️ Download</button>
+//                       </div>
 //                     </div>
-//                   </div>
+//                   </Reveal>
 //                 ))}
 //               </div>
 //         )}
@@ -3737,16 +1840,18 @@
 //             ? <div className="empty-state"><div className="icon">📡</div><p>No classes registered. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => navigate("/live")}>Browse classes →</span></p></div>
 //             : <div className="grid-3">
 //                 {liveRegs.map((r, i) => (
-//                   <div key={i} className="card">
-//                     <div className="card-body">
-//                       <div style={{ fontSize: "2rem", marginBottom: 10 }}>📡</div>
-//                       <div className="card-title">Live Class Registration</div>
-//                       <div style={{ fontSize: "0.8rem", color: "var(--text3)", marginTop: 6 }}>Registered {new Date(r.registeredAt).toLocaleDateString()}</div>
-//                       <span className={`badge ${r.urlSent ? "badge-green" : "badge-yellow"}`} style={{ marginTop: 10, display: "inline-flex" }}>
-//                         {r.urlSent ? "✅ Link Sent" : "⏳ Link Pending"}
-//                       </span>
+//                   <Reveal key={i} delay={i * 70}>
+//                     <div className="card">
+//                       <div className="card-body">
+//                         <div style={{ fontSize: "2rem", marginBottom: 10 }}>📡</div>
+//                         <div className="card-title">Live Class Registration</div>
+//                         <div style={{ fontSize: "0.8rem", color: "var(--text3)", marginTop: 6 }}>Registered {new Date(r.registeredAt).toLocaleDateString()}</div>
+//                         <span className={`badge ${r.urlSent ? "badge-green" : "badge-yellow"}`} style={{ marginTop: 10, display: "inline-flex" }}>
+//                           {r.urlSent ? "✅ Link Sent" : "⏳ Link Pending"}
+//                         </span>
+//                       </div>
 //                     </div>
-//                   </div>
+//                   </Reveal>
 //                 ))}
 //               </div>
 //         )}
@@ -3754,22 +1859,24 @@
 //         {tab === "payments" && (
 //           payments.length === 0
 //             ? <div className="empty-state"><div className="icon">💳</div><p>No payment history.</p></div>
-//             : <div className="table-wrap">
-//                 <table>
-//                   <thead><tr><th>Item</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
-//                   <tbody>
-//                     {payments.map(p => (
-//                       <tr key={p._id}>
-//                         <td>{p.itemTitle || "—"}</td>
-//                         <td><span className="badge badge-primary">{p.itemType}</span></td>
-//                         <td style={{ fontWeight: 700 }}>₹{p.amountInRupees}</td>
-//                         <td><span className={`badge ${p.status === "paid" ? "badge-green" : p.status === "failed" ? "badge-accent" : "badge-yellow"}`}>{p.status}</span></td>
-//                         <td style={{ color: "var(--text3)" }}>{new Date(p.createdAt).toLocaleDateString()}</td>
-//                       </tr>
-//                     ))}
-//                   </tbody>
-//                 </table>
-//               </div>
+//             : <Reveal>
+//                 <div className="table-wrap">
+//                   <table>
+//                     <thead><tr><th>Item</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+//                     <tbody>
+//                       {payments.map(p => (
+//                         <tr key={p._id}>
+//                           <td>{p.itemTitle || "—"}</td>
+//                           <td><span className="badge badge-primary">{p.itemType}</span></td>
+//                           <td style={{ fontWeight: 700 }}>₹{p.amountInRupees}</td>
+//                           <td><span className={`badge ${p.status === "paid" ? "badge-green" : p.status === "failed" ? "badge-accent" : "badge-yellow"}`}>{p.status}</span></td>
+//                           <td style={{ color: "var(--text3)" }}>{new Date(p.createdAt).toLocaleDateString()}</td>
+//                         </tr>
+//                       ))}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </Reveal>
 //         )}
 //       </div>
 //     </div>
@@ -3777,23 +1884,19 @@
 // }
 
 // // ═══════════════════════════════════════════════════════════════════
-// // ADMIN PANEL — Full implementation with all sections
+// // ADMIN PANEL
 // // ═══════════════════════════════════════════════════════════════════
 
-// // ── Video Manager Modal ──────────────────────────────────────────
 // function VideoManagerModal({ course, onClose, authFetch, toast }) {
 //   const [videos, setVideos] = useState(course.videos || []);
-//   const [addMode, setAddMode] = useState("url"); // "url" | "upload"
+//   const [addMode, setAddMode] = useState("url");
 //   const [uploading, setUploading] = useState(false);
 //   const [progress, setProgress] = useState(0);
 
-//   // URL form
 //   const [urlForm, setUrlForm] = useState({
 //     title: "", videoUrl: "", description: "", duration: 0,
 //     isPreview: false, buyNowTriggerSeconds: 300, order: course.videos?.length || 0
 //   });
-
-//   // Upload form
 //   const [uploadForm, setUploadForm] = useState({
 //     title: "", description: "", duration: 0,
 //     isPreview: false, buyNowTriggerSeconds: 300
@@ -3823,9 +1926,7 @@
 //   const uploadVideoFile = async () => {
 //     if (!uploadForm.title) { toast("Video title is required", "error"); return; }
 //     if (!videoFile) { toast("Please select a video file", "error"); return; }
-//     setUploading(true);
-//     setProgress(0);
-
+//     setUploading(true); setProgress(0);
 //     const formData = new FormData();
 //     formData.append("video", videoFile);
 //     formData.append("title", uploadForm.title);
@@ -3834,31 +1935,17 @@
 //     formData.append("isPreview", String(uploadForm.isPreview));
 //     formData.append("buyNowTriggerSeconds", String(uploadForm.buyNowTriggerSeconds));
 
-//     // const { token } = useAuth();
-
-//     // Use XMLHttpRequest for progress tracking
+//     const authToken = localStorage.getItem("token");
 //     const xhr = new XMLHttpRequest();
 //     xhr.open("POST", `${API_BASE}/courses/${course._id}/videos/upload`);
-//     xhr.setRequestHeader("Authorization", `Bearer ${authFetch._token || window._token}`);
-
-//     const authToken = localStorage.getItem("token");
 //     xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
-
-//     xhr.upload.onprogress = (e) => {
-//       if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
-//     };
-
+//     xhr.upload.onprogress = (e) => { if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100)); };
 //     xhr.onload = () => {
 //       setUploading(false);
 //       try {
 //         const res = JSON.parse(xhr.responseText);
-//         if (res.success) {
-//           toast("Video uploaded! ✅", "success");
-//           setVideoFile(null);
-//           setUploadForm({ title: "", description: "", duration: 0, isPreview: false, buyNowTriggerSeconds: 300 });
-//           setProgress(0);
-//           refreshVideos();
-//         } else toast(res.message || "Upload failed", "error");
+//         if (res.success) { toast("Video uploaded! ✅", "success"); setVideoFile(null); setUploadForm({ title: "", description: "", duration: 0, isPreview: false, buyNowTriggerSeconds: 300 }); setProgress(0); refreshVideos(); }
+//         else toast(res.message || "Upload failed", "error");
 //       } catch { toast("Upload failed", "error"); }
 //     };
 //     xhr.onerror = () => { setUploading(false); toast("Network error during upload", "error"); };
@@ -3879,7 +1966,6 @@
 //         <div className="modal-title">🎬 Manage Videos</div>
 //         <div className="modal-sub">{course.title} · {videos.length} video{videos.length !== 1 ? "s" : ""}</div>
 
-//         {/* Existing Videos */}
 //         {videos.length > 0 && (
 //           <div style={{ marginBottom: 24 }}>
 //             <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text2)", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Existing Videos</div>
@@ -3901,18 +1987,14 @@
 //         )}
 
 //         <hr className="divider" />
-
-//         {/* Add Video */}
 //         <div style={{ fontWeight: 700, marginBottom: 16 }}>➕ Add New Video</div>
 
 //         <div className="video-type-tabs">
 //           <div className={`video-type-tab ${addMode === "url" ? "active" : ""}`} onClick={() => setAddMode("url")}>
-//             🔗 Add by URL<br />
-//             <span style={{ fontSize: "0.72rem", color: "var(--text3)", fontWeight: 400 }}>YouTube, Vimeo, direct link</span>
+//             🔗 Add by URL<br /><span style={{ fontSize: "0.72rem", color: "var(--text3)", fontWeight: 400 }}>YouTube, Vimeo, direct link</span>
 //           </div>
 //           <div className={`video-type-tab ${addMode === "upload" ? "active" : ""}`} onClick={() => setAddMode("upload")}>
-//             📁 Upload File<br />
-//             <span style={{ fontSize: "0.72rem", color: "var(--text3)", fontWeight: 400 }}>MP4, WebM, MOV</span>
+//             📁 Upload File<br /><span style={{ fontSize: "0.72rem", color: "var(--text3)", fontWeight: 400 }}>MP4, WebM, MOV</span>
 //           </div>
 //         </div>
 
@@ -3921,41 +2003,33 @@
 //             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
 //               <div className="form-group" style={{ gridColumn: "1/-1" }}>
 //                 <label className="form-label">Video Title *</label>
-//                 <input className="form-input" placeholder="e.g. Introduction to React Hooks" value={urlForm.title}
-//                   onChange={e => setUrlForm(p => ({ ...p, title: e.target.value }))} />
+//                 <input className="form-input" placeholder="e.g. Introduction to React Hooks" value={urlForm.title} onChange={e => setUrlForm(p => ({ ...p, title: e.target.value }))} />
 //               </div>
 //               <div className="form-group" style={{ gridColumn: "1/-1" }}>
 //                 <label className="form-label">Video URL *</label>
-//                 <input className="form-input" placeholder="https://youtube.com/watch?v=... or direct MP4 URL" value={urlForm.videoUrl}
-//                   onChange={e => setUrlForm(p => ({ ...p, videoUrl: e.target.value }))} />
+//                 <input className="form-input" placeholder="https://youtube.com/watch?v=..." value={urlForm.videoUrl} onChange={e => setUrlForm(p => ({ ...p, videoUrl: e.target.value }))} />
 //                 <div className="form-hint">Supports YouTube, Vimeo, Google Drive, or direct video URLs</div>
 //               </div>
 //               <div className="form-group" style={{ gridColumn: "1/-1" }}>
 //                 <label className="form-label">Description</label>
-//                 <textarea className="form-input" rows={2} placeholder="Brief description of this video" value={urlForm.description}
-//                   onChange={e => setUrlForm(p => ({ ...p, description: e.target.value }))} />
+//                 <textarea className="form-input" rows={2} placeholder="Brief description" value={urlForm.description} onChange={e => setUrlForm(p => ({ ...p, description: e.target.value }))} />
 //               </div>
 //               <div className="form-group">
 //                 <label className="form-label">Duration (seconds)</label>
-//                 <input type="number" className="form-input" placeholder="e.g. 600 = 10 min" value={urlForm.duration}
-//                   onChange={e => setUrlForm(p => ({ ...p, duration: e.target.value }))} />
+//                 <input type="number" className="form-input" placeholder="e.g. 600 = 10 min" value={urlForm.duration} onChange={e => setUrlForm(p => ({ ...p, duration: e.target.value }))} />
 //               </div>
 //               <div className="form-group">
 //                 <label className="form-label">Order</label>
-//                 <input type="number" className="form-input" value={urlForm.order}
-//                   onChange={e => setUrlForm(p => ({ ...p, order: e.target.value }))} />
+//                 <input type="number" className="form-input" value={urlForm.order} onChange={e => setUrlForm(p => ({ ...p, order: e.target.value }))} />
 //               </div>
 //               <div className="form-group">
 //                 <label className="form-label">Buy-Now Trigger (seconds)</label>
-//                 <input type="number" className="form-input" placeholder="300" value={urlForm.buyNowTriggerSeconds}
-//                   onChange={e => setUrlForm(p => ({ ...p, buyNowTriggerSeconds: e.target.value }))} />
-//                 <div className="form-hint">Show buy prompt after this many seconds</div>
+//                 <input type="number" className="form-input" placeholder="300" value={urlForm.buyNowTriggerSeconds} onChange={e => setUrlForm(p => ({ ...p, buyNowTriggerSeconds: e.target.value }))} />
 //               </div>
 //               <div className="form-group" style={{ display: "flex", alignItems: "center" }}>
 //                 <div className="checkbox-row">
-//                   <input type="checkbox" id="url-preview" checked={urlForm.isPreview}
-//                     onChange={e => setUrlForm(p => ({ ...p, isPreview: e.target.checked }))} />
-//                   <label htmlFor="url-preview">Free Preview (visible without purchase)</label>
+//                   <input type="checkbox" id="url-preview" checked={urlForm.isPreview} onChange={e => setUrlForm(p => ({ ...p, isPreview: e.target.checked }))} />
+//                   <label htmlFor="url-preview">Free Preview</label>
 //                 </div>
 //               </div>
 //             </div>
@@ -3970,41 +2044,29 @@
 //             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
 //               <div className="form-group" style={{ gridColumn: "1/-1" }}>
 //                 <label className="form-label">Video Title *</label>
-//                 <input className="form-input" placeholder="e.g. Introduction to React Hooks" value={uploadForm.title}
-//                   onChange={e => setUploadForm(p => ({ ...p, title: e.target.value }))} />
+//                 <input className="form-input" placeholder="e.g. Introduction to React Hooks" value={uploadForm.title} onChange={e => setUploadForm(p => ({ ...p, title: e.target.value }))} />
 //               </div>
 //               <div className="form-group" style={{ gridColumn: "1/-1" }}>
 //                 <label className="form-label">Description</label>
-//                 <textarea className="form-input" rows={2} value={uploadForm.description}
-//                   onChange={e => setUploadForm(p => ({ ...p, description: e.target.value }))} />
+//                 <textarea className="form-input" rows={2} value={uploadForm.description} onChange={e => setUploadForm(p => ({ ...p, description: e.target.value }))} />
 //               </div>
 //               <div className="form-group">
 //                 <label className="form-label">Duration (seconds)</label>
-//                 <input type="number" className="form-input" placeholder="e.g. 600" value={uploadForm.duration}
-//                   onChange={e => setUploadForm(p => ({ ...p, duration: e.target.value }))} />
+//                 <input type="number" className="form-input" placeholder="e.g. 600" value={uploadForm.duration} onChange={e => setUploadForm(p => ({ ...p, duration: e.target.value }))} />
 //               </div>
 //               <div className="form-group">
 //                 <label className="form-label">Buy-Now Trigger (seconds)</label>
-//                 <input type="number" className="form-input" placeholder="300" value={uploadForm.buyNowTriggerSeconds}
-//                   onChange={e => setUploadForm(p => ({ ...p, buyNowTriggerSeconds: e.target.value }))} />
+//                 <input type="number" className="form-input" placeholder="300" value={uploadForm.buyNowTriggerSeconds} onChange={e => setUploadForm(p => ({ ...p, buyNowTriggerSeconds: e.target.value }))} />
 //               </div>
 //               <div className="form-group" style={{ gridColumn: "1/-1" }}>
 //                 <div className="checkbox-row">
-//                   <input type="checkbox" id="upload-preview" checked={uploadForm.isPreview}
-//                     onChange={e => setUploadForm(p => ({ ...p, isPreview: e.target.checked }))} />
-//                   <label htmlFor="upload-preview">Free Preview (visible without purchase)</label>
+//                   <input type="checkbox" id="upload-preview" checked={uploadForm.isPreview} onChange={e => setUploadForm(p => ({ ...p, isPreview: e.target.checked }))} />
+//                   <label htmlFor="upload-preview">Free Preview</label>
 //                 </div>
 //               </div>
 //               <div className="form-group" style={{ gridColumn: "1/-1" }}>
 //                 <label className="form-label">Video File *</label>
-//                 <FileUploadArea
-//                   accept="video/*"
-//                   onFile={setVideoFile}
-//                   file={videoFile}
-//                   label="Click or drag video file here"
-//                   hint="Supported: MP4, WebM, MOV (max 500MB)"
-//                   icon="🎬"
-//                 />
+//                 <FileUploadArea accept="video/*" onFile={setVideoFile} file={videoFile} label="Click or drag video file here" hint="Supported: MP4, WebM, MOV (max 500MB)" icon="🎬" />
 //               </div>
 //             </div>
 //             {uploading && (
@@ -4012,9 +2074,7 @@
 //                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "var(--text2)", marginBottom: 6 }}>
 //                   <span>Uploading…</span><span>{progress}%</span>
 //                 </div>
-//                 <div className="progress-bar-wrap">
-//                   <div className="progress-bar" style={{ width: `${progress}%` }} />
-//                 </div>
+//                 <div className="progress-bar-wrap"><div className="progress-bar" style={{ width: `${progress}%` }} /></div>
 //               </div>
 //             )}
 //             <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={uploadVideoFile} disabled={uploading || !videoFile}>
@@ -4027,23 +2087,14 @@
 //   );
 // }
 
-// // ── Course Form Modal ────────────────────────────────────────────
 // function CourseFormModal({ course, onClose, onSave, authFetch, toast }) {
 //   const isEdit = !!course;
 //   const [form, setForm] = useState({
-//     title: course?.title || "",
-//     description: course?.description || "",
-//     shortDescription: course?.shortDescription || "",
-//     price: course?.price || "",
-//     discountPrice: course?.discountPrice || "",
-//     category: course?.category || "",
-//     level: course?.level || "beginner",
-//     language: course?.language || "English",
-//     tags: course?.tags?.join(",") || "",
-//     requirements: course?.requirements?.join("\n") || "",
-//     outcomes: course?.outcomes?.join("\n") || "",
-//     isFree: course?.isFree || false,
-//     isPublished: course?.isPublished || false,
+//     title: course?.title || "", description: course?.description || "", shortDescription: course?.shortDescription || "",
+//     price: course?.price || "", discountPrice: course?.discountPrice || "", category: course?.category || "",
+//     level: course?.level || "beginner", language: course?.language || "English",
+//     tags: course?.tags?.join(",") || "", requirements: course?.requirements?.join("\n") || "",
+//     outcomes: course?.outcomes?.join("\n") || "", isFree: course?.isFree || false, isPublished: course?.isPublished || false,
 //   });
 //   const [thumbnail, setThumbnail] = useState(null);
 //   const [saving, setSaving] = useState(false);
@@ -4052,27 +2103,15 @@
 //     if (!form.title || !form.description) { toast("Title and description are required", "error"); return; }
 //     if (!form.isFree && !form.price) { toast("Price is required for paid courses", "error"); return; }
 //     setSaving(true);
-
 //     const fd = new FormData();
 //     Object.entries(form).forEach(([k, v]) => fd.append(k, String(v)));
 //     if (thumbnail) fd.append("thumbnail", thumbnail);
-
-//     const url = isEdit ? `/courses/${course._id}` : "/courses";
-//     const method = isEdit ? "PUT" : "POST";
-
 //     const authToken = localStorage.getItem("token");
-//     const res = await fetch(`${API_BASE}${url}`, {
-//       method,
-//       headers: { Authorization: `Bearer ${authToken}` },
-//       body: fd
-//     }).then(r => r.json());
-
+//     const url = isEdit ? `/courses/${course._id}` : "/courses";
+//     const res = await fetch(`${API_BASE}${url}`, { method: isEdit ? "PUT" : "POST", headers: { Authorization: `Bearer ${authToken}` }, body: fd }).then(r => r.json());
 //     setSaving(false);
-//     if (res.success) {
-//       toast(`Course ${isEdit ? "updated" : "created"}! ✅`, "success");
-//       onSave();
-//       onClose();
-//     } else toast(res.message || "Failed", "error");
+//     if (res.success) { toast(`Course ${isEdit ? "updated" : "created"}! ✅`, "success"); onSave(); onClose(); }
+//     else toast(res.message || "Failed", "error");
 //   };
 
 //   return (
@@ -4081,98 +2120,26 @@
 //         <button className="modal-close" onClick={onClose}>✕</button>
 //         <div className="modal-title">{isEdit ? "✏️ Edit Course" : "➕ Create New Course"}</div>
 //         <div className="modal-sub">{isEdit ? `Editing: ${course.title}` : "Fill in the course details below"}</div>
-
 //         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, maxHeight: "70vh", overflowY: "auto", paddingRight: 4 }}>
-//           <div className="form-group" style={{ gridColumn: "1/-1" }}>
-//             <label className="form-label">Course Title *</label>
-//             <input className="form-input" placeholder="e.g. Complete React.js Bootcamp" value={form.title}
-//               onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
-//           </div>
-//           <div className="form-group" style={{ gridColumn: "1/-1" }}>
-//             <label className="form-label">Full Description *</label>
-//             <textarea rows={4} className="form-input" placeholder="Detailed course description…" value={form.description}
-//               onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
-//           </div>
-//           <div className="form-group" style={{ gridColumn: "1/-1" }}>
-//             <label className="form-label">Short Description</label>
-//             <input className="form-input" placeholder="One-line teaser (max 500 chars)" value={form.shortDescription}
-//               onChange={e => setForm(p => ({ ...p, shortDescription: e.target.value }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Price (₹) {!form.isFree && "*"}</label>
-//             <input type="number" className="form-input" placeholder="e.g. 499" value={form.price}
-//               onChange={e => setForm(p => ({ ...p, price: e.target.value }))} disabled={form.isFree} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Discount Price (₹)</label>
-//             <input type="number" className="form-input" placeholder="e.g. 299" value={form.discountPrice}
-//               onChange={e => setForm(p => ({ ...p, discountPrice: e.target.value }))} disabled={form.isFree} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Category</label>
-//             <input className="form-input" placeholder="e.g. Web Development" value={form.category}
-//               onChange={e => setForm(p => ({ ...p, category: e.target.value }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Level</label>
-//             <select className="form-input" value={form.level} onChange={e => setForm(p => ({ ...p, level: e.target.value }))}>
-//               {["beginner", "intermediate", "advanced", "all"].map(l => <option key={l} value={l}>{l.charAt(0).toUpperCase() + l.slice(1)}</option>)}
-//             </select>
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Language</label>
-//             <input className="form-input" placeholder="e.g. English, Tamil, Hindi" value={form.language}
-//               onChange={e => setForm(p => ({ ...p, language: e.target.value }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Tags</label>
-//             <input className="form-input" placeholder="react,node,mongodb (comma separated)" value={form.tags}
-//               onChange={e => setForm(p => ({ ...p, tags: e.target.value }))} />
-//           </div>
-//           <div className="form-group" style={{ gridColumn: "1/-1" }}>
-//             <label className="form-label">Requirements</label>
-//             <textarea rows={3} className="form-input" placeholder="One requirement per line" value={form.requirements}
-//               onChange={e => setForm(p => ({ ...p, requirements: e.target.value }))} />
-//             <div className="form-hint">Each line becomes a separate requirement</div>
-//           </div>
-//           <div className="form-group" style={{ gridColumn: "1/-1" }}>
-//             <label className="form-label">Learning Outcomes</label>
-//             <textarea rows={3} className="form-input" placeholder="One outcome per line" value={form.outcomes}
-//               onChange={e => setForm(p => ({ ...p, outcomes: e.target.value }))} />
-//             <div className="form-hint">Each line becomes a separate outcome</div>
-//           </div>
-//           <div className="form-group" style={{ gridColumn: "1/-1" }}>
-//             <label className="form-label">Thumbnail Image</label>
-//             <FileUploadArea
-//               accept="image/*"
-//               onFile={setThumbnail}
-//               file={thumbnail}
-//               label="Upload course thumbnail"
-//               hint="PNG, JPG, WebP — 16:9 recommended (1280×720)"
-//               icon="🖼️"
-//             />
-//             {isEdit && course.thumbnail && !thumbnail && (
-//               <div style={{ fontSize: "0.78rem", color: "var(--text3)", marginTop: 6 }}>Current thumbnail will be kept if no new file selected.</div>
-//             )}
-//           </div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Course Title *</label><input className="form-input" placeholder="e.g. Complete React.js Bootcamp" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Full Description *</label><textarea rows={4} className="form-input" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Short Description</label><input className="form-input" value={form.shortDescription} onChange={e => setForm(p => ({ ...p, shortDescription: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Price (₹)</label><input type="number" className="form-input" value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} disabled={form.isFree} /></div>
+//           <div className="form-group"><label className="form-label">Discount Price (₹)</label><input type="number" className="form-input" value={form.discountPrice} onChange={e => setForm(p => ({ ...p, discountPrice: e.target.value }))} disabled={form.isFree} /></div>
+//           <div className="form-group"><label className="form-label">Category</label><input className="form-input" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Level</label><select className="form-input" value={form.level} onChange={e => setForm(p => ({ ...p, level: e.target.value }))}>{["beginner","intermediate","advanced","all"].map(l => <option key={l} value={l}>{l.charAt(0).toUpperCase()+l.slice(1)}</option>)}</select></div>
+//           <div className="form-group"><label className="form-label">Language</label><input className="form-input" value={form.language} onChange={e => setForm(p => ({ ...p, language: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Tags</label><input className="form-input" placeholder="react,node,mongodb" value={form.tags} onChange={e => setForm(p => ({ ...p, tags: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Requirements</label><textarea rows={3} className="form-input" placeholder="One per line" value={form.requirements} onChange={e => setForm(p => ({ ...p, requirements: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Learning Outcomes</label><textarea rows={3} className="form-input" placeholder="One per line" value={form.outcomes} onChange={e => setForm(p => ({ ...p, outcomes: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Thumbnail</label><FileUploadArea accept="image/*" onFile={setThumbnail} file={thumbnail} label="Upload course thumbnail" hint="PNG, JPG, WebP — 16:9 recommended" icon="🖼️" /></div>
 //           <div className="form-group" style={{ display: "flex", gap: 24 }}>
-//             <div className="checkbox-row">
-//               <input type="checkbox" id="cf-free" checked={form.isFree}
-//                 onChange={e => setForm(p => ({ ...p, isFree: e.target.checked, price: e.target.checked ? "0" : p.price }))} />
-//               <label htmlFor="cf-free">Free Course</label>
-//             </div>
-//             <div className="checkbox-row">
-//               <input type="checkbox" id="cf-pub" checked={form.isPublished}
-//                 onChange={e => setForm(p => ({ ...p, isPublished: e.target.checked }))} />
-//               <label htmlFor="cf-pub">Publish immediately</label>
-//             </div>
+//             <div className="checkbox-row"><input type="checkbox" id="cf-free" checked={form.isFree} onChange={e => setForm(p => ({ ...p, isFree: e.target.checked, price: e.target.checked ? "0" : p.price }))} /><label htmlFor="cf-free">Free Course</label></div>
+//             <div className="checkbox-row"><input type="checkbox" id="cf-pub" checked={form.isPublished} onChange={e => setForm(p => ({ ...p, isPublished: e.target.checked }))} /><label htmlFor="cf-pub">Publish immediately</label></div>
 //           </div>
 //         </div>
-
 //         <div style={{ display: "flex", gap: 10, marginTop: 24, paddingTop: 20, borderTop: "1px solid var(--border)" }}>
-//           <button className="btn btn-primary" onClick={submit} disabled={saving}>
-//             {saving ? "Saving…" : isEdit ? "Update Course" : "Create Course"}
-//           </button>
+//           <button className="btn btn-primary" onClick={submit} disabled={saving}>{saving ? "Saving…" : isEdit ? "Update Course" : "Create Course"}</button>
 //           <button className="btn btn-outline" onClick={onClose}>Cancel</button>
 //         </div>
 //       </div>
@@ -4180,23 +2147,16 @@
 //   );
 // }
 
-// // ── Live Class Form Modal ────────────────────────────────────────
 // function LiveClassFormModal({ liveClass, onClose, onSave, authFetch, toast }) {
 //   const isEdit = !!liveClass;
 //   const [form, setForm] = useState({
-//     title: liveClass?.title || "",
-//     description: liveClass?.description || "",
+//     title: liveClass?.title || "", description: liveClass?.description || "",
 //     scheduledAt: liveClass?.scheduledAt ? new Date(liveClass.scheduledAt).toISOString().slice(0, 16) : "",
-//     duration: liveClass?.duration || 60,
-//     platform: liveClass?.platform || "zoom",
-//     price: liveClass?.price || 0,
-//     isFree: liveClass?.isFree ?? true,
-//     maxParticipants: liveClass?.maxParticipants || 100,
-//     urlSendMinutesBefore: liveClass?.urlSendMinutesBefore || 30,
-//     meetingUrl: liveClass?.meetingUrl || "",
-//     meetingId: liveClass?.meetingId || "",
-//     meetingPassword: liveClass?.meetingPassword || "",
-//     tags: liveClass?.tags?.join(",") || "",
+//     duration: liveClass?.duration || 60, platform: liveClass?.platform || "zoom",
+//     price: liveClass?.price || 0, isFree: liveClass?.isFree ?? true,
+//     maxParticipants: liveClass?.maxParticipants || 100, urlSendMinutesBefore: liveClass?.urlSendMinutesBefore || 30,
+//     meetingUrl: liveClass?.meetingUrl || "", meetingId: liveClass?.meetingId || "",
+//     meetingPassword: liveClass?.meetingPassword || "", tags: liveClass?.tags?.join(",") || "",
 //   });
 //   const [thumbnail, setThumbnail] = useState(null);
 //   const [saving, setSaving] = useState(false);
@@ -4205,27 +2165,15 @@
 //     if (!form.title) { toast("Title is required", "error"); return; }
 //     if (!form.scheduledAt) { toast("Schedule date/time is required", "error"); return; }
 //     setSaving(true);
-
 //     const authToken = localStorage.getItem("token");
 //     const fd = new FormData();
 //     Object.entries(form).forEach(([k, v]) => fd.append(k, String(v)));
 //     if (thumbnail) fd.append("thumbnail", thumbnail);
-
 //     const url = isEdit ? `/live-classes/${liveClass._id}` : "/live-classes";
-//     const method = isEdit ? "PUT" : "POST";
-
-//     const res = await fetch(`${API_BASE}${url}`, {
-//       method,
-//       headers: { Authorization: `Bearer ${authToken}` },
-//       body: fd
-//     }).then(r => r.json());
-
+//     const res = await fetch(`${API_BASE}${url}`, { method: isEdit ? "PUT" : "POST", headers: { Authorization: `Bearer ${authToken}` }, body: fd }).then(r => r.json());
 //     setSaving(false);
-//     if (res.success) {
-//       toast(`Live class ${isEdit ? "updated" : "created"}! ✅`, "success");
-//       onSave();
-//       onClose();
-//     } else toast(res.message || "Failed", "error");
+//     if (res.success) { toast(`Live class ${isEdit ? "updated" : "created"}! ✅`, "success"); onSave(); onClose(); }
+//     else toast(res.message || "Failed", "error");
 //   };
 
 //   return (
@@ -4234,88 +2182,25 @@
 //         <button className="modal-close" onClick={onClose}>✕</button>
 //         <div className="modal-title">{isEdit ? "✏️ Edit Live Class" : "📡 Create Live Class"}</div>
 //         <div className="modal-sub">{isEdit ? `Editing: ${liveClass.title}` : "Schedule a new live session"}</div>
-
 //         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, maxHeight: "70vh", overflowY: "auto", paddingRight: 4 }}>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Class Title *</label><input className="form-input" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Description</label><textarea rows={3} className="form-input" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Schedule Date & Time *</label><input type="datetime-local" className="form-input" value={form.scheduledAt} onChange={e => setForm(p => ({ ...p, scheduledAt: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Duration (minutes)</label><input type="number" className="form-input" value={form.duration} onChange={e => setForm(p => ({ ...p, duration: Number(e.target.value) }))} /></div>
+//           <div className="form-group"><label className="form-label">Platform</label><select className="form-input" value={form.platform} onChange={e => setForm(p => ({ ...p, platform: e.target.value }))}>{["zoom","google_meet","teams","youtube_live","other"].map(pl => <option key={pl} value={pl}>{pl.replace("_"," ").replace(/\b\w/g,c=>c.toUpperCase())}</option>)}</select></div>
+//           <div className="form-group"><label className="form-label">Max Participants</label><input type="number" className="form-input" value={form.maxParticipants} onChange={e => setForm(p => ({ ...p, maxParticipants: Number(e.target.value) }))} /></div>
+//           <div className="form-group"><label className="form-label">Price (₹)</label><input type="number" className="form-input" value={form.price} onChange={e => setForm(p => ({ ...p, price: Number(e.target.value) }))} disabled={form.isFree} /></div>
+//           <div className="form-group"><label className="form-label">Send URL (minutes before)</label><input type="number" className="form-input" value={form.urlSendMinutesBefore} onChange={e => setForm(p => ({ ...p, urlSendMinutesBefore: Number(e.target.value) }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Meeting URL</label><input className="form-input" placeholder="https://zoom.us/j/..." value={form.meetingUrl} onChange={e => setForm(p => ({ ...p, meetingUrl: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Meeting ID</label><input className="form-input" value={form.meetingId} onChange={e => setForm(p => ({ ...p, meetingId: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Meeting Password</label><input className="form-input" value={form.meetingPassword} onChange={e => setForm(p => ({ ...p, meetingPassword: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Thumbnail</label><FileUploadArea accept="image/*" onFile={setThumbnail} file={thumbnail} label="Upload thumbnail" icon="🖼️" /></div>
 //           <div className="form-group" style={{ gridColumn: "1/-1" }}>
-//             <label className="form-label">Class Title *</label>
-//             <input className="form-input" placeholder="e.g. React Hooks Deep Dive" value={form.title}
-//               onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
-//           </div>
-//           <div className="form-group" style={{ gridColumn: "1/-1" }}>
-//             <label className="form-label">Description</label>
-//             <textarea rows={3} className="form-input" placeholder="What will be covered in this session?" value={form.description}
-//               onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Schedule Date & Time *</label>
-//             <input type="datetime-local" className="form-input" value={form.scheduledAt}
-//               onChange={e => setForm(p => ({ ...p, scheduledAt: e.target.value }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Duration (minutes)</label>
-//             <input type="number" className="form-input" value={form.duration}
-//               onChange={e => setForm(p => ({ ...p, duration: Number(e.target.value) }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Platform</label>
-//             <select className="form-input" value={form.platform} onChange={e => setForm(p => ({ ...p, platform: e.target.value }))}>
-//               {["zoom", "google_meet", "teams", "youtube_live", "other"].map(pl => (
-//                 <option key={pl} value={pl}>{pl.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase())}</option>
-//               ))}
-//             </select>
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Max Participants</label>
-//             <input type="number" className="form-input" value={form.maxParticipants}
-//               onChange={e => setForm(p => ({ ...p, maxParticipants: Number(e.target.value) }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Price (₹)</label>
-//             <input type="number" className="form-input" value={form.price}
-//               onChange={e => setForm(p => ({ ...p, price: Number(e.target.value) }))} disabled={form.isFree} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Send URL (minutes before class)</label>
-//             <input type="number" className="form-input" value={form.urlSendMinutesBefore}
-//               onChange={e => setForm(p => ({ ...p, urlSendMinutesBefore: Number(e.target.value) }))} />
-//           </div>
-//           <div className="form-group" style={{ gridColumn: "1/-1" }}>
-//             <label className="form-label">Meeting URL</label>
-//             <input className="form-input" placeholder="https://zoom.us/j/..." value={form.meetingUrl}
-//               onChange={e => setForm(p => ({ ...p, meetingUrl: e.target.value }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Meeting ID</label>
-//             <input className="form-input" placeholder="Optional" value={form.meetingId}
-//               onChange={e => setForm(p => ({ ...p, meetingId: e.target.value }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Meeting Password</label>
-//             <input className="form-input" placeholder="Optional" value={form.meetingPassword}
-//               onChange={e => setForm(p => ({ ...p, meetingPassword: e.target.value }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Tags</label>
-//             <input className="form-input" placeholder="react,hooks,live (comma separated)" value={form.tags}
-//               onChange={e => setForm(p => ({ ...p, tags: e.target.value }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Thumbnail</label>
-//             <FileUploadArea accept="image/*" onFile={setThumbnail} file={thumbnail} label="Upload thumbnail" icon="🖼️" />
-//           </div>
-//           <div className="form-group" style={{ gridColumn: "1/-1", display: "flex", gap: 24 }}>
-//             <div className="checkbox-row">
-//               <input type="checkbox" id="lc-free" checked={form.isFree}
-//                 onChange={e => setForm(p => ({ ...p, isFree: e.target.checked, price: e.target.checked ? 0 : p.price }))} />
-//               <label htmlFor="lc-free">Free Class</label>
-//             </div>
+//             <div className="checkbox-row"><input type="checkbox" id="lc-free" checked={form.isFree} onChange={e => setForm(p => ({ ...p, isFree: e.target.checked, price: e.target.checked ? 0 : p.price }))} /><label htmlFor="lc-free">Free Class</label></div>
 //           </div>
 //         </div>
-
 //         <div style={{ display: "flex", gap: 10, marginTop: 24, paddingTop: 20, borderTop: "1px solid var(--border)" }}>
-//           <button className="btn btn-primary" onClick={submit} disabled={saving}>
-//             {saving ? "Saving…" : isEdit ? "Update Live Class" : "Create Live Class"}
-//           </button>
+//           <button className="btn btn-primary" onClick={submit} disabled={saving}>{saving ? "Saving…" : isEdit ? "Update Live Class" : "Create Live Class"}</button>
 //           <button className="btn btn-outline" onClick={onClose}>Cancel</button>
 //         </div>
 //       </div>
@@ -4323,19 +2208,13 @@
 //   );
 // }
 
-// // ── Notes Form Modal ─────────────────────────────────────────────
 // function NotesFormModal({ note, onClose, onSave, authFetch, toast }) {
 //   const isEdit = !!note;
 //   const [form, setForm] = useState({
-//     title: note?.title || "",
-//     description: note?.description || "",
-//     price: note?.price || "",
-//     discountPrice: note?.discountPrice || "",
-//     category: note?.category || "",
-//     tags: note?.tags?.join(",") || "",
-//     previewPages: note?.previewPages || 0,
-//     isFree: note?.isFree || false,
-//     isPublished: note?.isPublished ?? true,
+//     title: note?.title || "", description: note?.description || "",
+//     price: note?.price || "", discountPrice: note?.discountPrice || "",
+//     category: note?.category || "", tags: note?.tags?.join(",") || "",
+//     previewPages: note?.previewPages || 0, isFree: note?.isFree || false, isPublished: note?.isPublished ?? true,
 //   });
 //   const [docFile, setDocFile] = useState(null);
 //   const [thumbnail, setThumbnail] = useState(null);
@@ -4345,35 +2224,22 @@
 //   const submit = async () => {
 //     if (!form.title) { toast("Title is required", "error"); return; }
 //     if (!isEdit && !docFile) { toast("Document file is required", "error"); return; }
-//     setSaving(true);
-//     setProgress(0);
-
+//     setSaving(true); setProgress(0);
 //     const authToken = localStorage.getItem("token");
 //     const fd = new FormData();
 //     Object.entries(form).forEach(([k, v]) => fd.append(k, String(v)));
 //     if (docFile) fd.append("document", docFile);
 //     if (thumbnail) fd.append("thumbnail", thumbnail);
-
-//     const url = isEdit ? `/notes/${note._id}` : "/notes";
-//     const method = isEdit ? "PUT" : "POST";
-
 //     const xhr = new XMLHttpRequest();
-//     xhr.open(method, `${API_BASE}${url}`);
+//     xhr.open(isEdit ? "PUT" : "POST", `${API_BASE}${isEdit ? `/notes/${note._id}` : "/notes"}`);
 //     xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
-
-//     xhr.upload.onprogress = (e) => {
-//       if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
-//     };
-
+//     xhr.upload.onprogress = (e) => { if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100)); };
 //     xhr.onload = () => {
 //       setSaving(false);
 //       try {
 //         const res = JSON.parse(xhr.responseText);
-//         if (res.success) {
-//           toast(`Notes ${isEdit ? "updated" : "uploaded"}! ✅`, "success");
-//           onSave();
-//           onClose();
-//         } else toast(res.message || "Failed", "error");
+//         if (res.success) { toast(`Notes ${isEdit ? "updated" : "uploaded"}! ✅`, "success"); onSave(); onClose(); }
+//         else toast(res.message || "Failed", "error");
 //       } catch { toast("Failed", "error"); }
 //     };
 //     xhr.onerror = () => { setSaving(false); toast("Network error", "error"); };
@@ -4386,88 +2252,29 @@
 //         <button className="modal-close" onClick={onClose}>✕</button>
 //         <div className="modal-title">{isEdit ? "✏️ Edit Notes" : "📄 Upload Notes"}</div>
 //         <div className="modal-sub">{isEdit ? `Editing: ${note.title}` : "Upload study material for students"}</div>
-
 //         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, maxHeight: "70vh", overflowY: "auto", paddingRight: 4 }}>
-//           <div className="form-group" style={{ gridColumn: "1/-1" }}>
-//             <label className="form-label">Title *</label>
-//             <input className="form-input" placeholder="e.g. React Complete Notes PDF" value={form.title}
-//               onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
-//           </div>
-//           <div className="form-group" style={{ gridColumn: "1/-1" }}>
-//             <label className="form-label">Description</label>
-//             <textarea rows={3} className="form-input" placeholder="What does this document cover?" value={form.description}
-//               onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Price (₹) {!form.isFree && "*"}</label>
-//             <input type="number" className="form-input" placeholder="e.g. 99" value={form.price}
-//               onChange={e => setForm(p => ({ ...p, price: e.target.value }))} disabled={form.isFree} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Discount Price (₹)</label>
-//             <input type="number" className="form-input" placeholder="e.g. 49" value={form.discountPrice}
-//               onChange={e => setForm(p => ({ ...p, discountPrice: e.target.value }))} disabled={form.isFree} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Category</label>
-//             <input className="form-input" placeholder="e.g. Web Development" value={form.category}
-//               onChange={e => setForm(p => ({ ...p, category: e.target.value }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Tags</label>
-//             <input className="form-input" placeholder="react,javascript (comma separated)" value={form.tags}
-//               onChange={e => setForm(p => ({ ...p, tags: e.target.value }))} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Free Preview Pages</label>
-//             <input type="number" className="form-input" placeholder="0 = no preview" value={form.previewPages}
-//               onChange={e => setForm(p => ({ ...p, previewPages: e.target.value }))} />
-//             <div className="form-hint">Number of pages visible without purchase</div>
-//           </div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Title *</label><input className="form-input" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Description</label><textarea rows={3} className="form-input" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Price (₹)</label><input type="number" className="form-input" value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} disabled={form.isFree} /></div>
+//           <div className="form-group"><label className="form-label">Discount Price (₹)</label><input type="number" className="form-input" value={form.discountPrice} onChange={e => setForm(p => ({ ...p, discountPrice: e.target.value }))} disabled={form.isFree} /></div>
+//           <div className="form-group"><label className="form-label">Category</label><input className="form-input" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Tags</label><input className="form-input" placeholder="react,javascript" value={form.tags} onChange={e => setForm(p => ({ ...p, tags: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Free Preview Pages</label><input type="number" className="form-input" value={form.previewPages} onChange={e => setForm(p => ({ ...p, previewPages: e.target.value }))} /></div>
 //           <div className="form-group" style={{ display: "flex", gap: 24, alignItems: "center", paddingTop: 24 }}>
-//             <div className="checkbox-row">
-//               <input type="checkbox" id="nf-free" checked={form.isFree}
-//                 onChange={e => setForm(p => ({ ...p, isFree: e.target.checked, price: e.target.checked ? "0" : p.price }))} />
-//               <label htmlFor="nf-free">Free Notes</label>
-//             </div>
-//             <div className="checkbox-row">
-//               <input type="checkbox" id="nf-pub" checked={form.isPublished}
-//                 onChange={e => setForm(p => ({ ...p, isPublished: e.target.checked }))} />
-//               <label htmlFor="nf-pub">Published</label>
-//             </div>
+//             <div className="checkbox-row"><input type="checkbox" id="nf-free" checked={form.isFree} onChange={e => setForm(p => ({ ...p, isFree: e.target.checked, price: e.target.checked ? "0" : p.price }))} /><label htmlFor="nf-free">Free Notes</label></div>
+//             <div className="checkbox-row"><input type="checkbox" id="nf-pub" checked={form.isPublished} onChange={e => setForm(p => ({ ...p, isPublished: e.target.checked }))} /><label htmlFor="nf-pub">Published</label></div>
 //           </div>
-//           <div className="form-group" style={{ gridColumn: "1/-1" }}>
-//             <label className="form-label">Document File {!isEdit && "*"}</label>
-//             <FileUploadArea
-//               accept=".pdf,.docx,.ppt,.pptx,.xlsx,.xls"
-//               onFile={setDocFile}
-//               file={docFile}
-//               label={isEdit ? "Upload new file (leave empty to keep current)" : "Click or drag document here"}
-//               hint="Supported: PDF, DOCX, PPT, XLSX"
-//               icon="📄"
-//             />
-//           </div>
-//           <div className="form-group" style={{ gridColumn: "1/-1" }}>
-//             <label className="form-label">Thumbnail Image</label>
-//             <FileUploadArea accept="image/*" onFile={setThumbnail} file={thumbnail} label="Upload thumbnail (optional)" icon="🖼️" />
-//           </div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Document File {!isEdit && "*"}</label><FileUploadArea accept=".pdf,.docx,.ppt,.pptx,.xlsx,.xls" onFile={setDocFile} file={docFile} label={isEdit ? "Upload new file (leave empty to keep current)" : "Click or drag document here"} hint="Supported: PDF, DOCX, PPT, XLSX" icon="📄" /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Thumbnail</label><FileUploadArea accept="image/*" onFile={setThumbnail} file={thumbnail} label="Upload thumbnail (optional)" icon="🖼️" /></div>
 //         </div>
-
 //         {saving && progress > 0 && (
 //           <div className="upload-progress" style={{ marginTop: 12 }}>
-//             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "var(--text2)", marginBottom: 6 }}>
-//               <span>Uploading…</span><span>{progress}%</span>
-//             </div>
-//             <div className="progress-bar-wrap">
-//               <div className="progress-bar" style={{ width: `${progress}%` }} />
-//             </div>
+//             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "var(--text2)", marginBottom: 6 }}><span>Uploading…</span><span>{progress}%</span></div>
+//             <div className="progress-bar-wrap"><div className="progress-bar" style={{ width: `${progress}%` }} /></div>
 //           </div>
 //         )}
-
 //         <div style={{ display: "flex", gap: 10, marginTop: 24, paddingTop: 20, borderTop: "1px solid var(--border)" }}>
-//           <button className="btn btn-primary" onClick={submit} disabled={saving}>
-//             {saving ? `Uploading ${progress}%…` : isEdit ? "Update Notes" : "Upload Notes"}
-//           </button>
+//           <button className="btn btn-primary" onClick={submit} disabled={saving}>{saving ? `Uploading ${progress}%…` : isEdit ? "Update Notes" : "Upload Notes"}</button>
 //           <button className="btn btn-outline" onClick={onClose}>Cancel</button>
 //         </div>
 //       </div>
@@ -4475,7 +2282,6 @@
 //   );
 // }
 
-// // ── Live Class Status / Meeting URL Panel ────────────────────────
 // function LiveClassActionsModal({ liveClass, onClose, authFetch, toast, onSave }) {
 //   const [status, setStatus] = useState(liveClass.status);
 //   const [meetingUrl, setMeetingUrl] = useState(liveClass.meetingUrl || "");
@@ -4485,10 +2291,7 @@
 
 //   const updateStatus = async () => {
 //     setSaving(true);
-//     const res = await authFetch(`/live-classes/${liveClass._id}/status`, {
-//       method: "PATCH",
-//       body: JSON.stringify({ status })
-//     });
+//     const res = await authFetch(`/live-classes/${liveClass._id}/status`, { method: "PATCH", body: JSON.stringify({ status }) });
 //     setSaving(false);
 //     if (res.success) { toast(`Status updated to ${status}`, "success"); onSave(); }
 //     else toast(res.message || "Failed", "error");
@@ -4496,10 +2299,7 @@
 
 //   const updateMeeting = async () => {
 //     setSaving(true);
-//     const res = await authFetch(`/live-classes/${liveClass._id}/meeting-url`, {
-//       method: "PATCH",
-//       body: JSON.stringify({ meetingUrl, meetingId, meetingPassword })
-//     });
+//     const res = await authFetch(`/live-classes/${liveClass._id}/meeting-url`, { method: "PATCH", body: JSON.stringify({ meetingUrl, meetingId, meetingPassword }) });
 //     setSaving(false);
 //     if (res.success) { toast("Meeting details updated! ✅", "success"); onSave(); }
 //     else toast(res.message || "Failed", "error");
@@ -4521,43 +2321,22 @@
 //         <button className="modal-close" onClick={onClose}>✕</button>
 //         <div className="modal-title">⚙️ Manage Live Class</div>
 //         <div className="modal-sub">{liveClass.title}</div>
-
 //         <div style={{ marginBottom: 24 }}>
 //           <div style={{ fontWeight: 700, fontSize: "0.88rem", marginBottom: 12 }}>📌 Update Status</div>
 //           <select className="form-input" value={status} onChange={e => setStatus(e.target.value)}>
-//             {["upcoming", "live", "completed", "cancelled"].map(s => (
-//               <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-//             ))}
+//             {["upcoming","live","completed","cancelled"].map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>)}
 //           </select>
-//           <button className="btn btn-primary btn-sm" style={{ marginTop: 10 }} onClick={updateStatus} disabled={saving}>
-//             Update Status
-//           </button>
+//           <button className="btn btn-primary btn-sm" style={{ marginTop: 10 }} onClick={updateStatus} disabled={saving}>Update Status</button>
 //         </div>
-
 //         <hr className="divider" />
-
 //         <div style={{ marginBottom: 24 }}>
 //           <div style={{ fontWeight: 700, fontSize: "0.88rem", marginBottom: 12 }}>🔗 Meeting Details</div>
-//           <div className="form-group">
-//             <label className="form-label">Meeting URL</label>
-//             <input className="form-input" placeholder="https://zoom.us/j/..." value={meetingUrl}
-//               onChange={e => setMeetingUrl(e.target.value)} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Meeting ID</label>
-//             <input className="form-input" placeholder="Optional" value={meetingId}
-//               onChange={e => setMeetingId(e.target.value)} />
-//           </div>
-//           <div className="form-group">
-//             <label className="form-label">Meeting Password</label>
-//             <input className="form-input" placeholder="Optional" value={meetingPassword}
-//               onChange={e => setMeetingPassword(e.target.value)} />
-//           </div>
+//           <div className="form-group"><label className="form-label">Meeting URL</label><input className="form-input" placeholder="https://zoom.us/j/..." value={meetingUrl} onChange={e => setMeetingUrl(e.target.value)} /></div>
+//           <div className="form-group"><label className="form-label">Meeting ID</label><input className="form-input" value={meetingId} onChange={e => setMeetingId(e.target.value)} /></div>
+//           <div className="form-group"><label className="form-label">Meeting Password</label><input className="form-input" value={meetingPassword} onChange={e => setMeetingPassword(e.target.value)} /></div>
 //           <div style={{ display: "flex", gap: 10 }}>
 //             <button className="btn btn-primary btn-sm" onClick={updateMeeting} disabled={saving}>Save Meeting Details</button>
-//             <button className="btn btn-accent btn-sm" onClick={sendUrlToAll} disabled={saving}>
-//               📨 Send URL to All ({liveClass.registrations?.length || 0})
-//             </button>
+//             <button className="btn btn-accent btn-sm" onClick={sendUrlToAll} disabled={saving}>📨 Send URL to All ({liveClass.registrations?.length || 0})</button>
 //           </div>
 //         </div>
 //       </div>
@@ -4565,7 +2344,6 @@
 //   );
 // }
 
-// // ── Main Admin Page ──────────────────────────────────────────────
 // function AdminPage({ navigate }) {
 //   const { user, authFetch, isAdmin } = useAuth();
 //   const toast = useToast();
@@ -4577,9 +2355,8 @@
 //   const [users, setUsers] = useState([]);
 //   const [payments, setPayments] = useState([]);
 
-//   // Modal states
 //   const [videoManagerCourse, setVideoManagerCourse] = useState(null);
-//   const [courseFormData, setCourseFormData] = useState(null); // null = closed, {} = new, {...} = edit
+//   const [courseFormData, setCourseFormData] = useState(null);
 //   const [liveFormData, setLiveFormData] = useState(null);
 //   const [notesFormData, setNotesFormData] = useState(null);
 //   const [liveActionsData, setLiveActionsData] = useState(null);
@@ -4592,9 +2369,7 @@
 //   const loadSection = useCallback((s) => {
 //     setSection(s);
 //     if (s === "courses") authFetch("/courses/admin/all").then(d => { if (d.success) setCourses(d.data || d.courses || []); });
-//     if (s === "live") authFetch("/live-classes/admin/all").then(d => {
-//       if (d.success) setLiveClasses(d.data || d.classes || d.liveClasses || []);
-//     });
+//     if (s === "live") authFetch("/live-classes/admin/all").then(d => { if (d.success) setLiveClasses(d.data || d.classes || d.liveClasses || []); });
 //     if (s === "notes") authFetch("/notes/admin/all").then(d => { if (d.success) setNotes(d.data || d.notes || []); });
 //     if (s === "users") authFetch("/admin/users").then(d => { if (d.success) setUsers(d.data || d.users || []); });
 //     if (s === "payments") authFetch("/payments/admin/all").then(d => { if (d.success) setPayments(d.data || d.payments || []); });
@@ -4658,54 +2433,13 @@
 
 //   return (
 //     <div className="page">
-//       {/* Modals */}
-//       {videoManagerCourse && (
-//         <VideoManagerModal
-//           course={videoManagerCourse}
-//           onClose={() => setVideoManagerCourse(null)}
-//           authFetch={authFetch}
-//           toast={toast}
-//         />
-//       )}
-//       {courseFormData !== null && (
-//         <CourseFormModal
-//           course={Object.keys(courseFormData).length > 0 ? courseFormData : null}
-//           onClose={() => setCourseFormData(null)}
-//           onSave={() => loadSection("courses")}
-//           authFetch={authFetch}
-//           toast={toast}
-//         />
-//       )}
-//       {liveFormData !== null && (
-//         <LiveClassFormModal
-//           liveClass={Object.keys(liveFormData).length > 0 ? liveFormData : null}
-//           onClose={() => setLiveFormData(null)}
-//           onSave={() => loadSection("live")}
-//           authFetch={authFetch}
-//           toast={toast}
-//         />
-//       )}
-//       {notesFormData !== null && (
-//         <NotesFormModal
-//           note={Object.keys(notesFormData).length > 0 ? notesFormData : null}
-//           onClose={() => setNotesFormData(null)}
-//           onSave={() => loadSection("notes")}
-//           authFetch={authFetch}
-//           toast={toast}
-//         />
-//       )}
-//       {liveActionsData && (
-//         <LiveClassActionsModal
-//           liveClass={liveActionsData}
-//           onClose={() => setLiveActionsData(null)}
-//           authFetch={authFetch}
-//           toast={toast}
-//           onSave={() => loadSection("live")}
-//         />
-//       )}
+//       {videoManagerCourse && <VideoManagerModal course={videoManagerCourse} onClose={() => setVideoManagerCourse(null)} authFetch={authFetch} toast={toast} />}
+//       {courseFormData !== null && <CourseFormModal course={Object.keys(courseFormData).length > 0 ? courseFormData : null} onClose={() => setCourseFormData(null)} onSave={() => loadSection("courses")} authFetch={authFetch} toast={toast} />}
+//       {liveFormData !== null && <LiveClassFormModal liveClass={Object.keys(liveFormData).length > 0 ? liveFormData : null} onClose={() => setLiveFormData(null)} onSave={() => loadSection("live")} authFetch={authFetch} toast={toast} />}
+//       {notesFormData !== null && <NotesFormModal note={Object.keys(notesFormData).length > 0 ? notesFormData : null} onClose={() => setNotesFormData(null)} onSave={() => loadSection("notes")} authFetch={authFetch} toast={toast} />}
+//       {liveActionsData && <LiveClassActionsModal liveClass={liveActionsData} onClose={() => setLiveActionsData(null)} authFetch={authFetch} toast={toast} onSave={() => loadSection("live")} />}
 
 //       <div className="admin-layout">
-//         {/* Sidebar */}
 //         <div className="admin-sidebar">
 //           <div style={{ padding: "0 20px 16px", borderBottom: "1px solid var(--border)", marginBottom: 8 }}>
 //             <div style={{ fontWeight: 700, fontSize: "0.78rem", color: "var(--text3)", textTransform: "uppercase", letterSpacing: 1 }}>Admin Panel</div>
@@ -4717,272 +2451,220 @@
 //           ))}
 //         </div>
 
-//         {/* Content */}
 //         <div className="admin-content">
 
-//           {/* ── DASHBOARD ── */}
 //           {section === "dashboard" && (
 //             <>
-//               <div className="admin-header">
-//                 <div className="admin-title">Platform Overview</div>
-//                 <div className="admin-sub">Welcome back, {user?.name}</div>
-//               </div>
+//               <Reveal>
+//                 <div className="admin-header">
+//                   <div className="admin-title">Platform Overview</div>
+//                   <div className="admin-sub">Welcome back, {user?.name}</div>
+//                 </div>
+//               </Reveal>
 //               {stats ? (
 //                 <div className="stats-grid">
-//                   {[["👥", stats.totalUsers || 0, "Total Users"], ["📚", stats.totalCourses || 0, "Courses"], ["📡", stats.totalLiveClasses || 0, "Live Classes"], ["📄", stats.totalNotes || 0, "Notes"], ["💳", stats.totalPayments || 0, "Payments"], ["💰", `₹${(stats.totalRevenue || 0).toLocaleString()}`, "Revenue"]].map(([icon, num, label]) => (
-//                     <div key={label} className="stat-card">
-//                       <div className="stat-card-icon">{icon}</div>
-//                       <div className="stat-card-num">{num}</div>
-//                       <div className="stat-card-label">{label}</div>
-//                     </div>
+//                   {[["👥", stats.totalUsers||0,"Total Users"],["📚",stats.totalCourses||0,"Courses"],["📡",stats.totalLiveClasses||0,"Live Classes"],["📄",stats.totalNotes||0,"Notes"],["💳",stats.totalPayments||0,"Payments"],["💰",`₹${(stats.totalRevenue||0).toLocaleString()}`,"Revenue"]].map(([icon,num,label],i) => (
+//                     <Reveal key={label} delay={i*70}>
+//                       <div className="stat-card">
+//                         <div className="stat-card-icon">{icon}</div>
+//                         <div className="stat-card-num">{num}</div>
+//                         <div className="stat-card-label">{label}</div>
+//                       </div>
+//                     </Reveal>
 //                   ))}
 //                 </div>
 //               ) : <div className="spinner" />}
-//               <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 24 }}>
-//                 <h3 style={{ fontWeight: 700, marginBottom: 16 }}>⚡ Quick Actions</h3>
-//                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-//                   <button className="btn btn-primary" onClick={() => { setCourseFormData({}); loadSection("courses"); }}>+ New Course</button>
-//                   <button className="btn btn-outline" onClick={() => { setLiveFormData({}); loadSection("live"); }}>+ New Live Class</button>
-//                   <button className="btn btn-outline" onClick={() => { setNotesFormData({}); loadSection("notes"); }}>+ Upload Notes</button>
-//                   <button className="btn btn-outline" onClick={() => loadSection("users")}>View Users</button>
-//                   <button className="btn btn-outline" onClick={() => loadSection("payments")}>View Payments</button>
+//               <Reveal delay={200}>
+//                 <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 24 }}>
+//                   <h3 style={{ fontWeight: 700, marginBottom: 16 }}>⚡ Quick Actions</h3>
+//                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+//                     <button className="btn btn-primary" onClick={() => { setCourseFormData({}); loadSection("courses"); }}>+ New Course</button>
+//                     <button className="btn btn-outline" onClick={() => { setLiveFormData({}); loadSection("live"); }}>+ New Live Class</button>
+//                     <button className="btn btn-outline" onClick={() => { setNotesFormData({}); loadSection("notes"); }}>+ Upload Notes</button>
+//                     <button className="btn btn-outline" onClick={() => loadSection("users")}>View Users</button>
+//                     <button className="btn btn-outline" onClick={() => loadSection("payments")}>View Payments</button>
+//                   </div>
 //                 </div>
-//               </div>
+//               </Reveal>
 //             </>
 //           )}
 
-//           {/* ── COURSES ── */}
 //           {section === "courses" && (
 //             <>
-//               <div className="admin-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-//                 <div>
-//                   <div className="admin-title">Courses</div>
-//                   <div className="admin-sub">{courses.length} total courses</div>
+//               <Reveal>
+//                 <div className="admin-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+//                   <div><div className="admin-title">Courses</div><div className="admin-sub">{courses.length} total courses</div></div>
+//                   <button className="btn btn-primary" onClick={() => setCourseFormData({})}>+ New Course</button>
 //                 </div>
-//                 <button className="btn btn-primary" onClick={() => setCourseFormData({})}>+ New Course</button>
-//               </div>
-
-//               <div className="table-wrap">
-//                 <table>
-//                   <thead>
-//                     <tr>
-//                       <th>Title</th>
-//                       <th>Category</th>
-//                       <th>Level</th>
-//                       <th>Price</th>
-//                       <th>Videos</th>
-//                       <th>Students</th>
-//                       <th>Status</th>
-//                       <th>Actions</th>
-//                     </tr>
-//                   </thead>
-//                   <tbody>
-//                     {courses.map(c => (
-//                       <tr key={c._id}>
-//                         <td style={{ fontWeight: 600, maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.title}</td>
-//                         <td>{c.category || "—"}</td>
-//                         <td><span className="badge badge-primary">{c.level}</span></td>
-//                         <td>{c.isFree ? <span className="badge badge-green">FREE</span> : `₹${c.discountPrice ?? c.price}`}</td>
-//                         <td style={{ textAlign: "center" }}>{c.videos?.length || 0}</td>
-//                         <td style={{ textAlign: "center" }}>{c.totalStudents || 0}</td>
-//                         <td><span className={`badge ${c.isPublished ? "badge-green" : "badge-yellow"}`}>{c.isPublished ? "Published" : "Draft"}</span></td>
-//                         <td>
-//                           <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-//                             <button className="btn btn-primary btn-sm" onClick={() => setVideoManagerCourse(c)} title="Manage Videos">🎬 Videos</button>
-//                             <button className="btn btn-outline btn-sm" onClick={() => setCourseFormData(c)} title="Edit">✏️</button>
-//                             <button className="btn btn-outline btn-sm" onClick={() => togglePublishCourse(c._id, c.isPublished)}>
-//                               {c.isPublished ? "Unpublish" : "Publish"}
-//                             </button>
-//                             <button className="btn btn-danger btn-sm" onClick={() => deleteCourse(c._id)}>🗑️</button>
-//                           </div>
-//                         </td>
-//                       </tr>
-//                     ))}
-//                     {courses.length === 0 && (
-//                       <tr><td colSpan={8} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>
-//                         No courses yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => setCourseFormData({})}>Create one →</span>
-//                       </td></tr>
-//                     )}
-//                   </tbody>
-//                 </table>
-//               </div>
+//               </Reveal>
+//               <Reveal delay={80}>
+//                 <div className="table-wrap">
+//                   <table>
+//                     <thead><tr><th>Title</th><th>Category</th><th>Level</th><th>Price</th><th>Videos</th><th>Students</th><th>Status</th><th>Actions</th></tr></thead>
+//                     <tbody>
+//                       {courses.map(c => (
+//                         <tr key={c._id}>
+//                           <td style={{ fontWeight: 600, maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.title}</td>
+//                           <td>{c.category || "—"}</td>
+//                           <td><span className="badge badge-primary">{c.level}</span></td>
+//                           <td>{c.isFree ? <span className="badge badge-green">FREE</span> : `₹${c.discountPrice ?? c.price}`}</td>
+//                           <td style={{ textAlign: "center" }}>{c.videos?.length || 0}</td>
+//                           <td style={{ textAlign: "center" }}>{c.totalStudents || 0}</td>
+//                           <td><span className={`badge ${c.isPublished ? "badge-green" : "badge-yellow"}`}>{c.isPublished ? "Published" : "Draft"}</span></td>
+//                           <td>
+//                             <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+//                               <button className="btn btn-primary btn-sm" onClick={() => setVideoManagerCourse(c)}>🎬 Videos</button>
+//                               <button className="btn btn-outline btn-sm" onClick={() => setCourseFormData(c)}>✏️</button>
+//                               <button className="btn btn-outline btn-sm" onClick={() => togglePublishCourse(c._id, c.isPublished)}>{c.isPublished ? "Unpublish" : "Publish"}</button>
+//                               <button className="btn btn-danger btn-sm" onClick={() => deleteCourse(c._id)}>🗑️</button>
+//                             </div>
+//                           </td>
+//                         </tr>
+//                       ))}
+//                       {courses.length === 0 && <tr><td colSpan={8} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>No courses yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => setCourseFormData({})}>Create one →</span></td></tr>}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </Reveal>
 //             </>
 //           )}
 
-//           {/* ── LIVE CLASSES ── */}
 //           {section === "live" && (
 //             <>
-//               <div className="admin-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-//                 <div>
-//                   <div className="admin-title">Live Classes</div>
-//                   <div className="admin-sub">{liveClasses.length} total classes</div>
+//               <Reveal>
+//                 <div className="admin-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+//                   <div><div className="admin-title">Live Classes</div><div className="admin-sub">{liveClasses.length} total classes</div></div>
+//                   <button className="btn btn-primary" onClick={() => setLiveFormData({})}>+ New Live Class</button>
 //                 </div>
-//                 <button className="btn btn-primary" onClick={() => setLiveFormData({})}>+ New Live Class</button>
-//               </div>
-
-//               <div className="table-wrap">
-//                 <table>
-//                   <thead>
-//                     <tr>
-//                       <th>Title</th>
-//                       <th>Scheduled</th>
-//                       <th>Platform</th>
-//                       <th>Price</th>
-//                       <th>Registered</th>
-//                       <th>Status</th>
-//                       <th>Actions</th>
-//                     </tr>
-//                   </thead>
-//                   <tbody>
-//                     {liveClasses.map(lc => (
-//                       <tr key={lc._id}>
-//                         <td style={{ fontWeight: 600, maxWidth: 180, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{lc.title}</td>
-//                         <td style={{ color: "var(--text2)", fontSize: "0.82rem", whiteSpace: "nowrap" }}>{new Date(lc.scheduledAt).toLocaleString("en-IN")}</td>
-//                         <td><span className="badge badge-cyan">{lc.platform}</span></td>
-//                         <td>{lc.isFree ? <span className="badge badge-green">FREE</span> : `₹${lc.price}`}</td>
-//                         <td>{lc.registrations?.length || 0} / {lc.maxParticipants}</td>
-//                         <td>
-//                           <span className={`badge ${lc.status === "live" ? "badge-accent" : lc.status === "upcoming" ? "badge-cyan" : lc.status === "completed" ? "badge-green" : "badge-yellow"}`}>
-//                             {lc.status}
-//                           </span>
-//                         </td>
-//                         <td>
-//                           <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-//                             <button className="btn btn-primary btn-sm" onClick={() => setLiveActionsData(lc)} title="Manage">⚙️ Manage</button>
-//                             <button className="btn btn-outline btn-sm" onClick={() => setLiveFormData(lc)} title="Edit">✏️</button>
-//                             <button className="btn btn-danger btn-sm" onClick={() => deleteLiveClass(lc._id)}>🗑️</button>
-//                           </div>
-//                         </td>
-//                       </tr>
-//                     ))}
-//                     {liveClasses.length === 0 && (
-//                       <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>
-//                         No live classes yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => setLiveFormData({})}>Schedule one →</span>
-//                       </td></tr>
-//                     )}
-//                   </tbody>
-//                 </table>
-//               </div>
+//               </Reveal>
+//               <Reveal delay={80}>
+//                 <div className="table-wrap">
+//                   <table>
+//                     <thead><tr><th>Title</th><th>Scheduled</th><th>Platform</th><th>Price</th><th>Registered</th><th>Status</th><th>Actions</th></tr></thead>
+//                     <tbody>
+//                       {liveClasses.map(lc => (
+//                         <tr key={lc._id}>
+//                           <td style={{ fontWeight: 600, maxWidth: 180, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{lc.title}</td>
+//                           <td style={{ color: "var(--text2)", fontSize: "0.82rem", whiteSpace: "nowrap" }}>{new Date(lc.scheduledAt).toLocaleString("en-IN")}</td>
+//                           <td><span className="badge badge-cyan">{lc.platform}</span></td>
+//                           <td>{lc.isFree ? <span className="badge badge-green">FREE</span> : `₹${lc.price}`}</td>
+//                           <td>{lc.registrations?.length||0} / {lc.maxParticipants}</td>
+//                           <td><span className={`badge ${lc.status==="live"?"badge-accent":lc.status==="upcoming"?"badge-cyan":lc.status==="completed"?"badge-green":"badge-yellow"}`}>{lc.status}</span></td>
+//                           <td>
+//                             <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+//                               <button className="btn btn-primary btn-sm" onClick={() => setLiveActionsData(lc)}>⚙️ Manage</button>
+//                               <button className="btn btn-outline btn-sm" onClick={() => setLiveFormData(lc)}>✏️</button>
+//                               <button className="btn btn-danger btn-sm" onClick={() => deleteLiveClass(lc._id)}>🗑️</button>
+//                             </div>
+//                           </td>
+//                         </tr>
+//                       ))}
+//                       {liveClasses.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>No live classes yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => setLiveFormData({})}>Schedule one →</span></td></tr>}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </Reveal>
 //             </>
 //           )}
 
-//           {/* ── NOTES ── */}
 //           {section === "notes" && (
 //             <>
-//               <div className="admin-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-//                 <div>
-//                   <div className="admin-title">Notes / Documents</div>
-//                   <div className="admin-sub">{notes.length} total documents</div>
+//               <Reveal>
+//                 <div className="admin-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+//                   <div><div className="admin-title">Notes / Documents</div><div className="admin-sub">{notes.length} total documents</div></div>
+//                   <button className="btn btn-primary" onClick={() => setNotesFormData({})}>+ Upload Notes</button>
 //                 </div>
-//                 <button className="btn btn-primary" onClick={() => setNotesFormData({})}>+ Upload Notes</button>
-//               </div>
-
-//               <div className="table-wrap">
-//                 <table>
-//                   <thead>
-//                     <tr>
-//                       <th>Title</th>
-//                       <th>Category</th>
-//                       <th>Type</th>
-//                       <th>Price</th>
-//                       <th>Downloads</th>
-//                       <th>Status</th>
-//                       <th>Actions</th>
-//                     </tr>
-//                   </thead>
-//                   <tbody>
-//                     {notes.map(n => (
-//                       <tr key={n._id}>
-//                         <td style={{ fontWeight: 600, maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{n.title}</td>
-//                         <td>{n.category || "—"}</td>
-//                         <td><span className="badge badge-yellow">{n.fileType?.toUpperCase() || "PDF"}</span></td>
-//                         <td>{n.isFree ? <span className="badge badge-green">FREE</span> : `₹${n.discountPrice ?? n.price}`}</td>
-//                         <td style={{ textAlign: "center" }}>{n.totalPurchases || 0}</td>
-//                         <td><span className={`badge ${n.isPublished ? "badge-green" : "badge-yellow"}`}>{n.isPublished ? "Published" : "Draft"}</span></td>
-//                         <td>
-//                           <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-//                             <button className="btn btn-outline btn-sm" onClick={() => setNotesFormData(n)}>✏️ Edit</button>
-//                             <button className="btn btn-outline btn-sm" onClick={() => togglePublishNotes(n._id, n.isPublished)}>
-//                               {n.isPublished ? "Unpublish" : "Publish"}
-//                             </button>
-//                             <button className="btn btn-danger btn-sm" onClick={() => deleteNotes(n._id)}>🗑️</button>
-//                           </div>
-//                         </td>
-//                       </tr>
-//                     ))}
-//                     {notes.length === 0 && (
-//                       <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>
-//                         No notes yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => setNotesFormData({})}>Upload some →</span>
-//                       </td></tr>
-//                     )}
-//                   </tbody>
-//                 </table>
-//               </div>
+//               </Reveal>
+//               <Reveal delay={80}>
+//                 <div className="table-wrap">
+//                   <table>
+//                     <thead><tr><th>Title</th><th>Category</th><th>Type</th><th>Price</th><th>Downloads</th><th>Status</th><th>Actions</th></tr></thead>
+//                     <tbody>
+//                       {notes.map(n => (
+//                         <tr key={n._id}>
+//                           <td style={{ fontWeight: 600, maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{n.title}</td>
+//                           <td>{n.category || "—"}</td>
+//                           <td><span className="badge badge-yellow">{n.fileType?.toUpperCase() || "PDF"}</span></td>
+//                           <td>{n.isFree ? <span className="badge badge-green">FREE</span> : `₹${n.discountPrice ?? n.price}`}</td>
+//                           <td style={{ textAlign: "center" }}>{n.totalPurchases || 0}</td>
+//                           <td><span className={`badge ${n.isPublished ? "badge-green" : "badge-yellow"}`}>{n.isPublished ? "Published" : "Draft"}</span></td>
+//                           <td>
+//                             <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+//                               <button className="btn btn-outline btn-sm" onClick={() => setNotesFormData(n)}>✏️ Edit</button>
+//                               <button className="btn btn-outline btn-sm" onClick={() => togglePublishNotes(n._id, n.isPublished)}>{n.isPublished ? "Unpublish" : "Publish"}</button>
+//                               <button className="btn btn-danger btn-sm" onClick={() => deleteNotes(n._id)}>🗑️</button>
+//                             </div>
+//                           </td>
+//                         </tr>
+//                       ))}
+//                       {notes.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>No notes yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => setNotesFormData({})}>Upload some →</span></td></tr>}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </Reveal>
 //             </>
 //           )}
 
-//           {/* ── USERS ── */}
 //           {section === "users" && (
 //             <>
-//               <div className="admin-header">
-//                 <div className="admin-title">Users</div>
-//                 <div className="admin-sub">{users.length} registered users</div>
-//               </div>
-//               <div className="table-wrap">
-//                 <table>
-//                   <thead>
-//                     <tr><th>Name</th><th>Email</th><th>Role</th><th>Courses</th><th>Joined</th><th>Status</th><th>Actions</th></tr>
-//                   </thead>
-//                   <tbody>
-//                     {users.map(u => (
-//                       <tr key={u._id}>
-//                         <td style={{ fontWeight: 600 }}>{u.name}</td>
-//                         <td style={{ color: "var(--text2)" }}>{u.email}</td>
-//                         <td><span className={`badge ${u.role === "admin" ? "badge-accent" : "badge-primary"}`}>{u.role}</span></td>
-//                         <td style={{ textAlign: "center" }}>{u.purchasedCourses?.length || 0}</td>
-//                         <td style={{ color: "var(--text3)", fontSize: "0.82rem" }}>{new Date(u.createdAt).toLocaleDateString()}</td>
-//                         <td><span className={`badge ${u.isActive ? "badge-green" : "badge-accent"}`}>{u.isActive ? "Active" : "Banned"}</span></td>
-//                         <td>
-//                           <button className="btn btn-outline btn-sm" onClick={() => toggleUser(u._id)}>
-//                             {u.isActive ? "Ban" : "Activate"}
-//                           </button>
-//                         </td>
-//                       </tr>
-//                     ))}
-//                     {users.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--text3)", padding: 40 }}>No users yet</td></tr>}
-//                   </tbody>
-//                 </table>
-//               </div>
+//               <Reveal>
+//                 <div className="admin-header">
+//                   <div className="admin-title">Users</div>
+//                   <div className="admin-sub">{users.length} registered users</div>
+//                 </div>
+//               </Reveal>
+//               <Reveal delay={80}>
+//                 <div className="table-wrap">
+//                   <table>
+//                     <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Courses</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+//                     <tbody>
+//                       {users.map(u => (
+//                         <tr key={u._id}>
+//                           <td style={{ fontWeight: 600 }}>{u.name}</td>
+//                           <td style={{ color: "var(--text2)" }}>{u.email}</td>
+//                           <td><span className={`badge ${u.role === "admin" ? "badge-accent" : "badge-primary"}`}>{u.role}</span></td>
+//                           <td style={{ textAlign: "center" }}>{u.purchasedCourses?.length || 0}</td>
+//                           <td style={{ color: "var(--text3)", fontSize: "0.82rem" }}>{new Date(u.createdAt).toLocaleDateString()}</td>
+//                           <td><span className={`badge ${u.isActive ? "badge-green" : "badge-accent"}`}>{u.isActive ? "Active" : "Banned"}</span></td>
+//                           <td><button className="btn btn-outline btn-sm" onClick={() => toggleUser(u._id)}>{u.isActive ? "Ban" : "Activate"}</button></td>
+//                         </tr>
+//                       ))}
+//                       {users.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--text3)", padding: 40 }}>No users yet</td></tr>}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </Reveal>
 //             </>
 //           )}
 
-//           {/* ── PAYMENTS ── */}
 //           {section === "payments" && (
 //             <>
-//               <div className="admin-header">
-//                 <div className="admin-title">All Payments</div>
-//                 <div className="admin-sub">Complete transaction history</div>
-//               </div>
-//               <div className="table-wrap">
-//                 <table>
-//                   <thead>
-//                     <tr><th>User</th><th>Item</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr>
-//                   </thead>
-//                   <tbody>
-//                     {payments.map(p => (
-//                       <tr key={p._id}>
-//                         <td style={{ fontWeight: 600 }}>{p.user?.name || "—"}</td>
-//                         <td style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.itemTitle || "—"}</td>
-//                         <td><span className="badge badge-primary">{p.itemType}</span></td>
-//                         <td style={{ fontWeight: 700, color: "var(--primary-light)" }}>₹{p.amountInRupees}</td>
-//                         <td><span className={`badge ${p.status === "paid" ? "badge-green" : p.status === "failed" ? "badge-accent" : "badge-yellow"}`}>{p.status}</span></td>
-//                         <td style={{ color: "var(--text3)", fontSize: "0.82rem" }}>{new Date(p.createdAt).toLocaleDateString()}</td>
-//                       </tr>
-//                     ))}
-//                     {payments.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text3)", padding: 40 }}>No payments yet</td></tr>}
-//                   </tbody>
-//                 </table>
-//               </div>
+//               <Reveal>
+//                 <div className="admin-header">
+//                   <div className="admin-title">All Payments</div>
+//                   <div className="admin-sub">Complete transaction history</div>
+//                 </div>
+//               </Reveal>
+//               <Reveal delay={80}>
+//                 <div className="table-wrap">
+//                   <table>
+//                     <thead><tr><th>User</th><th>Item</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+//                     <tbody>
+//                       {payments.map(p => (
+//                         <tr key={p._id}>
+//                           <td style={{ fontWeight: 600 }}>{p.user?.name || "—"}</td>
+//                           <td style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.itemTitle || "—"}</td>
+//                           <td><span className="badge badge-primary">{p.itemType}</span></td>
+//                           <td style={{ fontWeight: 700, color: "var(--primary-light)" }}>₹{p.amountInRupees}</td>
+//                           <td><span className={`badge ${p.status==="paid"?"badge-green":p.status==="failed"?"badge-accent":"badge-yellow"}`}>{p.status}</span></td>
+//                           <td style={{ color: "var(--text3)", fontSize: "0.82rem" }}>{new Date(p.createdAt).toLocaleDateString()}</td>
+//                         </tr>
+//                       ))}
+//                       {payments.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text3)", padding: 40 }}>No payments yet</td></tr>}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </Reveal>
 //             </>
 //           )}
 
@@ -4999,31 +2681,33 @@
 //   return (
 //     <footer style={{ background: "var(--bg2)", borderTop: "1px solid var(--border)", padding: "48px 0 24px", marginTop: 60 }}>
 //       <div className="container">
-//         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 32, marginBottom: 40 }}>
-//           <div>
-//             <div className="logo" style={{ marginBottom: 14 }}>
-//               <div className="logo-icon">💻</div>
-//               <span className="logo-text">WhatNext</span>
+//         <Reveal>
+//           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 32, marginBottom: 40 }}>
+//             <div>
+//               <div className="logo" style={{ marginBottom: 14 }}>
+//                 <div className="logo-icon">💻</div>
+//                 <span className="logo-text">WhatNext</span>
+//               </div>
+//               <p style={{ fontSize: "0.83rem", color: "var(--text3)", lineHeight: 1.6 }}>India's most affordable online learning platform. Powered by expert instructors.</p>
 //             </div>
-//             <p style={{ fontSize: "0.83rem", color: "var(--text3)", lineHeight: 1.6 }}>India's most affordable online learning platform. Powered by expert instructors.</p>
+//             {[["Quick Links", [["Home","/"],["Courses","/courses"],["Live Classes","/live"],["Notes","/notes"]]],
+//               ["Support", [["FAQ","/"],["Contact","/"],["Privacy Policy","/"],["Terms","/"]]],
+//               ["Categories", COURSE_CATS.slice(0,4).map(a => [a.emoji+" "+a.name,"/courses"])]
+//             ].map(([title, links]) => (
+//               <div key={title}>
+//                 <div style={{ fontWeight: 700, fontSize: "0.88rem", marginBottom: 14 }}>{title}</div>
+//                 {links.map(([label, to]) => (
+//                   <div key={label} style={{ fontSize: "0.82rem", color: "var(--text3)", marginBottom: 8, cursor: "pointer", transition: "color 0.2s" }}
+//                     onClick={() => navigate(to)}
+//                     onMouseEnter={e => e.target.style.color = "var(--text2)"}
+//                     onMouseLeave={e => e.target.style.color = "var(--text3)"}>
+//                     {label}
+//                   </div>
+//                 ))}
+//               </div>
+//             ))}
 //           </div>
-//           {[["Quick Links", [["Home", "/"], ["Courses", "/courses"], ["Live Classes", "/live"], ["Notes", "/notes"]]],
-//             ["Support", [["FAQ", "/"], ["Contact", "/"], ["Privacy Policy", "/"], ["Terms", "/"]]],
-//             ["Categories", COURSE_CATS.slice(0, 4).map(a => [a.emoji + " " + a.name, "/courses"])]
-//           ].map(([title, links]) => (
-//             <div key={title}>
-//               <div style={{ fontWeight: 700, fontSize: "0.88rem", marginBottom: 14 }}>{title}</div>
-//               {links.map(([label, to]) => (
-//                 <div key={label} style={{ fontSize: "0.82rem", color: "var(--text3)", marginBottom: 8, cursor: "pointer" }}
-//                   onClick={() => navigate(to)}
-//                   onMouseEnter={e => e.target.style.color = "var(--text2)"}
-//                   onMouseLeave={e => e.target.style.color = "var(--text3)"}>
-//                   {label}
-//                 </div>
-//               ))}
-//             </div>
-//           ))}
-//         </div>
+//         </Reveal>
 //         <hr style={{ border: "none", borderTop: "1px solid var(--border)", marginBottom: 20 }} />
 //         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
 //           <p style={{ fontSize: "0.78rem", color: "var(--text3)" }}>© {new Date().getFullYear()} WhatNext. All rights reserved.</p>
@@ -5097,6 +2781,2722 @@
 //   );
 // }
 
+// import { useState, useEffect, createContext, useContext, useCallback, useRef } from "react";
+
+// // ─────────────────────────────────────────────
+// // CONFIG
+// // ─────────────────────────────────────────────
+// const API_BASE = "http://localhost:5000/api";
+
+// // ─────────────────────────────────────────────
+// // SCROLL REVEAL HOOK
+// // ─────────────────────────────────────────────
+// function useScrollReveal(options = {}) {
+//   const ref = useRef(null);
+//   const [visible, setVisible] = useState(false);
+
+//   useEffect(() => {
+//     const el = ref.current;
+//     if (!el) return;
+
+//     // Respect reduced-motion preference
+//     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+//       setVisible(true);
+//       return;
+//     }
+
+//     const observer = new IntersectionObserver(
+//       ([entry]) => {
+//         if (entry.isIntersecting) {
+//           setVisible(true);
+//           observer.unobserve(el);
+//         }
+//       },
+//       { threshold: options.threshold || 0.12, rootMargin: options.rootMargin || "0px 0px -40px 0px" }
+//     );
+//     observer.observe(el);
+//     return () => observer.disconnect();
+//   }, []);
+
+//   return [ref, visible];
+// }
+
+// // Reveal wrapper component — fade + slide up
+// function Reveal({ children, delay = 0, className = "", style = {} }) {
+//   const [ref, visible] = useScrollReveal();
+//   return (
+//     <div
+//       ref={ref}
+//       className={className}
+//       style={{
+//         opacity: visible ? 1 : 0,
+//         transform: visible ? "translateY(0)" : "translateY(28px)",
+//         transition: `opacity 0.55s ease ${delay}ms, transform 0.55s ease ${delay}ms`,
+//         ...style,
+//       }}
+//     >
+//       {children}
+//     </div>
+//   );
+// }
+
+// // Staggered children reveal — wraps each child in a Reveal with increasing delay
+// function RevealList({ children, baseDelay = 0, step = 80, className = "", style = {} }) {
+//   return (
+//     <div className={className} style={style}>
+//       {Array.isArray(children)
+//         ? children.map((child, i) => (
+//             <Reveal key={i} delay={baseDelay + i * step}>
+//               {child}
+//             </Reveal>
+//           ))
+//         : <Reveal delay={baseDelay}>{children}</Reveal>
+//       }
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // AUTH CONTEXT
+// // ─────────────────────────────────────────────
+// const AuthContext = createContext(null);
+// const useAuth = () => useContext(AuthContext);
+
+// function AuthProvider({ children }) {
+//   const [user, setUser] = useState(null);
+//   const [token, setToken] = useState(() => localStorage.getItem("token"));
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     if (token) {
+//       fetch(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+//         .then(r => r.json())
+//         .then(d => { if (d.success) setUser(d.data || d.user); else logout(); })
+//         .catch(() => logout())
+//         .finally(() => setLoading(false));
+//     } else setLoading(false);
+//   }, [token]);
+
+//   const login = async (email, password) => {
+//     const r = await fetch(`${API_BASE}/auth/login`, {
+//       method: "POST", headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({ email, password })
+//     });
+//     const d = await r.json();
+//     if (d.success) { setToken(d.token); localStorage.setItem("token", d.token); setUser(d.user || d.data); }
+//     return d;
+//   };
+
+//   const register = async (name, email, password) => {
+//     const r = await fetch(`${API_BASE}/auth/register`, {
+//       method: "POST", headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({ name, email, password })
+//     });
+//     const d = await r.json();
+//     if (d.success) { setToken(d.token); localStorage.setItem("token", d.token); setUser(d.user || d.data); }
+//     return d;
+//   };
+
+//   const logout = () => { setUser(null); setToken(null); localStorage.removeItem("token"); };
+
+//   const authFetch = useCallback((url, opts = {}) => {
+//     const headers = { Authorization: `Bearer ${token}`, ...(opts.headers || {}) };
+//     if (!(opts.body instanceof FormData)) {
+//       headers["Content-Type"] = "application/json";
+//     }
+//     return fetch(`${API_BASE}${url}`, { ...opts, headers }).then(r => r.json());
+//   }, [token]);
+
+//   return (
+//     <AuthContext.Provider value={{ user, token, loading, login, register, logout, authFetch, isAdmin: user?.role === "admin" }}>
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // DESIGN TOKENS + SCROLL ANIMATION CSS
+// // ─────────────────────────────────────────────
+// const css = `
+//   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+//   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+//   :root {
+//     --bg: #ffffff;
+//     --bg2: #fff5f6;
+//     --bg3: #ffe9eb;
+//     --surface: #ffffff;
+//     --surface2: #fff0f1;
+//     --primary: #e8113b;
+//     --primary-light: #ff4d6d;
+//     --primary-dark: #c00d30;
+//     --primary-glow: rgba(232,17,59,0.18);
+//     --accent: #ff8a00;
+//     --accent2: #ffd93d;
+//     --green: #1fa855;
+//     --cyan: #0ea5b7;
+//     --text: #1a1a2e;
+//     --text2: #6b6b7d;
+//     --text3: #9a9aab;
+//     --border: rgba(232,17,59,0.16);
+//     --radius: 14px;
+//     --radius-sm: 8px;
+//     --shadow: 0 8px 32px rgba(232,17,59,0.10);
+//     --font: 'Plus Jakarta Sans', sans-serif;
+//     --font2: 'Space Grotesk', sans-serif;
+//   }
+
+//   html { scroll-behavior: smooth; }
+//   body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+//   a { color: inherit; text-decoration: none; }
+//   button { cursor: pointer; font-family: var(--font); border: none; outline: none; }
+//   input, textarea, select { font-family: var(--font); }
+//   img { max-width: 100%; }
+
+//   ::-webkit-scrollbar { width: 6px; }
+//   ::-webkit-scrollbar-track { background: var(--bg3); }
+//   ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+//   .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+//   .page { min-height: 100vh; padding-top: 72px; }
+
+//   /* ── SCROLL ANIMATIONS ── */
+//   @keyframes heroFadeIn {
+//     from { opacity: 0; transform: translateY(40px); }
+//     to   { opacity: 1; transform: translateY(0); }
+//   }
+//   @keyframes heroSlideRight {
+//     from { opacity: 0; transform: translateX(-30px); }
+//     to   { opacity: 1; transform: translateX(0); }
+//   }
+//   @keyframes countUp {
+//     from { opacity: 0; transform: translateY(16px); }
+//     to   { opacity: 1; transform: translateY(0); }
+//   }
+//   @keyframes shimmer {
+//     0%   { background-position: -200% center; }
+//     100% { background-position: 200% center; }
+//   }
+
+//   /* Hero entrance animations */
+//   .hero-eyebrow  { animation: heroFadeIn 0.6s ease 0.1s both; }
+//   .hero-title    { animation: heroFadeIn 0.7s ease 0.25s both; }
+//   .hero-sub      { animation: heroFadeIn 0.7s ease 0.4s both; }
+//   .hero-ctas     { animation: heroFadeIn 0.7s ease 0.55s both; }
+//   .hero-stats    { animation: heroFadeIn 0.7s ease 0.7s both; }
+
+//   /* Stat counter shimmer */
+//   .stat-num {
+//     background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 50%, var(--primary) 100%);
+//     background-size: 200% auto;
+//     -webkit-background-clip: text;
+//     -webkit-text-fill-color: transparent;
+//     animation: shimmer 3s linear infinite;
+//     font-family: var(--font2);
+//     font-size: 2rem;
+//     font-weight: 700;
+//   }
+
+//   /* Navbar */
+//   .navbar {
+//     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+//     background: rgba(255,255,255,0.92); backdrop-filter: blur(20px);
+//     border-bottom: 1px solid var(--border);
+//     height: 72px; display: flex; align-items: center;
+//     animation: heroFadeIn 0.5s ease both;
+//     box-shadow: 0 2px 16px rgba(232,17,59,0.05);
+//   }
+//   .navbar .inner { display: flex; align-items: center; gap: 32px; width: 100%; }
+//   .logo { display: flex; align-items: center; gap: 10px; font-family: var(--font2); font-size: 1.4rem; font-weight: 700; }
+//   .logo-icon { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #fff; }
+//   .logo-text { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+//   .nav-links { display: flex; gap: 4px; flex: 1; }
+//   .nav-link { padding: 8px 16px; border-radius: var(--radius-sm); color: var(--text2); font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
+//   .nav-link:hover, .nav-link.active { background: var(--bg3); color: var(--primary); }
+//   .nav-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+//   .avatar-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; cursor: pointer; flex-shrink: 0; }
+
+//   /* Buttons */
+//   .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
+//   .btn-primary { background: var(--primary); color: #fff; }
+//   .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 6px 24px var(--primary-glow); }
+//   .btn-primary:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
+//   .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+//   .btn-outline:hover { background: var(--primary); color: #fff; transform: translateY(-1px); }
+//   .btn-sm { padding: 7px 14px; font-size: 0.82rem; }
+//   .btn-lg { padding: 14px 32px; font-size: 1rem; border-radius: var(--radius); }
+//   .btn-accent { background: var(--accent); color: #fff; }
+//   .btn-accent:hover { opacity: 0.9; transform: translateY(-1px); }
+//   .btn-green { background: var(--green); color: #fff; }
+//   .btn-green:hover { opacity: 0.9; }
+//   .btn-danger { background: #d92d20; color: #fff; }
+//   .btn-danger:hover { background: #b42318; }
+//   .btn-yellow { background: var(--accent2); color: #1a1a2e; }
+
+//   /* Cards — hover lift + glow */
+//   .card {
+//     background: var(--surface);
+//     border: 1px solid var(--border);
+//     border-radius: var(--radius);
+//     overflow: hidden;
+//     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+//     will-change: transform;
+//   }
+//   .card:hover {
+//     border-color: var(--primary);
+//     transform: translateY(-6px) scale(1.01);
+//     box-shadow: var(--shadow), 0 0 0 1px var(--primary-glow), 0 20px 40px rgba(232,17,59,0.12);
+//   }
+//   .card-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: var(--text3); overflow: hidden; }
+//   .card-thumb img { transition: transform 0.4s ease; }
+//   .card:hover .card-thumb img { transform: scale(1.04); }
+//   .card-body { padding: 16px; }
+//   .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; line-height: 1.4; }
+//   .card-desc { font-size: 0.83rem; color: var(--text2); line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+//   .card-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+//   .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+//   .badge-primary { background: rgba(232,17,59,0.12); color: var(--primary); }
+//   .badge-accent { background: rgba(255,138,0,0.15); color: #c45f00; }
+//   .badge-green { background: rgba(31,168,85,0.12); color: var(--green); }
+//   .badge-yellow { background: rgba(255,217,61,0.2); color: #b88600; }
+//   .badge-cyan { background: rgba(14,165,183,0.12); color: var(--cyan); }
+//   .price { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
+//   .price-free { color: var(--green); }
+//   .price-old { font-size: 0.82rem; color: var(--text3); text-decoration: line-through; margin-left: 4px; }
+
+//   /* Grid */
+//   .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 24px; }
+//   .grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+//   .grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 24px; }
+
+//   /* Hero */
+//   .hero { padding: 80px 0 60px; position: relative; overflow: hidden; }
+//   .hero::before { content: ''; position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(232,17,59,0.10) 0%, transparent 70%); pointer-events: none; animation: heroFadeIn 1.2s ease both; }
+//   .hero::after { content: ''; position: absolute; bottom: -100px; left: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,138,0,0.06) 0%, transparent 70%); pointer-events: none; }
+//   .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 0.82rem; color: var(--primary); margin-bottom: 28px; font-weight: 600; }
+//   .hero-title { font-family: var(--font2); font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 700; line-height: 1.15; margin-bottom: 20px; color: var(--text); }
+//   .hero-title .hl { color: var(--primary); }
+//   .hero-sub { font-size: 1.1rem; color: var(--text2); max-width: 560px; line-height: 1.7; margin-bottom: 36px; }
+//   .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+//   .hero-stats { display: flex; gap: 40px; margin-top: 56px; flex-wrap: wrap; }
+//   .stat { display: flex; flex-direction: column; }
+//   .stat-label { font-size: 0.82rem; color: var(--text2); margin-top: 2px; }
+
+//   /* Section */
+//   .section { padding: 56px 0; }
+//   .section-header { margin-bottom: 36px; }
+//   .section-eyebrow { font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--primary); margin-bottom: 10px; }
+//   .section-title { font-family: var(--font2); font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; color: var(--text); }
+//   .section-sub { color: var(--text2); margin-top: 10px; font-size: 0.95rem; max-width: 600px; line-height: 1.6; }
+
+//   /* Form */
+//   .form-group { margin-bottom: 18px; }
+//   .form-label { display: block; font-size: 0.83rem; font-weight: 600; color: var(--text2); margin-bottom: 7px; }
+//   .form-input { width: 100%; padding: 11px 14px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.9rem; transition: border-color 0.2s, box-shadow 0.2s; }
+//   .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+//   .form-input::placeholder { color: var(--text3); }
+//   select.form-input option { background: #fff; color: var(--text); }
+//   .form-error { font-size: 0.78rem; color: #d92d20; margin-top: 5px; }
+//   .form-hint { font-size: 0.75rem; color: var(--text3); margin-top: 4px; }
+//   .checkbox-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+//   .checkbox-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+//   .checkbox-row label { font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+
+//   /* File upload */
+//   .file-upload-area { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg2); }
+//   .file-upload-area:hover, .file-upload-area.drag-over { border-color: var(--primary); background: rgba(232,17,59,0.04); }
+//   .file-upload-area input[type="file"] { display: none; }
+//   .file-upload-icon { font-size: 2.2rem; margin-bottom: 8px; }
+//   .file-upload-text { font-size: 0.88rem; color: var(--text2); }
+//   .file-upload-hint { font-size: 0.75rem; color: var(--text3); margin-top: 4px; }
+//   .file-selected { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: rgba(31,168,85,0.08); border: 1px solid var(--green); border-radius: var(--radius-sm); font-size: 0.85rem; margin-top: 8px; }
+
+//   /* Progress */
+//   .upload-progress { margin-top: 10px; }
+//   .progress-bar-wrap { width: 100%; background: var(--bg3); border-radius: 4px; height: 8px; overflow: hidden; }
+//   .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 4px; transition: width 0.3s; }
+
+//   /* Modal */
+//   .modal-overlay { position: fixed; inset: 0; background: rgba(26,26,46,0.55); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; animation: heroFadeIn 0.2s ease both; }
+//   .modal { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 36px; max-width: 540px; width: 100%; position: relative; box-shadow: var(--shadow); margin: auto; animation: heroFadeIn 0.3s ease 0.05s both; }
+//   .modal-lg { max-width: 760px; }
+//   .modal-close { position: absolute; top: 16px; right: 16px; background: var(--bg3); border: none; color: var(--text2); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; flex-shrink: 0; transition: all 0.2s; }
+//   .modal-close:hover { color: #fff; background: var(--primary); transform: rotate(90deg); }
+//   .modal-title { font-family: var(--font2); font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; padding-right: 40px; color: var(--text); }
+//   .modal-sub { color: var(--text2); font-size: 0.88rem; margin-bottom: 24px; }
+
+//   /* Toast */
+//   .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+//   .toast { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; font-size: 0.88rem; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease; min-width: 260px; max-width: 360px; box-shadow: var(--shadow); color: var(--text); }
+//   .toast.success { border-color: var(--green); }
+//   .toast.error { border-color: var(--primary); }
+//   @keyframes slideIn { from { opacity:0; transform: translateX(30px); } to { opacity:1; transform: translateX(0); } }
+
+//   /* Loading */
+//   .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 60px auto; display: block; }
+//   .spinner-sm { width: 20px; height: 20px; border-width: 2px; margin: 0; }
+//   @keyframes spin { to { transform: rotate(360deg); } }
+
+//   /* Tabs */
+//   .tabs { display: flex; gap: 4px; background: var(--bg3); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 28px; overflow-x: auto; }
+//   .tab { flex: 1; padding: 9px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text2); background: transparent; border: none; cursor: pointer; transition: all 0.2s; text-align: center; white-space: nowrap; min-width: fit-content; }
+//   .tab.active { background: var(--primary); color: #fff; }
+
+//   /* Tags */
+//   .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+//   .tag { padding: 4px 12px; background: #fff; border: 1px solid var(--border); border-radius: 20px; font-size: 0.78rem; color: var(--text2); cursor: pointer; transition: all 0.2s; }
+//   .tag:hover, .tag.active { border-color: var(--primary); color: var(--primary); background: rgba(232,17,59,0.06); }
+
+//   /* Detail page */
+//   .detail-header { background: linear-gradient(135deg, var(--bg2) 0%, var(--bg3) 100%); border-bottom: 1px solid var(--border); padding: 48px 0; }
+//   .detail-breadcrumb { font-size: 0.82rem; color: var(--text3); margin-bottom: 16px; cursor: pointer; transition: color 0.2s; }
+//   .detail-breadcrumb:hover { color: var(--primary); }
+//   .detail-breadcrumb span { color: var(--text2); }
+//   .detail-title { font-family: var(--font2); font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; margin-bottom: 12px; color: var(--text); }
+//   .detail-meta-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; color: var(--text2); font-size: 0.85rem; margin-bottom: 20px; }
+//   .detail-layout { display: grid; grid-template-columns: 1fr 340px; gap: 32px; padding: 40px 0; align-items: start; }
+//   .detail-sidebar { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; position: sticky; top: 90px; transition: box-shadow 0.3s; box-shadow: var(--shadow); }
+//   .detail-sidebar:hover { box-shadow: 0 8px 32px rgba(232,17,59,0.18); }
+//   .sidebar-price { font-family: var(--font2); font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 4px; }
+//   .sidebar-price-old { font-size: 0.9rem; color: var(--text3); text-decoration: line-through; margin-bottom: 16px; }
+//   .sidebar-btn { width: 100%; margin-bottom: 10px; justify-content: center; }
+//   .sidebar-features { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+//   .sidebar-feature { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text2); }
+
+//   /* Video list */
+//   .video-list { display: flex; flex-direction: column; gap: 6px; }
+//   .video-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--bg2); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; }
+//   .video-item:hover { border-color: var(--border); background: var(--bg3); transform: translateX(4px); }
+//   .video-item.locked { opacity: 0.6; cursor: not-allowed; }
+//   .video-num { width: 28px; height: 28px; background: var(--bg3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--primary); flex-shrink: 0; }
+//   .video-info { flex: 1; min-width: 0; }
+//   .video-title-text { font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+//   .video-dur { font-size: 0.75rem; color: var(--text3); margin-top: 2px; }
+
+//   /* Admin */
+//   .admin-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 72px); }
+//   .admin-sidebar { background: #fff; border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 72px; height: calc(100vh - 72px); overflow-y: auto; }
+//   .admin-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--text2); font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
+//   .admin-nav-item:hover { color: var(--primary); background: var(--bg2); }
+//   .admin-nav-item.active { color: var(--primary); border-left-color: var(--primary); background: rgba(232,17,59,0.06); }
+//   .admin-nav-icon { font-size: 1.1rem; flex-shrink: 0; }
+//   .admin-content { padding: 32px; background: var(--bg2); min-height: calc(100vh - 72px); }
+//   .admin-header { margin-bottom: 28px; }
+//   .admin-title { font-family: var(--font2); font-size: 1.6rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+//   .admin-sub { color: var(--text2); font-size: 0.88rem; }
+
+//   /* Stats cards */
+//   .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+//   .stat-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; transition: transform 0.25s, box-shadow 0.25s; }
+//   .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(232,17,59,0.15); }
+//   .stat-card-icon { font-size: 1.8rem; margin-bottom: 12px; }
+//   .stat-card-num { font-family: var(--font2); font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+//   .stat-card-label { font-size: 0.8rem; color: var(--text2); margin-top: 2px; }
+
+//   /* Table */
+//   .table-wrap { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; overflow-x: auto; }
+//   table { width: 100%; border-collapse: collapse; min-width: 600px; }
+//   th { background: var(--bg2); padding: 12px 16px; text-align: left; font-size: 0.78rem; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+//   td { padding: 13px 16px; font-size: 0.87rem; border-bottom: 1px solid rgba(232,17,59,0.06); vertical-align: middle; }
+//   tr:last-child td { border-bottom: none; }
+//   tr { transition: background 0.15s; }
+//   tr:hover td { background: rgba(232,17,59,0.03); }
+
+//   /* Misc */
+//   .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
+//   .empty-state .icon { font-size: 4rem; margin-bottom: 16px; }
+//   .empty-state p { font-size: 0.9rem; }
+//   .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+//   .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+//   .search-bar { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 16px; margin-bottom: 28px; transition: border-color 0.2s, box-shadow 0.2s; }
+//   .search-bar:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+//   .search-bar input { flex: 1; background: none; border: none; color: var(--text); font-size: 0.9rem; outline: none; }
+//   .search-bar input::placeholder { color: var(--text3); }
+
+//   /* Category strip */
+//   .mascot-strip { display: flex; gap: 20px; padding: 20px 0; overflow-x: auto; scrollbar-width: none; }
+//   .mascot-strip::-webkit-scrollbar { display: none; }
+//   .mascot-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; min-width: 130px; text-align: center; cursor: pointer; transition: all 0.25s; flex-shrink: 0; }
+//   .mascot-card:hover { border-color: var(--primary); transform: translateY(-5px) scale(1.03); box-shadow: 0 8px 24px rgba(232,17,59,0.15); }
+//   .mascot-card.active { border-color: var(--primary); background: rgba(232,17,59,0.06); }
+//   .mascot-emoji { font-size: 2.4rem; margin-bottom: 8px; transition: transform 0.3s; }
+//   .mascot-card:hover .mascot-emoji { transform: scale(1.15) rotate(-5deg); }
+//   .mascot-name { font-size: 0.8rem; font-weight: 600; color: var(--text2); }
+//   .mascot-label { font-size: 0.7rem; color: var(--text3); margin-top: 2px; }
+
+//   /* Features */
+//   .features-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+//   .feature-item { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; transition: all 0.3s; }
+//   .feature-item:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(232,17,59,0.12); }
+//   .feature-icon { font-size: 2rem; margin-bottom: 12px; transition: transform 0.3s; }
+//   .feature-item:hover .feature-icon { transform: scale(1.2); }
+//   .feature-title { font-weight: 700; margin-bottom: 6px; font-size: 0.95rem; color: var(--text); }
+//   .feature-desc { font-size: 0.82rem; color: var(--text2); line-height: 1.5; }
+
+//   /* Live */
+//   .live-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; background: rgba(232,17,59,0.12); border-radius: 20px; font-size: 0.72rem; font-weight: 700; color: var(--primary); }
+//   .live-dot { width: 7px; height: 7px; background: var(--primary); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+//   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+//   .grad { background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+//   /* User menu */
+//   .user-menu { position: absolute; top: calc(100% + 10px); right: 0; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; min-width: 200px; box-shadow: var(--shadow); z-index: 150; animation: heroFadeIn 0.2s ease both; }
+//   .user-menu-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; font-size: 0.87rem; color: var(--text2); cursor: pointer; transition: all 0.2s; }
+//   .user-menu-item:hover { background: var(--bg2); color: var(--primary); }
+//   .user-menu-divider { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
+
+//   /* Video manager */
+//   .video-manager-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; transition: all 0.2s; }
+//   .video-manager-item:hover { border-color: var(--primary); }
+//   .video-manager-info { flex: 1; min-width: 0; }
+//   .video-manager-title { font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+//   .video-manager-meta { font-size: 0.75rem; color: var(--text3); margin-top: 2px; display: flex; gap: 12px; }
+//   .video-type-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+//   .video-type-tab { flex: 1; padding: 10px; background: var(--bg2); border: 2px solid var(--border); border-radius: var(--radius-sm); text-align: center; cursor: pointer; font-size: 0.88rem; font-weight: 600; color: var(--text2); transition: all 0.2s; }
+//   .video-type-tab.active { border-color: var(--primary); color: var(--primary); background: rgba(232,17,59,0.06); }
+
+//   /* Info boxes */
+//   .info-box { background: rgba(232,17,59,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.84rem; color: var(--text2); margin-bottom: 16px; }
+//   .success-box { background: rgba(31,168,85,0.08); border: 1px solid rgba(31,168,85,0.3); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.87rem; color: var(--green); }
+//   .warning-box { background: rgba(255,217,61,0.12); border: 1px solid rgba(255,217,61,0.4); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.87rem; color: #b88600; }
+
+//   /* Responsive */
+//   @media (max-width: 900px) {
+//     .detail-layout { grid-template-columns: 1fr; }
+//     .admin-layout { grid-template-columns: 1fr; }
+//     .admin-sidebar { position: static; height: auto; display: flex; overflow-x: auto; padding: 8px; border-right: none; border-bottom: 1px solid var(--border); }
+//     .admin-nav-item { border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
+//     .admin-nav-item.active { border-left-color: transparent; border-bottom-color: var(--primary); }
+//     .nav-links { display: none; }
+//     .hero-stats { gap: 24px; }
+//     .hero { padding: 48px 0 40px; }
+//   }
+//   @media (max-width: 600px) {
+//     .grid-3, .grid-2 { grid-template-columns: 1fr; }
+//     .grid-4 { grid-template-columns: repeat(2, 1fr); }
+//     .modal { padding: 20px; }
+//     .admin-content { padding: 16px; }
+//   }
+
+//   /* Reduced motion */
+//   @media (prefers-reduced-motion: reduce) {
+//     *, *::before, *::after {
+//       animation-duration: 0.01ms !important;
+//       transition-duration: 0.01ms !important;
+//     }
+//   }
+// `;
+
+// // ─────────────────────────────────────────────
+// // TOAST SYSTEM
+// // ─────────────────────────────────────────────
+// const ToastContext = createContext(null);
+// function ToastProvider({ children }) {
+//   const [toasts, setToasts] = useState([]);
+//   const toast = useCallback((msg, type = "info") => {
+//     const id = Date.now();
+//     setToasts(p => [...p, { id, msg, type }]);
+//     setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3500);
+//   }, []);
+//   const icons = { success: "✅", error: "❌", info: "ℹ️" };
+//   return (
+//     <ToastContext.Provider value={toast}>
+//       {children}
+//       <div className="toast-container">
+//         {toasts.map(t => (
+//           <div key={t.id} className={`toast ${t.type}`}>{icons[t.type] || "💬"} {t.msg}</div>
+//         ))}
+//       </div>
+//     </ToastContext.Provider>
+//   );
+// }
+// const useToast = () => useContext(ToastContext);
+
+// // ─────────────────────────────────────────────
+// // ROUTER
+// // ─────────────────────────────────────────────
+// function useRoute() {
+//   const [path, setPath] = useState(window.location.hash.slice(1) || "/");
+//   useEffect(() => {
+//     const handler = () => setPath(window.location.hash.slice(1) || "/");
+//     window.addEventListener("hashchange", handler);
+//     return () => window.removeEventListener("hashchange", handler);
+//   }, []);
+//   const navigate = (to) => { window.location.hash = to; };
+//   return { path, navigate };
+// }
+
+// // ─────────────────────────────────────────────
+// // FILE UPLOAD COMPONENT
+// // ─────────────────────────────────────────────
+// function FileUploadArea({ accept, onFile, file, label, hint, icon = "📁" }) {
+//   const inputRef = useRef();
+//   const [drag, setDrag] = useState(false);
+//   const handleFile = (f) => { if (f) onFile(f); };
+
+//   return (
+//     <div>
+//       <div
+//         className={`file-upload-area ${drag ? "drag-over" : ""}`}
+//         onClick={() => inputRef.current?.click()}
+//         onDragOver={e => { e.preventDefault(); setDrag(true); }}
+//         onDragLeave={() => setDrag(false)}
+//         onDrop={e => { e.preventDefault(); setDrag(false); handleFile(e.dataTransfer.files[0]); }}
+//       >
+//         <input ref={inputRef} type="file" accept={accept} onChange={e => handleFile(e.target.files[0])} />
+//         <div className="file-upload-icon">{icon}</div>
+//         <div className="file-upload-text">{label || "Click or drag file here"}</div>
+//         {hint && <div className="file-upload-hint">{hint}</div>}
+//       </div>
+//       {file && (
+//         <div className="file-selected">
+//           <span>✅</span>
+//           <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.name}</span>
+//           <span style={{ color: "var(--text3)", fontSize: "0.75rem" }}>({(file.size / 1024 / 1024).toFixed(1)} MB)</span>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // AUTH MODAL
+// // ─────────────────────────────────────────────
+// function AuthModal({ onClose }) {
+//   const [tab, setTab] = useState("login");
+//   const [form, setForm] = useState({ name: "", email: "", password: "" });
+//   const [err, setErr] = useState("");
+//   const [loading, setLoading] = useState(false);
+//   const { login, register } = useAuth();
+//   const toast = useToast();
+
+//   const submit = async () => {
+//     setErr(""); setLoading(true);
+//     const res = tab === "login"
+//       ? await login(form.email, form.password)
+//       : await register(form.name, form.email, form.password);
+//     setLoading(false);
+//     if (res.success) { toast("Welcome! 🎉", "success"); onClose(); }
+//     else setErr(res.message || "Something went wrong");
+//   };
+
+//   return (
+//     <div className="modal-overlay" onClick={onClose}>
+//       <div className="modal" onClick={e => e.stopPropagation()}>
+//         <button className="modal-close" onClick={onClose}>✕</button>
+//         <div className="logo" style={{ marginBottom: 24 }}>
+//           <div className="logo-icon">💻</div>
+//           <span className="logo-text">WhatNext</span>
+//         </div>
+//         <div className="tabs">
+//           <button className={`tab ${tab === "login" ? "active" : ""}`} onClick={() => setTab("login")}>Login</button>
+//           <button className={`tab ${tab === "register" ? "active" : ""}`} onClick={() => setTab("register")}>Sign Up</button>
+//         </div>
+//         {tab === "register" && (
+//           <div className="form-group">
+//             <label className="form-label">Full Name</label>
+//             <input className="form-input" placeholder="Your name" value={form.name}
+//               onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
+//           </div>
+//         )}
+//         <div className="form-group">
+//           <label className="form-label">Email</label>
+//           <input className="form-input" type="email" placeholder="you@example.com" value={form.email}
+//             onChange={e => setForm(p => ({ ...p, email: e.target.value }))} />
+//         </div>
+//         <div className="form-group">
+//           <label className="form-label">Password</label>
+//           <input className="form-input" type="password" placeholder="••••••••" value={form.password}
+//             onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
+//             onKeyDown={e => e.key === "Enter" && submit()} />
+//         </div>
+//         {err && <div className="form-error" style={{ marginBottom: 12 }}>⚠️ {err}</div>}
+//         <button className="btn btn-primary btn-lg" style={{ width: "100%", justifyContent: "center" }}
+//           onClick={submit} disabled={loading}>
+//           {loading ? "Please wait…" : tab === "login" ? "Login →" : "Create Account →"}
+//         </button>
+//         <p style={{ textAlign: "center", fontSize: "0.8rem", color: "var(--text3)", marginTop: 16 }}>
+//           By continuing you agree to our Terms & Privacy Policy
+//         </p>
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // NAVBAR
+// // ─────────────────────────────────────────────
+// function Navbar({ navigate, path, onAuth }) {
+//   const { user, logout, isAdmin } = useAuth();
+//   const [menu, setMenu] = useState(false);
+//   const links = [
+//     { label: "Home", to: "/" },
+//     { label: "Courses", to: "/courses" },
+//     { label: "Live Classes", to: "/live" },
+//     { label: "Notes", to: "/notes" },
+//   ];
+//   if (isAdmin) links.push({ label: "Admin", to: "/admin" });
+
+//   return (
+//     <nav className="navbar">
+//       <div className="container inner">
+//         <div className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer", flexShrink: 0 }}>
+//           <div className="logo-icon">💻</div>
+//           <span className="logo-text">WhatNext</span>
+//         </div>
+//         <div className="nav-links">
+//           {links.map(l => (
+//             <span key={l.to} className={`nav-link ${path === l.to ? "active" : ""}`}
+//               onClick={() => navigate(l.to)} style={{ cursor: "pointer" }}>{l.label}</span>
+//           ))}
+//         </div>
+//         <div className="nav-actions">
+//           {user ? (
+//             <div style={{ position: "relative" }}>
+//               <div className="avatar-btn" onClick={() => setMenu(p => !p)}>
+//                 {user.name?.[0]?.toUpperCase() || "U"}
+//               </div>
+//               {menu && (
+//                 <div className="user-menu">
+//                   <div style={{ padding: "8px 12px 10px", borderBottom: "1px solid var(--border)" }}>
+//                     <div style={{ fontWeight: 700, fontSize: "0.9rem" }}>{user.name}</div>
+//                     <div style={{ fontSize: "0.78rem", color: "var(--text3)" }}>{user.email}</div>
+//                   </div>
+//                   <div className="user-menu-item" onClick={() => { navigate("/dashboard"); setMenu(false); }}>📚 My Learning</div>
+//                   {isAdmin && <div className="user-menu-item" onClick={() => { navigate("/admin"); setMenu(false); }}>⚙️ Admin Panel</div>}
+//                   <hr className="user-menu-divider" />
+//                   <div className="user-menu-item" style={{ color: "var(--primary)" }} onClick={() => { logout(); setMenu(false); }}>🚪 Logout</div>
+//                 </div>
+//               )}
+//             </div>
+//           ) : (
+//             <>
+//               <button className="btn btn-outline btn-sm" onClick={onAuth}>Login</button>
+//               <button className="btn btn-primary btn-sm" onClick={onAuth}>Sign Up Free</button>
+//             </>
+//           )}
+//         </div>
+//       </div>
+//     </nav>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // CATEGORY DATA & STRIP
+// // ─────────────────────────────────────────────
+// const COURSE_CATS = [
+//   { emoji: "💻", name: "MERN Stack", label: "Full Stack", level: "advanced" },
+//   { emoji: "⚛️", name: "React.js", label: "Frontend", level: "intermediate" },
+//   { emoji: "🟢", name: "Node.js", label: "Backend", level: "intermediate" },
+//   { emoji: "📱", name: "Flutter", label: "Mobile App", level: "intermediate" },
+//   { emoji: "🎨", name: "UI/UX Design", label: "Design", level: "beginner" },
+//   { emoji: "🤖", name: "AI", label: "Artificial Intelligence", level: "advanced" },
+//   { emoji: "📊", name: "Data Science", label: "Analytics", level: "advanced" },
+//   { emoji: "☁️", name: "AWS Cloud", label: "Cloud", level: "advanced" },
+//   { emoji: "🔒", name: "Cyber Security", label: "Security", level: "advanced" },
+//   { emoji: "📈", name: "Digital Marketing", label: "Marketing", level: "beginner" }
+// ];
+
+// function CategoryStrip({ onSelect, selected }) {
+//   return (
+//     <div className="mascot-strip">
+//       <div className={`mascot-card ${!selected ? "active" : ""}`} onClick={() => onSelect(null)}>
+//         <div className="mascot-emoji">🌟</div>
+//         <div className="mascot-name">All Courses</div>
+//         <div className="mascot-label">View All</div>
+//       </div>
+//       {COURSE_CATS.map(a => (
+//         <div key={a.level + a.name} className={`mascot-card ${selected === a.level ? "active" : ""}`}
+//           onClick={() => onSelect(a.level)}>
+//           <div className="mascot-emoji">{a.emoji}</div>
+//           <div className="mascot-name">{a.name}</div>
+//           <div className="mascot-label">{a.label}</div>
+//         </div>
+//       ))}
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // COURSE CARD
+// // ─────────────────────────────────────────────
+// function CourseCard({ course, onClick }) {
+//   const price = course.isFree ? 0 : (course.discountPrice ?? course.price);
+//   const levelEmojis = { beginner: "🎨", intermediate: "⚛️", advanced: "💻", all: "📚" };
+//   return (
+//     <div className="card" onClick={() => onClick(course._id)} style={{ cursor: "pointer" }}>
+//       <div className="card-thumb" style={{ background: "var(--bg3)" }}>
+//         {course.thumbnail
+//           ? <img src={course.thumbnail} alt={course.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+//           : <div style={{ textAlign: "center" }}>
+//               <div style={{ fontSize: "3rem" }}>{levelEmojis[course.level] || "📚"}</div>
+//               <div style={{ fontSize: "0.75rem", color: "var(--text3)", marginTop: 8 }}>{course.category || "Course"}</div>
+//             </div>
+//         }
+//       </div>
+//       <div className="card-body">
+//         <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+//           <span className="badge badge-primary">{course.level || "All"}</span>
+//           {course.category && <span className="badge badge-cyan">{course.category}</span>}
+//           {!course.isPublished && <span className="badge badge-yellow">Draft</span>}
+//         </div>
+//         <div className="card-title">{course.title}</div>
+//         <div className="card-desc">{course.description}</div>
+//         <div className="card-meta">
+//           <span className={`price ${course.isFree ? "price-free" : ""}`}>
+//             {course.isFree ? "FREE" : `₹${price}`}
+//           </span>
+//           {!course.isFree && course.discountPrice && <span className="price-old">₹{course.price}</span>}
+//           <span style={{ marginLeft: "auto", fontSize: "0.78rem", color: "var(--text3)" }}>
+//             🎬 {course.videos?.length || 0} videos
+//           </span>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // LIVE CLASS CARD
+// // ─────────────────────────────────────────────
+// function LiveClassCard({ liveClass, onClick }) {
+//   const isLive = liveClass.status === "live";
+//   const date = new Date(liveClass.scheduledAt);
+//   return (
+//     <div className="card" onClick={onClick} style={{ cursor: "pointer" }}>
+//       <div className="card-thumb" style={{ background: "var(--bg3)", position: "relative" }}>
+//         {liveClass.thumbnail
+//           ? <img src={liveClass.thumbnail} alt={liveClass.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+//           : <div style={{ textAlign: "center" }}>
+//               <div style={{ fontSize: "3rem" }}>📡</div>
+//               <div style={{ fontSize: "0.75rem", color: "var(--text3)", marginTop: 8 }}>Live Class</div>
+//             </div>
+//         }
+//         {isLive && (
+//           <div style={{ position: "absolute", top: 12, left: 12 }}>
+//             <div className="live-badge"><div className="live-dot" />LIVE</div>
+//           </div>
+//         )}
+//       </div>
+//       <div className="card-body">
+//         <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+//           <span className={`badge ${isLive ? "badge-accent" : liveClass.status === "upcoming" ? "badge-cyan" : "badge-primary"}`}>
+//             {liveClass.status}
+//           </span>
+//           {liveClass.isFree && <span className="badge badge-green">FREE</span>}
+//         </div>
+//         <div className="card-title">{liveClass.title}</div>
+//         <div style={{ fontSize: "0.82rem", color: "var(--text2)", marginBottom: 12 }}>
+//           🗓 {date.toLocaleDateString("en-IN", { day: "numeric", month: "short" })} · {date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })} · {liveClass.duration || 60} mins
+//         </div>
+//         <div className="card-meta">
+//           <span className={`price ${liveClass.isFree ? "price-free" : ""}`}>
+//             {liveClass.isFree ? "FREE" : `₹${liveClass.price}`}
+//           </span>
+//           <span style={{ marginLeft: "auto", fontSize: "0.78rem", color: "var(--text3)" }}>
+//             👥 {liveClass.registrations?.length || 0} registered
+//           </span>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // NOTES CARD
+// // ─────────────────────────────────────────────
+// function NotesCard({ note, onClick }) {
+//   const price = note.isFree ? 0 : (note.discountPrice ?? note.price);
+//   return (
+//     <div className="card" onClick={onClick} style={{ cursor: "pointer" }}>
+//       <div className="card-thumb" style={{ background: "var(--bg3)" }}>
+//         {note.thumbnail
+//           ? <img src={note.thumbnail} alt={note.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+//           : <div style={{ textAlign: "center" }}>
+//               <div style={{ fontSize: "3rem" }}>📄</div>
+//               <div style={{ fontSize: "0.75rem", color: "var(--text3)", marginTop: 8 }}>{note.fileType?.toUpperCase() || "PDF"}</div>
+//             </div>
+//         }
+//       </div>
+//       <div className="card-body">
+//         <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+//           <span className="badge badge-yellow">{note.fileType?.toUpperCase() || "PDF"}</span>
+//           {note.isFree && <span className="badge badge-green">FREE</span>}
+//           {note.category && <span className="badge badge-primary">{note.category}</span>}
+//         </div>
+//         <div className="card-title">{note.title}</div>
+//         <div className="card-desc">{note.description}</div>
+//         <div className="card-meta">
+//           <span className={`price ${note.isFree ? "price-free" : ""}`}>{note.isFree ? "FREE" : `₹${price}`}</span>
+//           {!note.isFree && note.discountPrice && <span className="price-old">₹{note.price}</span>}
+//           <span style={{ marginLeft: "auto", fontSize: "0.78rem", color: "var(--text3)" }}>
+//             📥 {note.totalPurchases || 0} downloads
+//           </span>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // HOME PAGE  ← scroll animations applied here
+// // ─────────────────────────────────────────────
+// function HomePage({ navigate, onAuth }) {
+//   const { user } = useAuth();
+//   const [courses, setCourses] = useState([]);
+//   const [liveClasses, setLiveClasses] = useState([]);
+//   const [loadingCourses, setLoadingCourses] = useState(true);
+
+//   useEffect(() => {
+//     fetch(`${API_BASE}/courses?limit=6`).then(r => r.json()).then(d => {
+//       if (d.success) setCourses(d.data || d.courses || []);
+//       setLoadingCourses(false);
+//     }).catch(() => setLoadingCourses(false));
+//     fetch(`${API_BASE}/live-classes?limit=4`).then(r => r.json()).then(d => {
+//       if (d.success) setLiveClasses(d.data || d.liveClasses || []);
+//     }).catch(() => {});
+//   }, []);
+
+//   return (
+//     <div className="page">
+//       {/* ── Hero (CSS-animated, no IntersectionObserver needed — always in view) */}
+//       <section className="hero">
+//         <div className="container">
+//           <div className="hero-eyebrow">🎓 India's Most Affordable Learning Platform</div>
+//           <h1 className="hero-title">
+//             Learn From <span className="hl">Expert Tutors</span><br />
+//             Anytime, Anywhere
+//           </h1>
+//           <p className="hero-sub">
+//             Access 500+ courses, live interactive classes, and downloadable study notes — all at prices that don't break the bank.
+//           </p>
+//           <div className="hero-ctas">
+//             {user
+//               ? <button className="btn btn-primary btn-lg" onClick={() => navigate("/courses")}>Browse Courses 🚀</button>
+//               : <button className="btn btn-primary btn-lg" onClick={onAuth}>Get Started Free →</button>
+//             }
+//             <button className="btn btn-outline btn-lg" onClick={() => navigate("/live")}>View Live Classes 📡</button>
+//           </div>
+//           <div className="hero-stats">
+//             {[["50K+", "Active Students"], ["500+", "Expert Courses"], ["1000+", "Live Classes"], ["4.8★", "Average Rating"]].map(([n, l]) => (
+//               <div key={l} className="stat">
+//                 <span className="stat-num">{n}</span>
+//                 <span className="stat-label">{l}</span>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* ── Category strip */}
+//       <section className="section" style={{ paddingTop: 0 }}>
+//         <div className="container">
+//           <Reveal>
+//             <div className="section-header">
+//               <div className="section-eyebrow">Choose Your Batch</div>
+//               <h2 className="section-title">Find Your <span className="grad">Learning Tribe</span></h2>
+//             </div>
+//           </Reveal>
+//           <Reveal delay={100}>
+//             <CategoryStrip onSelect={() => navigate("/courses")} selected={null} />
+//           </Reveal>
+//         </div>
+//       </section>
+
+//       {/* ── Features */}
+//       <section className="section" style={{ background: "var(--bg2)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+//         <div className="container">
+//           <Reveal>
+//             <div className="section-header">
+//               <div className="section-eyebrow">Why WhatNext</div>
+//               <h2 className="section-title">Everything You Need to <span className="grad">Excel</span></h2>
+//             </div>
+//           </Reveal>
+//           {/* Staggered feature cards */}
+//           <div className="features-row">
+//             {[
+//               ["📡", "Live Classes", "Interact with instructors in real-time."],
+//               ["🎬", "Video Courses", "Learn at your pace with HD video lectures."],
+//               ["📄", "Study Notes", "Curated PDF notes to reinforce your learning."],
+//               ["📊", "Track Progress", "Monitor video progress and stay on goals."],
+//               ["💳", "Easy Payments", "Secure Razorpay checkout. Pay once, learn forever."],
+//               ["🏆", "Certificates", "Earn certificates to showcase achievements."]
+//             ].map(([icon, title, desc], i) => (
+//               <Reveal key={title} delay={i * 80}>
+//                 <div className="feature-item">
+//                   <div className="feature-icon">{icon}</div>
+//                   <div className="feature-title">{title}</div>
+//                   <div className="feature-desc">{desc}</div>
+//                 </div>
+//               </Reveal>
+//             ))}
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* ── Featured courses */}
+//       <section className="section">
+//         <div className="container">
+//           <Reveal>
+//             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
+//               <div>
+//                 <div className="section-eyebrow">Popular Picks</div>
+//                 <h2 className="section-title">Featured <span className="grad">Courses</span></h2>
+//               </div>
+//               <button className="btn btn-outline btn-sm" onClick={() => navigate("/courses")}>View All →</button>
+//             </div>
+//           </Reveal>
+//           {loadingCourses
+//             ? <div className="spinner" />
+//             : courses.length === 0
+//               ? <div className="empty-state"><div className="icon">📚</div><p>No courses yet.</p></div>
+//               : (
+//                 <div className="grid-3">
+//                   {courses.slice(0, 6).map((c, i) => (
+//                     <Reveal key={c._id} delay={i * 70}>
+//                       <CourseCard course={c} onClick={() => navigate(`/courses/${c._id}`)} />
+//                     </Reveal>
+//                   ))}
+//                 </div>
+//               )
+//           }
+//         </div>
+//       </section>
+
+//       {/* ── Live classes teaser */}
+//       {liveClasses.length > 0 && (
+//         <section className="section" style={{ background: "var(--bg2)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+//           <div className="container">
+//             <Reveal>
+//               <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
+//                 <div>
+//                   <div className="section-eyebrow">Coming Up</div>
+//                   <h2 className="section-title">Upcoming <span className="grad">Live Classes</span></h2>
+//                 </div>
+//                 <button className="btn btn-outline btn-sm" onClick={() => navigate("/live")}>View All →</button>
+//               </div>
+//             </Reveal>
+//             <div className="grid-3">
+//               {liveClasses.slice(0, 3).map((lc, i) => (
+//                 <Reveal key={lc._id} delay={i * 80}>
+//                   <LiveClassCard liveClass={lc} onClick={() => navigate(`/live/${lc._id}`)} />
+//                 </Reveal>
+//               ))}
+//             </div>
+//           </div>
+//         </section>
+//       )}
+
+//       {/* ── CTA Banner */}
+//       <section className="section">
+//         <div className="container">
+//           <Reveal>
+//             <div style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)", border: "1px solid var(--border)", borderRadius: 20, padding: "48px 40px", textAlign: "center" }}>
+//               <div style={{ fontSize: "3rem", marginBottom: 16 }}>💻</div>
+//               <h2 style={{ fontFamily: "var(--font2)", fontSize: "1.8rem", fontWeight: 700, marginBottom: 12, color: "#fff" }}>Ready to start learning?</h2>
+//               <p style={{ color: "rgba(255,255,255,0.9)", marginBottom: 28, maxWidth: 480, margin: "0 auto 28px" }}>
+//                 Join 50,000+ students mastering their subjects with expert guidance.
+//               </p>
+//               <button className="btn btn-lg" style={{ background: "#fff", color: "var(--primary)" }} onClick={user ? () => navigate("/courses") : onAuth}>
+//                 {user ? "Browse Courses 🚀" : "Start Learning Free →"}
+//               </button>
+//             </div>
+//           </Reveal>
+//         </div>
+//       </section>
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // COURSES PAGE
+// // ─────────────────────────────────────────────
+// function CoursesPage({ navigate }) {
+//   const [courses, setCourses] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [search, setSearch] = useState("");
+//   const [level, setLevel] = useState(null);
+//   const [category, setCategory] = useState("");
+//   const categories = ["Mathematics", "Science", "English", "Physics", "Chemistry", "Biology", "History", "Computer"];
+
+//   useEffect(() => {
+//     const params = new URLSearchParams();
+//     if (search) params.set("search", search);
+//     if (level) params.set("level", level);
+//     if (category) params.set("category", category);
+//     setLoading(true);
+//     fetch(`${API_BASE}/courses?${params}`).then(r => r.json()).then(d => {
+//       if (d.success) setCourses(d.data || d.courses || []);
+//       setLoading(false);
+//     }).catch(() => setLoading(false));
+//   }, [search, level, category]);
+
+//   return (
+//     <div className="page">
+//       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
+//         <div className="container">
+//           <Reveal>
+//             <h1 className="section-title" style={{ marginBottom: 8 }}>All <span className="grad">Courses</span></h1>
+//             <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Explore our library of expert-taught courses</p>
+//           </Reveal>
+//         </div>
+//       </div>
+//       <div className="container section">
+//         <Reveal><CategoryStrip onSelect={setLevel} selected={level} /></Reveal>
+//         <Reveal delay={80}>
+//           <div className="search-bar" style={{ marginTop: 16 }}>
+//             <span style={{ color: "var(--text3)" }}>🔍</span>
+//             <input placeholder="Search courses…" value={search} onChange={e => setSearch(e.target.value)} />
+//             {search && <button onClick={() => setSearch("")} style={{ background: "none", color: "var(--text3)" }}>✕</button>}
+//           </div>
+//         </Reveal>
+//         <Reveal delay={120}>
+//           <div className="tag-row">
+//             <span className={`tag ${!category ? "active" : ""}`} onClick={() => setCategory("")}>All</span>
+//             {categories.map(c => (
+//               <span key={c} className={`tag ${category === c ? "active" : ""}`} onClick={() => setCategory(c)}>{c}</span>
+//             ))}
+//           </div>
+//         </Reveal>
+//         {loading
+//           ? <div className="spinner" />
+//           : courses.length === 0
+//             ? <div className="empty-state"><div className="icon">🔎</div><p>No courses found. Try adjusting filters.</p></div>
+//             : (
+//               <div className="grid-3">
+//                 {courses.map((c, i) => (
+//                   <Reveal key={c._id} delay={i * 60}>
+//                     <CourseCard course={c} onClick={() => navigate(`/courses/${c._id}`)} />
+//                   </Reveal>
+//                 ))}
+//               </div>
+//             )
+//         }
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // COURSE DETAIL PAGE
+// // ─────────────────────────────────────────────
+// function CourseDetailPage({ id, navigate, onAuth }) {
+//   const { user, authFetch, token } = useAuth();
+//   const toast = useToast();
+//   const [course, setCourse] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [paying, setPaying] = useState(false);
+
+//   useEffect(() => {
+//     const headers = token ? { Authorization: `Bearer ${token}` } : {};
+//     fetch(`${API_BASE}/courses/${id}`, { headers }).then(r => r.json()).then(d => {
+//       if (d.success) setCourse(d.data || d.course);
+//       setLoading(false);
+//     }).catch(() => setLoading(false));
+//   }, [id, token]);
+
+//   const hasPurchased = course?.purchased || user?.purchasedCourses?.some(p => p.course?.toString() === id || p.course === id);
+//   const price = course?.isFree ? 0 : (course?.discountPrice ?? course?.price ?? 0);
+
+//   const handleBuy = async () => {
+//     if (!user) { onAuth(); return; }
+//     if (course.isFree || price === 0) { toast("Enrolling…", "info"); return; }
+//     setPaying(true);
+//     try {
+//       const order = await authFetch("/payments/create-order", {
+//         method: "POST",
+//         body: JSON.stringify({ itemType: "course", itemId: id })
+//       });
+//       if (!order.success) { toast(order.message || "Order failed", "error"); setPaying(false); return; }
+//       const options = {
+//         key: order.razorpayKeyId || "",
+//         amount: order.order?.amount,
+//         currency: order.order?.currency || "INR",
+//         name: "WhatNext",
+//         description: course.title,
+//         order_id: order.order?.id,
+//         handler: async (res) => {
+//           const verify = await authFetch("/payments/verify", {
+//             method: "POST",
+//             body: JSON.stringify({ razorpayOrderId: res.razorpay_order_id, razorpayPaymentId: res.razorpay_payment_id, razorpaySignature: res.razorpay_signature, itemType: "course", itemId: id })
+//           });
+//           if (verify.success) { toast("Purchase successful! 🎉", "success"); navigate("/dashboard"); }
+//           else toast(verify.message || "Verification failed", "error");
+//         },
+//         prefill: { name: user.name, email: user.email }
+//       };
+//       if (window.Razorpay) { const rz = new window.Razorpay(options); rz.open(); }
+//       else toast("Payment gateway not loaded", "error");
+//     } catch { toast("Payment error", "error"); }
+//     setPaying(false);
+//   };
+
+//   if (loading) return <div className="page"><div className="spinner" /></div>;
+//   if (!course) return <div className="page"><div className="container" style={{ padding: "80px 24px", textAlign: "center" }}><h2>Course not found</h2></div></div>;
+
+//   return (
+//     <div className="page">
+//       <div className="detail-header">
+//         <div className="container">
+//           <Reveal>
+//             <div className="detail-breadcrumb" onClick={() => navigate("/courses")}>← Back to <span>Courses</span></div>
+//             <div style={{ display: "flex", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
+//               <span className="badge badge-primary">{course.level}</span>
+//               {course.category && <span className="badge badge-cyan">{course.category}</span>}
+//               {course.isFree && <span className="badge badge-green">FREE</span>}
+//             </div>
+//             <h1 className="detail-title">{course.title}</h1>
+//             <div className="detail-meta-row">
+//               <span>🎬 {course.videos?.length || 0} videos</span>
+//               <span>👥 {course.totalStudents || 0} students</span>
+//               <span>🌐 {course.language || "English"}</span>
+//             </div>
+//             <p style={{ color: "var(--text2)", maxWidth: 700, lineHeight: 1.6 }}>{course.description}</p>
+//           </Reveal>
+//         </div>
+//       </div>
+//       <div className="container">
+//         <div className="detail-layout">
+//           <div>
+//             {hasPurchased && (
+//               <Reveal><div className="success-box" style={{ marginBottom: 24 }}>✅ You have access to this course!</div></Reveal>
+//             )}
+//             {course.outcomes?.length > 0 && (
+//               <Reveal>
+//                 <div style={{ marginBottom: 28 }}>
+//                   <h3 style={{ fontWeight: 700, marginBottom: 14 }}>🎯 What You'll Learn</h3>
+//                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+//                     {course.outcomes.map((o, i) => (
+//                       <div key={i} style={{ display: "flex", gap: 8, fontSize: "0.87rem", color: "var(--text2)" }}>
+//                         <span style={{ color: "var(--green)", flexShrink: 0 }}>✓</span> {o}
+//                       </div>
+//                     ))}
+//                   </div>
+//                 </div>
+//               </Reveal>
+//             )}
+//             {course.requirements?.length > 0 && (
+//               <Reveal>
+//                 <div style={{ marginBottom: 28 }}>
+//                   <h3 style={{ fontWeight: 700, marginBottom: 14 }}>📋 Requirements</h3>
+//                   {course.requirements.map((r, i) => (
+//                     <div key={i} style={{ fontSize: "0.87rem", color: "var(--text2)", marginBottom: 6, display: "flex", gap: 8 }}>
+//                       <span>•</span> {r}
+//                     </div>
+//                   ))}
+//                 </div>
+//               </Reveal>
+//             )}
+//             <Reveal>
+//               <div>
+//                 <h3 style={{ fontWeight: 700, marginBottom: 14 }}>🎬 Course Content</h3>
+//                 {(!course.videos || course.videos.length === 0)
+//                   ? <div style={{ color: "var(--text3)", fontSize: "0.87rem" }}>No videos added yet.</div>
+//                   : <div className="video-list">
+//                       {course.videos.map((v, i) => (
+//                         <div key={v._id || i} className={`video-item ${!hasPurchased && !v.isPreview ? "locked" : ""}`}>
+//                           <div className="video-num">{i + 1}</div>
+//                           <div className="video-info">
+//                             <div className="video-title-text">{v.title}</div>
+//                             {v.duration > 0 && <div className="video-dur">{Math.floor(v.duration / 60)}m {v.duration % 60}s</div>}
+//                           </div>
+//                           {v.isPreview ? <span className="badge badge-green">Preview</span>
+//                             : hasPurchased ? <span style={{ color: "var(--text3)" }}>▶</span>
+//                             : <span style={{ color: "var(--text3)" }}>🔒</span>}
+//                         </div>
+//                       ))}
+//                     </div>
+//                 }
+//               </div>
+//             </Reveal>
+//           </div>
+//           <Reveal>
+//             <div className="detail-sidebar">
+//               <div className="sidebar-price">{course.isFree ? "FREE" : `₹${price}`}</div>
+//               {!course.isFree && course.discountPrice && <div className="sidebar-price-old">₹{course.price}</div>}
+//               {hasPurchased
+//                 ? <button className="btn btn-green btn-lg sidebar-btn" onClick={() => navigate("/dashboard")}>Go to My Learning →</button>
+//                 : <button className="btn btn-primary btn-lg sidebar-btn" onClick={handleBuy} disabled={paying}>
+//                     {paying ? "Processing…" : course.isFree ? "Enrol Free →" : `Buy for ₹${price} →`}
+//                   </button>
+//               }
+//               <div className="sidebar-features">
+//                 {[["📱", "Access on all devices"], ["♾️", "Lifetime access"], ["🎬", `${course.videos?.length || 0} video lectures`], ["📄", "Downloadable resources"], ["🏆", "Certificate of completion"]].map(([icon, label]) => (
+//                   <div key={label} className="sidebar-feature"><span>{icon}</span> {label}</div>
+//                 ))}
+//               </div>
+//             </div>
+//           </Reveal>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // LIVE CLASSES PAGE
+// // ─────────────────────────────────────────────
+// function LiveClassesPage({ navigate }) {
+//   const [classes, setClasses] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [status, setStatus] = useState("all");
+
+//   useEffect(() => {
+//     setLoading(true);
+//     const params = new URLSearchParams();
+//     if (status !== "all") params.set("status", status);
+//     fetch(`${API_BASE}/live-classes?${params}`)
+//       .then(r => r.json())
+//       .then(d => {
+//         if (d.success) {
+//           // Handle all possible response shapes
+//           setClasses(d.data || d.liveClasses || d.classes || []);
+//         }
+//         setLoading(false);
+//       })
+//       .catch(() => setLoading(false));
+//   }, [status]);
+
+//   return (
+//     <div className="page">
+//       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
+//         <div className="container">
+//           <Reveal>
+//             <h1 className="section-title" style={{ marginBottom: 8 }}>Live <span className="grad">Classes</span></h1>
+//             <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Join interactive sessions with expert instructors in real time</p>
+//           </Reveal>
+//         </div>
+//       </div>
+//       <div className="container section">
+//         <Reveal>
+//           <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
+//             {["all", "upcoming", "live", "completed"].map(s => (
+//               <button key={s} className={`btn ${status === s ? "btn-primary" : "btn-outline"} btn-sm`}
+//                 onClick={() => setStatus(s)} style={{ textTransform: "capitalize" }}>
+//                 {s === "live" && "🔴 "}{s}
+//               </button>
+//             ))}
+//           </div>
+//         </Reveal>
+//         {loading
+//           ? <div className="spinner" />
+//           : classes.length === 0
+//             ? <div className="empty-state"><div className="icon">📡</div><p>No live classes found.</p></div>
+//             : (
+//               <div className="grid-3">
+//                 {classes.map((lc, i) => (
+//                   <Reveal key={lc._id} delay={i * 70}>
+//                     <LiveClassCard liveClass={lc} onClick={() => navigate(`/live/${lc._id}`)} />
+//                   </Reveal>
+//                 ))}
+//               </div>
+//             )
+//         }
+//       </div>
+//     </div>
+//   );
+// }
+// // ─────────────────────────────────────────────
+// // LIVE CLASS DETAIL
+// // ─────────────────────────────────────────────
+// function LiveClassDetailPage({ id, navigate, onAuth }) {
+//   const { user, authFetch, token } = useAuth();
+//   const toast = useToast();
+//   const [lc, setLc] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [registering, setRegistering] = useState(false);
+
+//   useEffect(() => {
+//     const headers = token ? { Authorization: `Bearer ${token}` } : {};
+//     fetch(`${API_BASE}/live-classes/${id}`, { headers }).then(r => r.json()).then(d => {
+//       if (d.success) setLc(d.data || d.liveClass);
+//       setLoading(false);
+//     }).catch(() => setLoading(false));
+//   }, [id, token]);
+
+//   const isRegistered = lc?.registered || user?.liveClassRegistrations?.some(r => r.liveClass?.toString() === id || r.liveClass === id);
+// const handleRegister = async () => {
+//   if (!user) { onAuth(); return; }
+
+//   // ── PAID class → go through Razorpay ──────────────────────
+//   if (!lc.isFree && lc.price > 0) {
+//     try {
+//       const order = await authFetch('/payments/create-order', {
+//         method: 'POST',
+//         body: JSON.stringify({ itemType: 'liveClass', itemId: id })
+//       });
+
+//       if (!order.success) {
+//         toast(order.message || 'Could not create order', 'error');
+//         return;
+//       }
+
+//       const options = {
+//         key: order.razorpayKeyId || '',
+//         amount: order.order?.amount,
+//         currency: order.order?.currency || 'INR',
+//         name: 'WhatNext',
+//         description: lc.title,
+//         order_id: order.order?.id,
+//         handler: async (razorpayRes) => {
+//           const verify = await authFetch('/payments/verify', {
+//             method: 'POST',
+//             body: JSON.stringify({
+//               razorpayOrderId:   razorpayRes.razorpay_order_id,
+//               razorpayPaymentId: razorpayRes.razorpay_payment_id,
+//               razorpaySignature: razorpayRes.razorpay_signature,
+//               itemType: 'liveClass',
+//               itemId: id
+//             })
+//           });
+//           if (verify.success) {
+//             toast('Payment successful! You\'re registered 🎉', 'success');
+//             // Refresh the class so isRegistered flips to true
+//             const headers = token ? { Authorization: `Bearer ${token}` } : {};
+//             fetch(`${API_BASE}/live-classes/${id}`, { headers })
+//               .then(r => r.json())
+//               .then(d => { if (d.success) setLc(d.data || d.liveClass); });
+//           } else {
+//             toast(verify.message || 'Payment verification failed', 'error');
+//           }
+//         },
+//         prefill: { name: user.name, email: user.email },
+//         modal: { ondismiss: () => toast('Payment cancelled', 'info') }
+//       };
+
+//       if (window.Razorpay) {
+//         const rz = new window.Razorpay(options);
+//         rz.open();
+//       } else {
+//         toast('Payment gateway not loaded', 'error');
+//       }
+//     } catch {
+//       toast('Payment error', 'error');
+//     }
+//     return; // ← stop here; Razorpay handler takes over
+//   }
+
+//   // ── FREE class → direct register ──────────────────────────
+//   setRegistering(true);
+//   try {
+//     const res = await authFetch(`/live-classes/${id}/register`, {
+//       method: 'POST',
+//       body: JSON.stringify({})
+//     });
+
+//     if (res.success) {
+//       toast('Registered! 🎉 Meeting link will be sent before class starts.', 'success');
+//       // Refresh so the sidebar shows "Registered" button
+//       const headers = token ? { Authorization: `Bearer ${token}` } : {};
+//       fetch(`${API_BASE}/live-classes/${id}`, { headers })
+//         .then(r => r.json())
+//         .then(d => { if (d.success) setLc(d.data || d.liveClass); });
+//     } else {
+//       toast(res.message || 'Registration failed', 'error');
+//     }
+//   } catch {
+//     toast('Error registering', 'error');
+//   }
+//   setRegistering(false);
+// };
+
+//   if (loading) return <div className="page"><div className="spinner" /></div>;
+//   if (!lc) return <div className="page"><div className="container" style={{ padding: "80px 24px", textAlign: "center" }}><h2>Class not found</h2></div></div>;
+
+//   const date = new Date(lc.scheduledAt);
+//   const isLive = lc.status === "live";
+
+//   return (
+//     <div className="page">
+//       <div className="detail-header">
+//         <div className="container">
+//           <Reveal>
+//             <div className="detail-breadcrumb" onClick={() => navigate("/live")}>← Back to <span>Live Classes</span></div>
+//             <div style={{ display: "flex", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
+//               {isLive && <div className="live-badge"><div className="live-dot" />LIVE NOW</div>}
+//               <span className={`badge ${lc.isFree ? "badge-green" : "badge-primary"}`}>{lc.isFree ? "FREE" : `₹${lc.price}`}</span>
+//               <span className="badge badge-cyan">{lc.platform}</span>
+//             </div>
+//             <h1 className="detail-title">{lc.title}</h1>
+//             <div className="detail-meta-row">
+//               <span>🗓 {date.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}</span>
+//               <span>🕐 {date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
+//               <span>⏱ {lc.duration} mins</span>
+//               <span>👥 {lc.registrations?.length || 0} / {lc.maxParticipants}</span>
+//             </div>
+//             {lc.description && <p style={{ color: "var(--text2)", maxWidth: 700, lineHeight: 1.6 }}>{lc.description}</p>}
+//           </Reveal>
+//         </div>
+//       </div>
+//       <div className="container">
+//         <div className="detail-layout">
+//           <div>
+//             {isRegistered && (
+//               <Reveal>
+//                 <div className="success-box" style={{ marginBottom: 24 }}>
+                 
+//                   ✅ You're registered! Meeting link will be sent {lc.urlSendMinutesBefore || 30} minutes before the class.
+//                 </div>
+//               </Reveal>
+//             )}
+//             <Reveal delay={60}>
+//               <div style={{ background: "var(--surface)", borderRadius: 14, padding: 24, border: "1px solid var(--border)" }}>
+//                 <h3 style={{ fontWeight: 700, marginBottom: 16 }}>📋 Class Details</h3>
+//                 {[["Platform", lc.platform], ["Duration", `${lc.duration} minutes`], ["Max Participants", lc.maxParticipants], ["Registered", lc.registrations?.length || 0], ["Seats Left", lc.availableSeats ?? Math.max(0, lc.maxParticipants - (lc.registrations?.length || 0))]].map(([k, v]) => (
+//                   <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)", fontSize: "0.87rem" }}>
+//                     <span style={{ color: "var(--text2)" }}>{k}</span>
+//                     <span style={{ fontWeight: 600 }}>{v}</span>
+//                   </div>
+//                 ))}
+//               </div>
+//             </Reveal>
+//           </div>
+//           <Reveal>
+//             <div className="detail-sidebar">
+//               <div className="sidebar-price">{lc.isFree ? "FREE" : `₹${lc.price}`}</div>
+//               {isRegistered
+//                 ? <button className="btn btn-green btn-lg sidebar-btn" disabled>✅ Registered</button>
+//                 : lc.status === "completed" || lc.status === "cancelled"
+//                   ? <button className="btn btn-outline btn-lg sidebar-btn" disabled>Class {lc.status}</button>
+//                   : <button className="btn btn-primary btn-lg sidebar-btn" onClick={handleRegister} disabled={registering || lc.isFull}>
+//                       {registering ? "Registering…" : lc.isFull ? "Class Full" : "Register Now →"}
+//                     </button>
+//               }
+//               <div className="sidebar-features">
+//                 {[["📡", lc.platform + " meeting"], ["📧", "Link sent via email"], ["⏱", `${lc.duration} min session`], ["👥", `Max ${lc.maxParticipants} participants`]].map(([icon, label]) => (
+//                   <div key={label} className="sidebar-feature"><span>{icon}</span> {label}</div>
+//                 ))}
+//               </div>
+//             </div>
+//           </Reveal>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // NOTES PAGE
+// // ─────────────────────────────────────────────
+// function NotesPage({ navigate }) {
+//   const [notes, setNotes] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [search, setSearch] = useState("");
+
+//   useEffect(() => {
+//     const params = new URLSearchParams();
+//     if (search) params.set("search", search);
+//     fetch(`${API_BASE}/notes?${params}`).then(r => r.json()).then(d => {
+//       if (d.success) setNotes(d.data || d.notes || []);
+//       setLoading(false);
+//     }).catch(() => setLoading(false));
+//   }, [search]);
+
+//   return (
+//     <div className="page">
+//       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
+//         <div className="container">
+//           <Reveal>
+//             <h1 className="section-title" style={{ marginBottom: 8 }}>Study <span className="grad">Notes</span></h1>
+//             <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Curated PDFs and study material for focused learning</p>
+//           </Reveal>
+//         </div>
+//       </div>
+//       <div className="container section">
+//         <Reveal>
+//           <div className="search-bar">
+//             <span style={{ color: "var(--text3)" }}>🔍</span>
+//             <input placeholder="Search notes…" value={search} onChange={e => setSearch(e.target.value)} />
+//             {search && <button onClick={() => setSearch("")} style={{ background: "none", color: "var(--text3)" }}>✕</button>}
+//           </div>
+//         </Reveal>
+//         {loading ? <div className="spinner" />
+//           : notes.length === 0
+//             ? <div className="empty-state"><div className="icon">📄</div><p>No notes found.</p></div>
+//             : (
+//               <div className="grid-3">
+//                 {notes.map((n, i) => (
+//                   <Reveal key={n._id} delay={i * 65}>
+//                     <NotesCard note={n} onClick={() => navigate(`/notes/${n._id}`)} />
+//                   </Reveal>
+//                 ))}
+//               </div>
+//             )
+//         }
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // NOTE DETAIL
+// // ─────────────────────────────────────────────
+// function NoteDetailPage({ id, navigate, onAuth }) {
+//   const { user, authFetch, token } = useAuth();
+//   const toast = useToast();
+//   const [note, setNote] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [paying, setPaying] = useState(false);
+
+//   useEffect(() => {
+//     const headers = token ? { Authorization: `Bearer ${token}` } : {};
+//     fetch(`${API_BASE}/notes/${id}`, { headers }).then(r => r.json()).then(d => {
+//       if (d.success) setNote(d.data || d.note);
+//       setLoading(false);
+//     }).catch(() => setLoading(false));
+//   }, [id, token]);
+
+//   const hasPurchased = note?.purchased || user?.purchasedNotes?.some(p => p.notes?.toString() === id || p.notes === id);
+//   const price = note?.isFree ? 0 : (note?.discountPrice ?? note?.price ?? 0);
+
+//   const handleDownload = async () => {
+//     if (!user) { onAuth(); return; }
+//     if (!hasPurchased && !note?.isFree) { toast("Please purchase to download", "error"); return; }
+//     window.open(`${API_BASE}/notes/${id}/download?token=${token}`, "_blank");
+//   };
+
+//   const handleBuy = async () => {
+//     if (!user) { onAuth(); return; }
+//     setPaying(true);
+//     try {
+//       const order = await authFetch("/payments/create-order", {
+//         method: "POST",
+//         body: JSON.stringify({ itemType: "notes", itemId: id })
+//       });
+//       if (!order.success) { toast(order.message || "Order failed", "error"); setPaying(false); return; }
+//       const options = {
+//         key: order.razorpayKeyId || "",
+//         amount: order.order?.amount,
+//         currency: order.order?.currency || "INR",
+//         name: "WhatNext",
+//         description: note.title,
+//         order_id: order.order?.id,
+//         handler: async (res) => {
+//           const verify = await authFetch("/payments/verify", {
+//             method: "POST",
+//             body: JSON.stringify({ razorpayOrderId: res.razorpay_order_id, razorpayPaymentId: res.razorpay_payment_id, razorpaySignature: res.razorpay_signature, itemType: "notes", itemId: id })
+//           });
+//           if (verify.success) { toast("Purchase successful! 🎉", "success"); }
+//           else toast(verify.message || "Verification failed", "error");
+//         },
+//         prefill: { name: user.name, email: user.email }
+//       };
+//       if (window.Razorpay) { const rz = new window.Razorpay(options); rz.open(); }
+//       else toast("Payment gateway not loaded", "error");
+//     } catch { toast("Payment error", "error"); }
+//     setPaying(false);
+//   };
+
+//   if (loading) return <div className="page"><div className="spinner" /></div>;
+//   if (!note) return <div className="page"><div className="container" style={{ padding: "80px 24px", textAlign: "center" }}><h2>Note not found</h2></div></div>;
+
+//   return (
+//     <div className="page">
+//       <div className="detail-header">
+//         <div className="container">
+//           <Reveal>
+//             <div className="detail-breadcrumb" onClick={() => navigate("/notes")}>← Back to <span>Notes</span></div>
+//             <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+//               <span className="badge badge-yellow">{note.fileType?.toUpperCase()}</span>
+//               {note.isFree && <span className="badge badge-green">FREE</span>}
+//             </div>
+//             <h1 className="detail-title">{note.title}</h1>
+//             <div className="detail-meta-row">
+//               <span>📄 {note.fileType?.toUpperCase()}</span>
+//               {note.fileSizeBytes > 0 && <span>💾 {(note.fileSizeBytes / 1024 / 1024).toFixed(1)} MB</span>}
+//               {note.previewPages > 0 && <span>👀 {note.previewPages} preview pages</span>}
+//               <span>📥 {note.totalPurchases || 0} downloads</span>
+//             </div>
+//             {note.description && <p style={{ color: "var(--text2)", maxWidth: 700, lineHeight: 1.6 }}>{note.description}</p>}
+//           </Reveal>
+//         </div>
+//       </div>
+//       <div className="container">
+//         <div className="detail-layout">
+//           <div>
+//             {hasPurchased && (
+//               <Reveal><div className="success-box" style={{ marginBottom: 24 }}>✅ You own this — click Download to access your file!</div></Reveal>
+//             )}
+//             <Reveal delay={60}>
+//               <div style={{ background: "var(--surface)", borderRadius: 14, padding: 24, border: "1px solid var(--border)" }}>
+//                 <h3 style={{ fontWeight: 700, marginBottom: 16 }}>📋 Document Details</h3>
+//                 {[["File Type", note.fileType?.toUpperCase()], ["Category", note.category || "General"], ["Downloads", note.totalPurchases || 0], ...(note.previewPages > 0 ? [["Free Preview", `${note.previewPages} pages`]] : [])].map(([k, v]) => (
+//                   <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)", fontSize: "0.87rem" }}>
+//                     <span style={{ color: "var(--text2)" }}>{k}</span><span style={{ fontWeight: 600 }}>{v}</span>
+//                   </div>
+//                 ))}
+//               </div>
+//             </Reveal>
+//           </div>
+//           <Reveal>
+//             <div className="detail-sidebar">
+//               <div className="sidebar-price">{note.isFree ? "FREE" : `₹${price}`}</div>
+//               {!note.isFree && note.discountPrice && <div className="sidebar-price-old">₹{note.price}</div>}
+//               {(hasPurchased || note.isFree)
+//                 ? <button className="btn btn-green btn-lg sidebar-btn" onClick={handleDownload}>⬇️ Download Now</button>
+//                 : <button className="btn btn-primary btn-lg sidebar-btn" onClick={handleBuy} disabled={paying}>
+//                     {paying ? "Processing…" : `Buy for ₹${price} →`}
+//                   </button>
+//               }
+//             </div>
+//           </Reveal>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // DASHBOARD
+// // ─────────────────────────────────────────────
+// function DashboardPage({ navigate }) {
+//   const { user, authFetch } = useAuth();
+//   const [payments, setPayments] = useState([]);
+//   const [tab, setTab] = useState("courses");
+
+//   useEffect(() => {
+//     if (user) authFetch("/payments/my").then(d => { if (d.success) setPayments(d.data || d.payments || []); }).catch(() => {});
+//   }, [authFetch, user]);
+
+//   if (!user) return (
+//     <div className="page"><div className="container" style={{ padding: 80, textAlign: "center" }}>
+//       <h2>Please login to view your dashboard</h2>
+//     </div></div>
+//   );
+
+//   const courses = user.purchasedCourses || [];
+//   const notes = user.purchasedNotes || [];
+//   const liveRegs = user.liveClassRegistrations || [];
+
+//   return (
+//     <div className="page">
+//       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
+//         <div className="container">
+//           <Reveal>
+//             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+//               <div className="avatar-btn" style={{ width: 52, height: 52, fontSize: "1.2rem", flexShrink: 0 }}>
+//                 {user.name?.[0]?.toUpperCase()}
+//               </div>
+//               <div>
+//                 <h1 style={{ fontFamily: "var(--font2)", fontSize: "1.6rem", fontWeight: 700 }}>Welcome, {user.name}! 👋</h1>
+//                 <p style={{ color: "var(--text2)", fontSize: "0.88rem" }}>{user.email} · {user.role}</p>
+//               </div>
+//             </div>
+//           </Reveal>
+//         </div>
+//       </div>
+//       <div className="container section">
+//         <div className="stats-grid" style={{ marginBottom: 32 }}>
+//           {[["📚", courses.length, "Courses Enrolled"], ["📄", notes.length, "Notes Purchased"], ["📡", liveRegs.length, "Classes Registered"], ["💳", payments.filter(p => p.status === "paid").length, "Successful Payments"]].map(([icon, num, label], i) => (
+//             <Reveal key={label} delay={i * 80}>
+//               <div className="stat-card">
+//                 <div className="stat-card-icon">{icon}</div>
+//                 <div className="stat-card-num">{num}</div>
+//                 <div className="stat-card-label">{label}</div>
+//               </div>
+//             </Reveal>
+//           ))}
+//         </div>
+//         <Reveal>
+//           <div className="tabs">
+//             {[["courses", "📚 My Courses"], ["notes", "📄 My Notes"], ["live", "📡 Live Classes"], ["payments", "💳 Payments"]].map(([key, label]) => (
+//               <button key={key} className={`tab ${tab === key ? "active" : ""}`} onClick={() => setTab(key)}>{label}</button>
+//             ))}
+//           </div>
+//         </Reveal>
+
+//         {tab === "courses" && (
+//           courses.length === 0
+//             ? <div className="empty-state"><div className="icon">📚</div><p>No courses yet. <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={() => navigate("/courses")}>Browse courses →</span></p></div>
+//             : <div className="grid-3">
+//                 {courses.map((p, i) => (
+//                   <Reveal key={p._id || p.course} delay={i * 70}>
+//                     <div className="card" onClick={() => navigate(`/courses/${p.course?._id || p.course}`)} style={{ cursor: "pointer" }}>
+//                       <div className="card-thumb" style={{ background: "var(--bg3)" }}>
+//                         {p.course?.thumbnail ? <img src={p.course.thumbnail} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt="" /> : <div style={{ fontSize: "3rem" }}>📚</div>}
+//                       </div>
+//                       <div className="card-body">
+//                         <div className="card-title">{p.course?.title || "Course"}</div>
+//                         <div style={{ fontSize: "0.8rem", color: "var(--text3)", marginTop: 6 }}>Purchased {new Date(p.purchasedAt).toLocaleDateString()}</div>
+//                         <div style={{ marginTop: 10 }}>
+//                           <div className="progress-bar-wrap"><div className="progress-bar" style={{ width: "35%" }} /></div>
+//                           <div style={{ fontSize: "0.75rem", color: "var(--text3)", marginTop: 4 }}>35% completed</div>
+//                         </div>
+//                       </div>
+//                     </div>
+//                   </Reveal>
+//                 ))}
+//               </div>
+//         )}
+
+//         {tab === "notes" && (
+//           notes.length === 0
+//             ? <div className="empty-state"><div className="icon">📄</div><p>No notes yet. <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={() => navigate("/notes")}>Browse notes →</span></p></div>
+//             : <div className="grid-3">
+//                 {notes.map((p, i) => (
+//                   <Reveal key={p._id || p.notes} delay={i * 70}>
+//                     <div className="card">
+//                       <div className="card-body">
+//                         <div style={{ fontSize: "2rem", marginBottom: 10 }}>📄</div>
+//                         <div className="card-title">{p.notes?.title || "Notes"}</div>
+//                         <div style={{ fontSize: "0.8rem", color: "var(--text3)", marginTop: 6 }}>Purchased {new Date(p.purchasedAt).toLocaleDateString()}</div>
+//                         <button className="btn btn-green btn-sm" style={{ marginTop: 12 }} onClick={() => navigate(`/notes/${p.notes?._id || p.notes}`)}>⬇️ Download</button>
+//                       </div>
+//                     </div>
+//                   </Reveal>
+//                 ))}
+//               </div>
+//         )}
+
+//         {tab === "live" && (
+//           liveRegs.length === 0
+//             ? <div className="empty-state"><div className="icon">📡</div><p>No classes registered. <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={() => navigate("/live")}>Browse classes →</span></p></div>
+//             : <div className="grid-3">
+//                 {liveRegs.map((r, i) => (
+//                   <Reveal key={i} delay={i * 70}>
+//                     <div className="card">
+//                       <div className="card-body">
+//                         <div style={{ fontSize: "2rem", marginBottom: 10 }}>📡</div>
+//                         <div className="card-title">Live Class Registration</div>
+//                         <div style={{ fontSize: "0.8rem", color: "var(--text3)", marginTop: 6 }}>Registered {new Date(r.registeredAt).toLocaleDateString()}</div>
+//                         <span className={`badge ${r.urlSent ? "badge-green" : "badge-yellow"}`} style={{ marginTop: 10, display: "inline-flex" }}>
+//                           {r.urlSent ? "✅ Link Sent" : "⏳ Link Pending"}
+//                         </span>
+//                       </div>
+//                     </div>
+//                   </Reveal>
+//                 ))}
+//               </div>
+//         )}
+
+//         {tab === "payments" && (
+//           payments.length === 0
+//             ? <div className="empty-state"><div className="icon">💳</div><p>No payment history.</p></div>
+//             : <Reveal>
+//                 <div className="table-wrap">
+//                   <table>
+//                     <thead><tr><th>Item</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+//                     <tbody>
+//                       {payments.map(p => (
+//                         <tr key={p._id}>
+//                           <td>{p.itemTitle || "—"}</td>
+//                           <td><span className="badge badge-primary">{p.itemType}</span></td>
+//                           <td style={{ fontWeight: 700 }}>₹{p.amountInRupees}</td>
+//                           <td><span className={`badge ${p.status === "paid" ? "badge-green" : p.status === "failed" ? "badge-accent" : "badge-yellow"}`}>{p.status}</span></td>
+//                           <td style={{ color: "var(--text3)" }}>{new Date(p.createdAt).toLocaleDateString()}</td>
+//                         </tr>
+//                       ))}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </Reveal>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ═══════════════════════════════════════════════════════════════════
+// // ADMIN PANEL
+// // ═══════════════════════════════════════════════════════════════════
+
+// function VideoManagerModal({ course, onClose, authFetch, toast }) {
+//   const [videos, setVideos] = useState(course.videos || []);
+//   const [addMode, setAddMode] = useState("url");
+//   const [uploading, setUploading] = useState(false);
+//   const [progress, setProgress] = useState(0);
+
+//   const [urlForm, setUrlForm] = useState({
+//     title: "", videoUrl: "", description: "", duration: 0,
+//     isPreview: false, buyNowTriggerSeconds: 300, order: course.videos?.length || 0
+//   });
+//   const [uploadForm, setUploadForm] = useState({
+//     title: "", description: "", duration: 0,
+//     isPreview: false, buyNowTriggerSeconds: 300
+//   });
+//   const [videoFile, setVideoFile] = useState(null);
+
+//   const refreshVideos = async () => {
+//     const res = await authFetch(`/courses/${course._id}`);
+//     if (res.success) setVideos((res.data || res.course)?.videos || []);
+//   };
+
+//   const addUrlVideo = async () => {
+//     if (!urlForm.title || !urlForm.videoUrl) { toast("Title and URL are required", "error"); return; }
+//     setUploading(true);
+//     const res = await authFetch(`/courses/${course._id}/videos/url`, {
+//       method: "POST",
+//       body: JSON.stringify({ ...urlForm, duration: Number(urlForm.duration), order: Number(urlForm.order), buyNowTriggerSeconds: Number(urlForm.buyNowTriggerSeconds) })
+//     });
+//     setUploading(false);
+//     if (res.success) {
+//       toast("Video added! ✅", "success");
+//       setUrlForm({ title: "", videoUrl: "", description: "", duration: 0, isPreview: false, buyNowTriggerSeconds: 300, order: videos.length + 1 });
+//       refreshVideos();
+//     } else toast(res.message || "Failed to add video", "error");
+//   };
+
+//   const uploadVideoFile = async () => {
+//     if (!uploadForm.title) { toast("Video title is required", "error"); return; }
+//     if (!videoFile) { toast("Please select a video file", "error"); return; }
+//     setUploading(true); setProgress(0);
+//     const formData = new FormData();
+//     formData.append("video", videoFile);
+//     formData.append("title", uploadForm.title);
+//     formData.append("description", uploadForm.description);
+//     formData.append("duration", String(uploadForm.duration));
+//     formData.append("isPreview", String(uploadForm.isPreview));
+//     formData.append("buyNowTriggerSeconds", String(uploadForm.buyNowTriggerSeconds));
+
+//     const authToken = localStorage.getItem("token");
+//     const xhr = new XMLHttpRequest();
+//     xhr.open("POST", `${API_BASE}/courses/${course._id}/videos/upload`);
+//     xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
+//     xhr.upload.onprogress = (e) => { if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100)); };
+//     xhr.onload = () => {
+//       setUploading(false);
+//       try {
+//         const res = JSON.parse(xhr.responseText);
+//         if (res.success) { toast("Video uploaded! ✅", "success"); setVideoFile(null); setUploadForm({ title: "", description: "", duration: 0, isPreview: false, buyNowTriggerSeconds: 300 }); setProgress(0); refreshVideos(); }
+//         else toast(res.message || "Upload failed", "error");
+//       } catch { toast("Upload failed", "error"); }
+//     };
+//     xhr.onerror = () => { setUploading(false); toast("Network error during upload", "error"); };
+//     xhr.send(formData);
+//   };
+
+//   const deleteVideo = async (videoId) => {
+//     if (!window.confirm("Delete this video?")) return;
+//     const res = await authFetch(`/courses/${course._id}/videos/${videoId}`, { method: "DELETE" });
+//     if (res.success) { toast("Video deleted", "success"); refreshVideos(); }
+//     else toast(res.message || "Delete failed", "error");
+//   };
+
+//   return (
+//     <div className="modal-overlay" onClick={onClose}>
+//       <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+//         <button className="modal-close" onClick={onClose}>✕</button>
+//         <div className="modal-title">🎬 Manage Videos</div>
+//         <div className="modal-sub">{course.title} · {videos.length} video{videos.length !== 1 ? "s" : ""}</div>
+
+//         {videos.length > 0 && (
+//           <div style={{ marginBottom: 24 }}>
+//             <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text2)", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Existing Videos</div>
+//             {videos.map((v, i) => (
+//               <div key={v._id || i} className="video-manager-item">
+//                 <div className="video-num">{i + 1}</div>
+//                 <div className="video-manager-info">
+//                   <div className="video-manager-title">{v.title}</div>
+//                   <div className="video-manager-meta">
+//                     <span>{v.videoType === "upload" ? "📁 File" : "🔗 URL"}</span>
+//                     {v.duration > 0 && <span>⏱ {Math.floor(v.duration / 60)}m {v.duration % 60}s</span>}
+//                     {v.isPreview && <span className="badge badge-green" style={{ fontSize: "0.7rem", padding: "1px 6px" }}>Preview</span>}
+//                   </div>
+//                 </div>
+//                 <button className="btn btn-danger btn-sm" onClick={() => deleteVideo(v._id)}>Delete</button>
+//               </div>
+//             ))}
+//           </div>
+//         )}
+
+//         <hr className="divider" />
+//         <div style={{ fontWeight: 700, marginBottom: 16 }}>➕ Add New Video</div>
+
+//         <div className="video-type-tabs">
+//           <div className={`video-type-tab ${addMode === "url" ? "active" : ""}`} onClick={() => setAddMode("url")}>
+//             🔗 Add by URL<br /><span style={{ fontSize: "0.72rem", color: "var(--text3)", fontWeight: 400 }}>YouTube, Vimeo, direct link</span>
+//           </div>
+//           <div className={`video-type-tab ${addMode === "upload" ? "active" : ""}`} onClick={() => setAddMode("upload")}>
+//             📁 Upload File<br /><span style={{ fontSize: "0.72rem", color: "var(--text3)", fontWeight: 400 }}>MP4, WebM, MOV</span>
+//           </div>
+//         </div>
+
+//         {addMode === "url" && (
+//           <div>
+//             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+//               <div className="form-group" style={{ gridColumn: "1/-1" }}>
+//                 <label className="form-label">Video Title *</label>
+//                 <input className="form-input" placeholder="e.g. Introduction to React Hooks" value={urlForm.title} onChange={e => setUrlForm(p => ({ ...p, title: e.target.value }))} />
+//               </div>
+//               <div className="form-group" style={{ gridColumn: "1/-1" }}>
+//                 <label className="form-label">Video URL *</label>
+//                 <input className="form-input" placeholder="https://youtube.com/watch?v=..." value={urlForm.videoUrl} onChange={e => setUrlForm(p => ({ ...p, videoUrl: e.target.value }))} />
+//                 <div className="form-hint">Supports YouTube, Vimeo, Google Drive, or direct video URLs</div>
+//               </div>
+//               <div className="form-group" style={{ gridColumn: "1/-1" }}>
+//                 <label className="form-label">Description</label>
+//                 <textarea className="form-input" rows={2} placeholder="Brief description" value={urlForm.description} onChange={e => setUrlForm(p => ({ ...p, description: e.target.value }))} />
+//               </div>
+//               <div className="form-group">
+//                 <label className="form-label">Duration (seconds)</label>
+//                 <input type="number" className="form-input" placeholder="e.g. 600 = 10 min" value={urlForm.duration} onChange={e => setUrlForm(p => ({ ...p, duration: e.target.value }))} />
+//               </div>
+//               <div className="form-group">
+//                 <label className="form-label">Order</label>
+//                 <input type="number" className="form-input" value={urlForm.order} onChange={e => setUrlForm(p => ({ ...p, order: e.target.value }))} />
+//               </div>
+//               <div className="form-group">
+//                 <label className="form-label">Buy-Now Trigger (seconds)</label>
+//                 <input type="number" className="form-input" placeholder="300" value={urlForm.buyNowTriggerSeconds} onChange={e => setUrlForm(p => ({ ...p, buyNowTriggerSeconds: e.target.value }))} />
+//               </div>
+//               <div className="form-group" style={{ display: "flex", alignItems: "center" }}>
+//                 <div className="checkbox-row">
+//                   <input type="checkbox" id="url-preview" checked={urlForm.isPreview} onChange={e => setUrlForm(p => ({ ...p, isPreview: e.target.checked }))} />
+//                   <label htmlFor="url-preview">Free Preview</label>
+//                 </div>
+//               </div>
+//             </div>
+//             <button className="btn btn-primary" onClick={addUrlVideo} disabled={uploading}>
+//               {uploading ? "Adding…" : "➕ Add Video URL"}
+//             </button>
+//           </div>
+//         )}
+
+//         {addMode === "upload" && (
+//           <div>
+//             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+//               <div className="form-group" style={{ gridColumn: "1/-1" }}>
+//                 <label className="form-label">Video Title *</label>
+//                 <input className="form-input" placeholder="e.g. Introduction to React Hooks" value={uploadForm.title} onChange={e => setUploadForm(p => ({ ...p, title: e.target.value }))} />
+//               </div>
+//               <div className="form-group" style={{ gridColumn: "1/-1" }}>
+//                 <label className="form-label">Description</label>
+//                 <textarea className="form-input" rows={2} value={uploadForm.description} onChange={e => setUploadForm(p => ({ ...p, description: e.target.value }))} />
+//               </div>
+//               <div className="form-group">
+//                 <label className="form-label">Duration (seconds)</label>
+//                 <input type="number" className="form-input" placeholder="e.g. 600" value={uploadForm.duration} onChange={e => setUploadForm(p => ({ ...p, duration: e.target.value }))} />
+//               </div>
+//               <div className="form-group">
+//                 <label className="form-label">Buy-Now Trigger (seconds)</label>
+//                 <input type="number" className="form-input" placeholder="300" value={uploadForm.buyNowTriggerSeconds} onChange={e => setUploadForm(p => ({ ...p, buyNowTriggerSeconds: e.target.value }))} />
+//               </div>
+//               <div className="form-group" style={{ gridColumn: "1/-1" }}>
+//                 <div className="checkbox-row">
+//                   <input type="checkbox" id="upload-preview" checked={uploadForm.isPreview} onChange={e => setUploadForm(p => ({ ...p, isPreview: e.target.checked }))} />
+//                   <label htmlFor="upload-preview">Free Preview</label>
+//                 </div>
+//               </div>
+//               <div className="form-group" style={{ gridColumn: "1/-1" }}>
+//                 <label className="form-label">Video File *</label>
+//                 <FileUploadArea accept="video/*" onFile={setVideoFile} file={videoFile} label="Click or drag video file here" hint="Supported: MP4, WebM, MOV (max 500MB)" icon="🎬" />
+//               </div>
+//             </div>
+//             {uploading && (
+//               <div className="upload-progress">
+//                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "var(--text2)", marginBottom: 6 }}>
+//                   <span>Uploading…</span><span>{progress}%</span>
+//                 </div>
+//                 <div className="progress-bar-wrap"><div className="progress-bar" style={{ width: `${progress}%` }} /></div>
+//               </div>
+//             )}
+//             <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={uploadVideoFile} disabled={uploading || !videoFile}>
+//               {uploading ? `Uploading ${progress}%…` : "📤 Upload Video"}
+//             </button>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function CourseFormModal({ course, onClose, onSave, authFetch, toast }) {
+//   const isEdit = !!course;
+//   const [form, setForm] = useState({
+//     title: course?.title || "", description: course?.description || "", shortDescription: course?.shortDescription || "",
+//     price: course?.price || "", discountPrice: course?.discountPrice || "", category: course?.category || "",
+//     level: course?.level || "beginner", language: course?.language || "English",
+//     tags: course?.tags?.join(",") || "", requirements: course?.requirements?.join("\n") || "",
+//     outcomes: course?.outcomes?.join("\n") || "", isFree: course?.isFree || false, isPublished: course?.isPublished || false,
+//   });
+//   const [thumbnail, setThumbnail] = useState(null);
+//   const [saving, setSaving] = useState(false);
+
+//   const submit = async () => {
+//     if (!form.title || !form.description) { toast("Title and description are required", "error"); return; }
+//     if (!form.isFree && !form.price) { toast("Price is required for paid courses", "error"); return; }
+//     setSaving(true);
+//     const fd = new FormData();
+//     Object.entries(form).forEach(([k, v]) => fd.append(k, String(v)));
+//     if (thumbnail) fd.append("thumbnail", thumbnail);
+//     const authToken = localStorage.getItem("token");
+//     const url = isEdit ? `/courses/${course._id}` : "/courses";
+//     const res = await fetch(`${API_BASE}${url}`, { method: isEdit ? "PUT" : "POST", headers: { Authorization: `Bearer ${authToken}` }, body: fd }).then(r => r.json());
+//     setSaving(false);
+//     if (res.success) { toast(`Course ${isEdit ? "updated" : "created"}! ✅`, "success"); onSave(); onClose(); }
+//     else toast(res.message || "Failed", "error");
+//   };
+
+//   return (
+//     <div className="modal-overlay" onClick={onClose}>
+//       <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+//         <button className="modal-close" onClick={onClose}>✕</button>
+//         <div className="modal-title">{isEdit ? "✏️ Edit Course" : "➕ Create New Course"}</div>
+//         <div className="modal-sub">{isEdit ? `Editing: ${course.title}` : "Fill in the course details below"}</div>
+//         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, maxHeight: "70vh", overflowY: "auto", paddingRight: 4 }}>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Course Title *</label><input className="form-input" placeholder="e.g. Complete React.js Bootcamp" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Full Description *</label><textarea rows={4} className="form-input" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Short Description</label><input className="form-input" value={form.shortDescription} onChange={e => setForm(p => ({ ...p, shortDescription: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Price (₹)</label><input type="number" className="form-input" value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} disabled={form.isFree} /></div>
+//           <div className="form-group"><label className="form-label">Discount Price (₹)</label><input type="number" className="form-input" value={form.discountPrice} onChange={e => setForm(p => ({ ...p, discountPrice: e.target.value }))} disabled={form.isFree} /></div>
+//           <div className="form-group"><label className="form-label">Category</label><input className="form-input" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Level</label><select className="form-input" value={form.level} onChange={e => setForm(p => ({ ...p, level: e.target.value }))}>{["beginner","intermediate","advanced","all"].map(l => <option key={l} value={l}>{l.charAt(0).toUpperCase()+l.slice(1)}</option>)}</select></div>
+//           <div className="form-group"><label className="form-label">Language</label><input className="form-input" value={form.language} onChange={e => setForm(p => ({ ...p, language: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Tags</label><input className="form-input" placeholder="react,node,mongodb" value={form.tags} onChange={e => setForm(p => ({ ...p, tags: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Requirements</label><textarea rows={3} className="form-input" placeholder="One per line" value={form.requirements} onChange={e => setForm(p => ({ ...p, requirements: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Learning Outcomes</label><textarea rows={3} className="form-input" placeholder="One per line" value={form.outcomes} onChange={e => setForm(p => ({ ...p, outcomes: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Thumbnail</label><FileUploadArea accept="image/*" onFile={setThumbnail} file={thumbnail} label="Upload course thumbnail" hint="PNG, JPG, WebP — 16:9 recommended" icon="🖼️" /></div>
+//           <div className="form-group" style={{ display: "flex", gap: 24 }}>
+//             <div className="checkbox-row"><input type="checkbox" id="cf-free" checked={form.isFree} onChange={e => setForm(p => ({ ...p, isFree: e.target.checked, price: e.target.checked ? "0" : p.price }))} /><label htmlFor="cf-free">Free Course</label></div>
+//             <div className="checkbox-row"><input type="checkbox" id="cf-pub" checked={form.isPublished} onChange={e => setForm(p => ({ ...p, isPublished: e.target.checked }))} /><label htmlFor="cf-pub">Publish immediately</label></div>
+//           </div>
+//         </div>
+//         <div style={{ display: "flex", gap: 10, marginTop: 24, paddingTop: 20, borderTop: "1px solid var(--border)" }}>
+//           <button className="btn btn-primary" onClick={submit} disabled={saving}>{saving ? "Saving…" : isEdit ? "Update Course" : "Create Course"}</button>
+//           <button className="btn btn-outline" onClick={onClose}>Cancel</button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function LiveClassFormModal({ liveClass, onClose, onSave, authFetch, toast }) {
+//   const isEdit = !!liveClass;
+//   const [form, setForm] = useState({
+//     title: liveClass?.title || "", description: liveClass?.description || "",
+//     scheduledAt: liveClass?.scheduledAt ? new Date(liveClass.scheduledAt).toISOString().slice(0, 16) : "",
+//     duration: liveClass?.duration || 60, platform: liveClass?.platform || "zoom",
+//     price: liveClass?.price || 0, isFree: liveClass?.isFree ?? true,
+//     maxParticipants: liveClass?.maxParticipants || 100, urlSendMinutesBefore: liveClass?.urlSendMinutesBefore || 30,
+//     meetingUrl: liveClass?.meetingUrl || "", meetingId: liveClass?.meetingId || "",
+//     meetingPassword: liveClass?.meetingPassword || "", tags: liveClass?.tags?.join(",") || "",
+//   });
+//   const [thumbnail, setThumbnail] = useState(null);
+//   const [saving, setSaving] = useState(false);
+
+//   const submit = async () => {
+//     if (!form.title) { toast("Title is required", "error"); return; }
+//     if (!form.scheduledAt) { toast("Schedule date/time is required", "error"); return; }
+//     setSaving(true);
+//     const authToken = localStorage.getItem("token");
+//     const fd = new FormData();
+//     Object.entries(form).forEach(([k, v]) => fd.append(k, String(v)));
+//     if (thumbnail) fd.append("thumbnail", thumbnail);
+//     const url = isEdit ? `/live-classes/${liveClass._id}` : "/live-classes";
+//     const res = await fetch(`${API_BASE}${url}`, { method: isEdit ? "PUT" : "POST", headers: { Authorization: `Bearer ${authToken}` }, body: fd }).then(r => r.json());
+//     setSaving(false);
+//     if (res.success) { toast(`Live class ${isEdit ? "updated" : "created"}! ✅`, "success"); onSave(); onClose(); }
+//     else toast(res.message || "Failed", "error");
+//   };
+
+//   return (
+//     <div className="modal-overlay" onClick={onClose}>
+//       <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+//         <button className="modal-close" onClick={onClose}>✕</button>
+//         <div className="modal-title">{isEdit ? "✏️ Edit Live Class" : "📡 Create Live Class"}</div>
+//         <div className="modal-sub">{isEdit ? `Editing: ${liveClass.title}` : "Schedule a new live session"}</div>
+//         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, maxHeight: "70vh", overflowY: "auto", paddingRight: 4 }}>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Class Title *</label><input className="form-input" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Description</label><textarea rows={3} className="form-input" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Schedule Date & Time *</label><input type="datetime-local" className="form-input" value={form.scheduledAt} onChange={e => setForm(p => ({ ...p, scheduledAt: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Duration (minutes)</label><input type="number" className="form-input" value={form.duration} onChange={e => setForm(p => ({ ...p, duration: Number(e.target.value) }))} /></div>
+//           <div className="form-group"><label className="form-label">Platform</label><select className="form-input" value={form.platform} onChange={e => setForm(p => ({ ...p, platform: e.target.value }))}>{["zoom","google_meet","teams","youtube_live","other"].map(pl => <option key={pl} value={pl}>{pl.replace("_"," ").replace(/\b\w/g,c=>c.toUpperCase())}</option>)}</select></div>
+//           <div className="form-group"><label className="form-label">Max Participants</label><input type="number" className="form-input" value={form.maxParticipants} onChange={e => setForm(p => ({ ...p, maxParticipants: Number(e.target.value) }))} /></div>
+//           <div className="form-group"><label className="form-label">Price (₹)</label><input type="number" className="form-input" value={form.price} onChange={e => setForm(p => ({ ...p, price: Number(e.target.value) }))} disabled={form.isFree} /></div>
+//           <div className="form-group"><label className="form-label">Send URL (minutes before)</label><input type="number" className="form-input" value={form.urlSendMinutesBefore} onChange={e => setForm(p => ({ ...p, urlSendMinutesBefore: Number(e.target.value) }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Meeting URL</label><input className="form-input" placeholder="https://zoom.us/j/..." value={form.meetingUrl} onChange={e => setForm(p => ({ ...p, meetingUrl: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Meeting ID</label><input className="form-input" value={form.meetingId} onChange={e => setForm(p => ({ ...p, meetingId: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Meeting Password</label><input className="form-input" value={form.meetingPassword} onChange={e => setForm(p => ({ ...p, meetingPassword: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Thumbnail</label><FileUploadArea accept="image/*" onFile={setThumbnail} file={thumbnail} label="Upload thumbnail" icon="🖼️" /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}>
+//             <div className="checkbox-row"><input type="checkbox" id="lc-free" checked={form.isFree} onChange={e => setForm(p => ({ ...p, isFree: e.target.checked, price: e.target.checked ? 0 : p.price }))} /><label htmlFor="lc-free">Free Class</label></div>
+//           </div>
+//         </div>
+//         <div style={{ display: "flex", gap: 10, marginTop: 24, paddingTop: 20, borderTop: "1px solid var(--border)" }}>
+//           <button className="btn btn-primary" onClick={submit} disabled={saving}>{saving ? "Saving…" : isEdit ? "Update Live Class" : "Create Live Class"}</button>
+//           <button className="btn btn-outline" onClick={onClose}>Cancel</button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function NotesFormModal({ note, onClose, onSave, authFetch, toast }) {
+//   const isEdit = !!note;
+//   const [form, setForm] = useState({
+//     title: note?.title || "", description: note?.description || "",
+//     price: note?.price || "", discountPrice: note?.discountPrice || "",
+//     category: note?.category || "", tags: note?.tags?.join(",") || "",
+//     previewPages: note?.previewPages || 0, isFree: note?.isFree || false, isPublished: note?.isPublished ?? true,
+//   });
+//   const [docFile, setDocFile] = useState(null);
+//   const [thumbnail, setThumbnail] = useState(null);
+//   const [saving, setSaving] = useState(false);
+//   const [progress, setProgress] = useState(0);
+
+//   const submit = async () => {
+//     if (!form.title) { toast("Title is required", "error"); return; }
+//     if (!isEdit && !docFile) { toast("Document file is required", "error"); return; }
+//     setSaving(true); setProgress(0);
+//     const authToken = localStorage.getItem("token");
+//     const fd = new FormData();
+//     Object.entries(form).forEach(([k, v]) => fd.append(k, String(v)));
+//     if (docFile) fd.append("document", docFile);
+//     if (thumbnail) fd.append("thumbnail", thumbnail);
+//     const xhr = new XMLHttpRequest();
+//     xhr.open(isEdit ? "PUT" : "POST", `${API_BASE}${isEdit ? `/notes/${note._id}` : "/notes"}`);
+//     xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
+//     xhr.upload.onprogress = (e) => { if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100)); };
+//     xhr.onload = () => {
+//       setSaving(false);
+//       try {
+//         const res = JSON.parse(xhr.responseText);
+//         if (res.success) { toast(`Notes ${isEdit ? "updated" : "uploaded"}! ✅`, "success"); onSave(); onClose(); }
+//         else toast(res.message || "Failed", "error");
+//       } catch { toast("Failed", "error"); }
+//     };
+//     xhr.onerror = () => { setSaving(false); toast("Network error", "error"); };
+//     xhr.send(fd);
+//   };
+
+//   return (
+//     <div className="modal-overlay" onClick={onClose}>
+//       <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+//         <button className="modal-close" onClick={onClose}>✕</button>
+//         <div className="modal-title">{isEdit ? "✏️ Edit Notes" : "📄 Upload Notes"}</div>
+//         <div className="modal-sub">{isEdit ? `Editing: ${note.title}` : "Upload study material for students"}</div>
+//         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, maxHeight: "70vh", overflowY: "auto", paddingRight: 4 }}>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Title *</label><input className="form-input" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Description</label><textarea rows={3} className="form-input" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Price (₹)</label><input type="number" className="form-input" value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} disabled={form.isFree} /></div>
+//           <div className="form-group"><label className="form-label">Discount Price (₹)</label><input type="number" className="form-input" value={form.discountPrice} onChange={e => setForm(p => ({ ...p, discountPrice: e.target.value }))} disabled={form.isFree} /></div>
+//           <div className="form-group"><label className="form-label">Category</label><input className="form-input" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Tags</label><input className="form-input" placeholder="react,javascript" value={form.tags} onChange={e => setForm(p => ({ ...p, tags: e.target.value }))} /></div>
+//           <div className="form-group"><label className="form-label">Free Preview Pages</label><input type="number" className="form-input" value={form.previewPages} onChange={e => setForm(p => ({ ...p, previewPages: e.target.value }))} /></div>
+//           <div className="form-group" style={{ display: "flex", gap: 24, alignItems: "center", paddingTop: 24 }}>
+//             <div className="checkbox-row"><input type="checkbox" id="nf-free" checked={form.isFree} onChange={e => setForm(p => ({ ...p, isFree: e.target.checked, price: e.target.checked ? "0" : p.price }))} /><label htmlFor="nf-free">Free Notes</label></div>
+//             <div className="checkbox-row"><input type="checkbox" id="nf-pub" checked={form.isPublished} onChange={e => setForm(p => ({ ...p, isPublished: e.target.checked }))} /><label htmlFor="nf-pub">Published</label></div>
+//           </div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Document File {!isEdit && "*"}</label><FileUploadArea accept=".pdf,.docx,.ppt,.pptx,.xlsx,.xls" onFile={setDocFile} file={docFile} label={isEdit ? "Upload new file (leave empty to keep current)" : "Click or drag document here"} hint="Supported: PDF, DOCX, PPT, XLSX" icon="📄" /></div>
+//           <div className="form-group" style={{ gridColumn: "1/-1" }}><label className="form-label">Thumbnail</label><FileUploadArea accept="image/*" onFile={setThumbnail} file={thumbnail} label="Upload thumbnail (optional)" icon="🖼️" /></div>
+//         </div>
+//         {saving && progress > 0 && (
+//           <div className="upload-progress" style={{ marginTop: 12 }}>
+//             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "var(--text2)", marginBottom: 6 }}><span>Uploading…</span><span>{progress}%</span></div>
+//             <div className="progress-bar-wrap"><div className="progress-bar" style={{ width: `${progress}%` }} /></div>
+//           </div>
+//         )}
+//         <div style={{ display: "flex", gap: 10, marginTop: 24, paddingTop: 20, borderTop: "1px solid var(--border)" }}>
+//           <button className="btn btn-primary" onClick={submit} disabled={saving}>{saving ? `Uploading ${progress}%…` : isEdit ? "Update Notes" : "Upload Notes"}</button>
+//           <button className="btn btn-outline" onClick={onClose}>Cancel</button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function LiveClassActionsModal({ liveClass, onClose, authFetch, toast, onSave }) {
+//   const [status, setStatus] = useState(liveClass.status);
+//   const [meetingUrl, setMeetingUrl] = useState(liveClass.meetingUrl || "");
+//   const [meetingId, setMeetingId] = useState(liveClass.meetingId || "");
+//   const [meetingPassword, setMeetingPassword] = useState(liveClass.meetingPassword || "");
+//   const [saving, setSaving] = useState(false);
+
+//   const updateStatus = async () => {
+//     setSaving(true);
+//     const res = await authFetch(`/live-classes/${liveClass._id}/status`, { method: "PATCH", body: JSON.stringify({ status }) });
+//     setSaving(false);
+//     if (res.success) { toast(`Status updated to ${status}`, "success"); onSave(); }
+//     else toast(res.message || "Failed", "error");
+//   };
+
+//   const updateMeeting = async () => {
+//     setSaving(true);
+//     const res = await authFetch(`/live-classes/${liveClass._id}/meeting-url`, { method: "PATCH", body: JSON.stringify({ meetingUrl, meetingId, meetingPassword }) });
+//     setSaving(false);
+//     if (res.success) { toast("Meeting details updated! ✅", "success"); onSave(); }
+//     else toast(res.message || "Failed", "error");
+//   };
+
+//   const sendUrlToAll = async () => {
+//     if (!meetingUrl) { toast("Set a meeting URL first", "error"); return; }
+//     if (!window.confirm(`Send meeting URL to all ${liveClass.registrations?.length || 0} registrants?`)) return;
+//     setSaving(true);
+//     const res = await authFetch(`/live-classes/${liveClass._id}/send-url`, { method: "POST", body: JSON.stringify({}) });
+//     setSaving(false);
+//     if (res.success) toast(`Sent to ${res.data?.succeeded || 0} registrants ✅`, "success");
+//     else toast(res.message || "Failed", "error");
+//   };
+
+//   return (
+//     <div className="modal-overlay" onClick={onClose}>
+//       <div className="modal" onClick={e => e.stopPropagation()}>
+//         <button className="modal-close" onClick={onClose}>✕</button>
+//         <div className="modal-title">⚙️ Manage Live Class</div>
+//         <div className="modal-sub">{liveClass.title}</div>
+//         <div style={{ marginBottom: 24 }}>
+//           <div style={{ fontWeight: 700, fontSize: "0.88rem", marginBottom: 12 }}>📌 Update Status</div>
+//           <select className="form-input" value={status} onChange={e => setStatus(e.target.value)}>
+//             {["upcoming","live","completed","cancelled"].map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>)}
+//           </select>
+//           <button className="btn btn-primary btn-sm" style={{ marginTop: 10 }} onClick={updateStatus} disabled={saving}>Update Status</button>
+//         </div>
+//         <hr className="divider" />
+//         <div style={{ marginBottom: 24 }}>
+//           <div style={{ fontWeight: 700, fontSize: "0.88rem", marginBottom: 12 }}>🔗 Meeting Details</div>
+//           <div className="form-group"><label className="form-label">Meeting URL</label><input className="form-input" placeholder="https://zoom.us/j/..." value={meetingUrl} onChange={e => setMeetingUrl(e.target.value)} /></div>
+//           <div className="form-group"><label className="form-label">Meeting ID</label><input className="form-input" value={meetingId} onChange={e => setMeetingId(e.target.value)} /></div>
+//           <div className="form-group"><label className="form-label">Meeting Password</label><input className="form-input" value={meetingPassword} onChange={e => setMeetingPassword(e.target.value)} /></div>
+//           <div style={{ display: "flex", gap: 10 }}>
+//             <button className="btn btn-primary btn-sm" onClick={updateMeeting} disabled={saving}>Save Meeting Details</button>
+//             <button className="btn btn-accent btn-sm" onClick={sendUrlToAll} disabled={saving}>📨 Send URL to All ({liveClass.registrations?.length || 0})</button>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function AdminPage({ navigate }) {
+//   const { user, authFetch, isAdmin } = useAuth();
+//   const toast = useToast();
+//   const [section, setSection] = useState("dashboard");
+//   const [stats, setStats] = useState(null);
+//   const [courses, setCourses] = useState([]);
+//   const [liveClasses, setLiveClasses] = useState([]);
+//   const [notes, setNotes] = useState([]);
+//   const [users, setUsers] = useState([]);
+//   const [payments, setPayments] = useState([]);
+
+//   const [videoManagerCourse, setVideoManagerCourse] = useState(null);
+//   const [courseFormData, setCourseFormData] = useState(null);
+//   const [liveFormData, setLiveFormData] = useState(null);
+//   const [notesFormData, setNotesFormData] = useState(null);
+//   const [liveActionsData, setLiveActionsData] = useState(null);
+
+//   useEffect(() => {
+//     if (!isAdmin) return;
+//     authFetch("/admin/stats").then(d => { if (d.success) setStats(d.data || d.stats); }).catch(() => {});
+//   }, [isAdmin, authFetch]);
+
+//   const loadSection = useCallback((s) => {
+//     setSection(s);
+//     if (s === "courses") authFetch("/courses/admin/all").then(d => { if (d.success) setCourses(d.data || d.courses || []); });
+//     if (s === "live") authFetch("/live-classes/admin/all").then(d => { if (d.success) setLiveClasses(d.data || d.classes || d.liveClasses || []); });
+//     if (s === "notes") authFetch("/notes/admin/all").then(d => { if (d.success) setNotes(d.data || d.notes || []); });
+//     if (s === "users") authFetch("/admin/users").then(d => { if (d.success) setUsers(d.data || d.users || []); });
+//     if (s === "payments") authFetch("/payments/admin/all").then(d => { if (d.success) setPayments(d.data || d.payments || []); });
+//   }, [authFetch]);
+
+//   const togglePublishCourse = async (courseId, current) => {
+//     await authFetch(`/courses/${courseId}/publish`, { method: "PATCH" });
+//     loadSection("courses");
+//     toast(`Course ${current ? "unpublished" : "published"}`, "success");
+//   };
+
+//   const deleteCourse = async (id) => {
+//     if (!window.confirm("Delete this course? This cannot be undone.")) return;
+//     const res = await authFetch(`/courses/${id}`, { method: "DELETE" });
+//     if (res.success) { loadSection("courses"); toast("Course deleted", "success"); }
+//     else toast(res.message || "Delete failed", "error");
+//   };
+
+//   const deleteLiveClass = async (id) => {
+//     if (!window.confirm("Delete this live class?")) return;
+//     const res = await authFetch(`/live-classes/${id}`, { method: "DELETE" });
+//     if (res.success) { loadSection("live"); toast("Live class deleted", "success"); }
+//     else toast(res.message || "Delete failed", "error");
+//   };
+
+//   const deleteNotes = async (id) => {
+//     if (!window.confirm("Delete these notes?")) return;
+//     const res = await authFetch(`/notes/${id}`, { method: "DELETE" });
+//     if (res.success) { loadSection("notes"); toast("Notes deleted", "success"); }
+//     else toast(res.message || "Delete failed", "error");
+//   };
+
+//   const togglePublishNotes = async (id, current) => {
+//     await authFetch(`/notes/${id}/toggle-publish`, { method: "PATCH" });
+//     loadSection("notes");
+//     toast(`Notes ${current ? "unpublished" : "published"}`, "success");
+//   };
+
+//   const toggleUser = async (userId) => {
+//     await authFetch(`/admin/users/${userId}/status`, { method: "PATCH" });
+//     loadSection("users");
+//   };
+
+//   if (!isAdmin) return (
+//     <div className="page"><div className="container" style={{ padding: 80, textAlign: "center" }}>
+//       <div style={{ fontSize: "4rem" }}>🚫</div>
+//       <h2 style={{ margin: "16px 0 8px" }}>Access Denied</h2>
+//       <p style={{ color: "var(--text2)" }}>Admin access required</p>
+//       <button className="btn btn-primary" style={{ marginTop: 20 }} onClick={() => navigate("/")}>Go Home</button>
+//     </div></div>
+//   );
+
+//   const navItems = [
+//     { key: "dashboard", icon: "📊", label: "Dashboard" },
+//     { key: "courses", icon: "📚", label: "Courses" },
+//     { key: "live", icon: "📡", label: "Live Classes" },
+//     { key: "notes", icon: "📄", label: "Notes" },
+//     { key: "users", icon: "👥", label: "Users" },
+//     { key: "payments", icon: "💳", label: "Payments" },
+//   ];
+
+//   return (
+//     <div className="page">
+//       {videoManagerCourse && <VideoManagerModal course={videoManagerCourse} onClose={() => setVideoManagerCourse(null)} authFetch={authFetch} toast={toast} />}
+//       {courseFormData !== null && <CourseFormModal course={Object.keys(courseFormData).length > 0 ? courseFormData : null} onClose={() => setCourseFormData(null)} onSave={() => loadSection("courses")} authFetch={authFetch} toast={toast} />}
+//       {liveFormData !== null && <LiveClassFormModal liveClass={Object.keys(liveFormData).length > 0 ? liveFormData : null} onClose={() => setLiveFormData(null)} onSave={() => loadSection("live")} authFetch={authFetch} toast={toast} />}
+//       {notesFormData !== null && <NotesFormModal note={Object.keys(notesFormData).length > 0 ? notesFormData : null} onClose={() => setNotesFormData(null)} onSave={() => loadSection("notes")} authFetch={authFetch} toast={toast} />}
+//       {liveActionsData && <LiveClassActionsModal liveClass={liveActionsData} onClose={() => setLiveActionsData(null)} authFetch={authFetch} toast={toast} onSave={() => loadSection("live")} />}
+
+//       <div className="admin-layout">
+//         <div className="admin-sidebar">
+//           <div style={{ padding: "0 20px 16px", borderBottom: "1px solid var(--border)", marginBottom: 8 }}>
+//             <div style={{ fontWeight: 700, fontSize: "0.78rem", color: "var(--text3)", textTransform: "uppercase", letterSpacing: 1 }}>Admin Panel</div>
+//           </div>
+//           {navItems.map(n => (
+//             <div key={n.key} className={`admin-nav-item ${section === n.key ? "active" : ""}`} onClick={() => loadSection(n.key)}>
+//               <span className="admin-nav-icon">{n.icon}</span> {n.label}
+//             </div>
+//           ))}
+//         </div>
+
+//         <div className="admin-content">
+
+//           {section === "dashboard" && (
+//             <>
+//               <Reveal>
+//                 <div className="admin-header">
+//                   <div className="admin-title">Platform Overview</div>
+//                   <div className="admin-sub">Welcome back, {user?.name}</div>
+//                 </div>
+//               </Reveal>
+//               {stats ? (
+//                 <div className="stats-grid">
+//                   {[["👥", stats.totalUsers||0,"Total Users"],["📚",stats.totalCourses||0,"Courses"],["📡",stats.totalLiveClasses||0,"Live Classes"],["📄",stats.totalNotes||0,"Notes"],["💳",stats.totalPayments||0,"Payments"],["💰",`₹${(stats.totalRevenue||0).toLocaleString()}`,"Revenue"]].map(([icon,num,label],i) => (
+//                     <Reveal key={label} delay={i*70}>
+//                       <div className="stat-card">
+//                         <div className="stat-card-icon">{icon}</div>
+//                         <div className="stat-card-num">{num}</div>
+//                         <div className="stat-card-label">{label}</div>
+//                       </div>
+//                     </Reveal>
+//                   ))}
+//                 </div>
+//               ) : <div className="spinner" />}
+//               <Reveal delay={200}>
+//                 <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: 24 }}>
+//                   <h3 style={{ fontWeight: 700, marginBottom: 16 }}>⚡ Quick Actions</h3>
+//                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+//                     <button className="btn btn-primary" onClick={() => { setCourseFormData({}); loadSection("courses"); }}>+ New Course</button>
+//                     <button className="btn btn-outline" onClick={() => { setLiveFormData({}); loadSection("live"); }}>+ New Live Class</button>
+//                     <button className="btn btn-outline" onClick={() => { setNotesFormData({}); loadSection("notes"); }}>+ Upload Notes</button>
+//                     <button className="btn btn-outline" onClick={() => loadSection("users")}>View Users</button>
+//                     <button className="btn btn-outline" onClick={() => loadSection("payments")}>View Payments</button>
+//                   </div>
+//                 </div>
+//               </Reveal>
+//             </>
+//           )}
+
+//           {section === "courses" && (
+//             <>
+//               <Reveal>
+//                 <div className="admin-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+//                   <div><div className="admin-title">Courses</div><div className="admin-sub">{courses.length} total courses</div></div>
+//                   <button className="btn btn-primary" onClick={() => setCourseFormData({})}>+ New Course</button>
+//                 </div>
+//               </Reveal>
+//               <Reveal delay={80}>
+//                 <div className="table-wrap">
+//                   <table>
+//                     <thead><tr><th>Title</th><th>Category</th><th>Level</th><th>Price</th><th>Videos</th><th>Students</th><th>Status</th><th>Actions</th></tr></thead>
+//                     <tbody>
+//                       {courses.map(c => (
+//                         <tr key={c._id}>
+//                           <td style={{ fontWeight: 600, maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.title}</td>
+//                           <td>{c.category || "—"}</td>
+//                           <td><span className="badge badge-primary">{c.level}</span></td>
+//                           <td>{c.isFree ? <span className="badge badge-green">FREE</span> : `₹${c.discountPrice ?? c.price}`}</td>
+//                           <td style={{ textAlign: "center" }}>{c.videos?.length || 0}</td>
+//                           <td style={{ textAlign: "center" }}>{c.totalStudents || 0}</td>
+//                           <td><span className={`badge ${c.isPublished ? "badge-green" : "badge-yellow"}`}>{c.isPublished ? "Published" : "Draft"}</span></td>
+//                           <td>
+//                             <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+//                               <button className="btn btn-primary btn-sm" onClick={() => setVideoManagerCourse(c)}>🎬 Videos</button>
+//                               <button className="btn btn-outline btn-sm" onClick={() => setCourseFormData(c)}>✏️</button>
+//                               <button className="btn btn-outline btn-sm" onClick={() => togglePublishCourse(c._id, c.isPublished)}>{c.isPublished ? "Unpublish" : "Publish"}</button>
+//                               <button className="btn btn-danger btn-sm" onClick={() => deleteCourse(c._id)}>🗑️</button>
+//                             </div>
+//                           </td>
+//                         </tr>
+//                       ))}
+//                       {courses.length === 0 && <tr><td colSpan={8} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>No courses yet. <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={() => setCourseFormData({})}>Create one →</span></td></tr>}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </Reveal>
+//             </>
+//           )}
+
+//           {section === "live" && (
+//             <>
+//               <Reveal>
+//                 <div className="admin-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+//                   <div><div className="admin-title">Live Classes</div><div className="admin-sub">{liveClasses.length} total classes</div></div>
+//                   <button className="btn btn-primary" onClick={() => setLiveFormData({})}>+ New Live Class</button>
+//                 </div>
+//               </Reveal>
+//               <Reveal delay={80}>
+//                 <div className="table-wrap">
+//                   <table>
+//                     <thead><tr><th>Title</th><th>Scheduled</th><th>Platform</th><th>Price</th><th>Registered</th><th>Status</th><th>Actions</th></tr></thead>
+//                     <tbody>
+//                       {liveClasses.map(lc => (
+//                         <tr key={lc._id}>
+//                           <td style={{ fontWeight: 600, maxWidth: 180, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{lc.title}</td>
+//                           <td style={{ color: "var(--text2)", fontSize: "0.82rem", whiteSpace: "nowrap" }}>{new Date(lc.scheduledAt).toLocaleString("en-IN")}</td>
+//                           <td><span className="badge badge-cyan">{lc.platform}</span></td>
+//                           <td>{lc.isFree ? <span className="badge badge-green">FREE</span> : `₹${lc.price}`}</td>
+//                           <td>{lc.registrations?.length||0} / {lc.maxParticipants}</td>
+//                           <td><span className={`badge ${lc.status==="live"?"badge-accent":lc.status==="upcoming"?"badge-cyan":lc.status==="completed"?"badge-green":"badge-yellow"}`}>{lc.status}</span></td>
+//                           <td>
+//                             <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+//                               <button className="btn btn-primary btn-sm" onClick={() => setLiveActionsData(lc)}>⚙️ Manage</button>
+//                               <button className="btn btn-outline btn-sm" onClick={() => setLiveFormData(lc)}>✏️</button>
+//                               <button className="btn btn-danger btn-sm" onClick={() => deleteLiveClass(lc._id)}>🗑️</button>
+//                             </div>
+//                           </td>
+//                         </tr>
+//                       ))}
+//                       {liveClasses.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>No live classes yet. <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={() => setLiveFormData({})}>Schedule one →</span></td></tr>}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </Reveal>
+//             </>
+//           )}
+
+//           {section === "notes" && (
+//             <>
+//               <Reveal>
+//                 <div className="admin-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+//                   <div><div className="admin-title">Notes / Documents</div><div className="admin-sub">{notes.length} total documents</div></div>
+//                   <button className="btn btn-primary" onClick={() => setNotesFormData({})}>+ Upload Notes</button>
+//                 </div>
+//               </Reveal>
+//               <Reveal delay={80}>
+//                 <div className="table-wrap">
+//                   <table>
+//                     <thead><tr><th>Title</th><th>Category</th><th>Type</th><th>Price</th><th>Downloads</th><th>Status</th><th>Actions</th></tr></thead>
+//                     <tbody>
+//                       {notes.map(n => (
+//                         <tr key={n._id}>
+//                           <td style={{ fontWeight: 600, maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{n.title}</td>
+//                           <td>{n.category || "—"}</td>
+//                           <td><span className="badge badge-yellow">{n.fileType?.toUpperCase() || "PDF"}</span></td>
+//                           <td>{n.isFree ? <span className="badge badge-green">FREE</span> : `₹${n.discountPrice ?? n.price}`}</td>
+//                           <td style={{ textAlign: "center" }}>{n.totalPurchases || 0}</td>
+//                           <td><span className={`badge ${n.isPublished ? "badge-green" : "badge-yellow"}`}>{n.isPublished ? "Published" : "Draft"}</span></td>
+//                           <td>
+//                             <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+//                               <button className="btn btn-outline btn-sm" onClick={() => setNotesFormData(n)}>✏️ Edit</button>
+//                               <button className="btn btn-outline btn-sm" onClick={() => togglePublishNotes(n._id, n.isPublished)}>{n.isPublished ? "Unpublish" : "Publish"}</button>
+//                               <button className="btn btn-danger btn-sm" onClick={() => deleteNotes(n._id)}>🗑️</button>
+//                             </div>
+//                           </td>
+//                         </tr>
+//                       ))}
+//                       {notes.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>No notes yet. <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={() => setNotesFormData({})}>Upload some →</span></td></tr>}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </Reveal>
+//             </>
+//           )}
+
+//           {section === "users" && (
+//             <>
+//               <Reveal>
+//                 <div className="admin-header">
+//                   <div className="admin-title">Users</div>
+//                   <div className="admin-sub">{users.length} registered users</div>
+//                 </div>
+//               </Reveal>
+//               <Reveal delay={80}>
+//                 <div className="table-wrap">
+//                   <table>
+//                     <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Courses</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+//                     <tbody>
+//                       {users.map(u => (
+//                         <tr key={u._id}>
+//                           <td style={{ fontWeight: 600 }}>{u.name}</td>
+//                           <td style={{ color: "var(--text2)" }}>{u.email}</td>
+//                           <td><span className={`badge ${u.role === "admin" ? "badge-accent" : "badge-primary"}`}>{u.role}</span></td>
+//                           <td style={{ textAlign: "center" }}>{u.purchasedCourses?.length || 0}</td>
+//                           <td style={{ color: "var(--text3)", fontSize: "0.82rem" }}>{new Date(u.createdAt).toLocaleDateString()}</td>
+//                           <td><span className={`badge ${u.isActive ? "badge-green" : "badge-accent"}`}>{u.isActive ? "Active" : "Banned"}</span></td>
+//                           <td><button className="btn btn-outline btn-sm" onClick={() => toggleUser(u._id)}>{u.isActive ? "Ban" : "Activate"}</button></td>
+//                         </tr>
+//                       ))}
+//                       {users.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--text3)", padding: 40 }}>No users yet</td></tr>}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </Reveal>
+//             </>
+//           )}
+
+//           {section === "payments" && (
+//             <>
+//               <Reveal>
+//                 <div className="admin-header">
+//                   <div className="admin-title">All Payments</div>
+//                   <div className="admin-sub">Complete transaction history</div>
+//                 </div>
+//               </Reveal>
+//               <Reveal delay={80}>
+//                 <div className="table-wrap">
+//                   <table>
+//                     <thead><tr><th>User</th><th>Item</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+//                     <tbody>
+//                       {payments.map(p => (
+//                         <tr key={p._id}>
+//                           <td style={{ fontWeight: 600 }}>{p.user?.name || "—"}</td>
+//                           <td style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.itemTitle || "—"}</td>
+//                           <td><span className="badge badge-primary">{p.itemType}</span></td>
+//                           <td style={{ fontWeight: 700, color: "var(--primary)" }}>₹{p.amountInRupees}</td>
+//                           <td><span className={`badge ${p.status==="paid"?"badge-green":p.status==="failed"?"badge-accent":"badge-yellow"}`}>{p.status}</span></td>
+//                           <td style={{ color: "var(--text3)", fontSize: "0.82rem" }}>{new Date(p.createdAt).toLocaleDateString()}</td>
+//                         </tr>
+//                       ))}
+//                       {payments.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text3)", padding: 40 }}>No payments yet</td></tr>}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </Reveal>
+//             </>
+//           )}
+
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // FOOTER
+// // ─────────────────────────────────────────────
+// function Footer({ navigate }) {
+//   return (
+//     <footer style={{ background: "var(--bg2)", borderTop: "1px solid var(--border)", padding: "48px 0 24px", marginTop: 60 }}>
+//       <div className="container">
+//         <Reveal>
+//           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 32, marginBottom: 40 }}>
+//             <div>
+//               <div className="logo" style={{ marginBottom: 14 }}>
+//                 <div className="logo-icon">💻</div>
+//                 <span className="logo-text">WhatNext</span>
+//               </div>
+//               <p style={{ fontSize: "0.83rem", color: "var(--text3)", lineHeight: 1.6 }}>India's most affordable online learning platform. Powered by expert instructors.</p>
+//             </div>
+//             {[["Quick Links", [["Home","/"],["Courses","/courses"],["Live Classes","/live"],["Notes","/notes"]]],
+//               ["Support", [["FAQ","/"],["Contact","/"],["Privacy Policy","/"],["Terms","/"]]],
+//               ["Categories", COURSE_CATS.slice(0,4).map(a => [a.emoji+" "+a.name,"/courses"])]
+//             ].map(([title, links]) => (
+//               <div key={title}>
+//                 <div style={{ fontWeight: 700, fontSize: "0.88rem", marginBottom: 14, color: "var(--text)" }}>{title}</div>
+//                 {links.map(([label, to]) => (
+//                   <div key={label} style={{ fontSize: "0.82rem", color: "var(--text3)", marginBottom: 8, cursor: "pointer", transition: "color 0.2s" }}
+//                     onClick={() => navigate(to)}
+//                     onMouseEnter={e => e.target.style.color = "var(--primary)"}
+//                     onMouseLeave={e => e.target.style.color = "var(--text3)"}>
+//                     {label}
+//                   </div>
+//                 ))}
+//               </div>
+//             ))}
+//           </div>
+//         </Reveal>
+//         <hr style={{ border: "none", borderTop: "1px solid var(--border)", marginBottom: 20 }} />
+//         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+//           <p style={{ fontSize: "0.78rem", color: "var(--text3)" }}>© {new Date().getFullYear()} WhatNext. All rights reserved.</p>
+//           <p style={{ fontSize: "0.78rem", color: "var(--text3)" }}>Made with 💻 for learners everywhere</p>
+//         </div>
+//       </div>
+//     </footer>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // APP ROUTER
+// // ─────────────────────────────────────────────
+// function AppRouter() {
+//   const { path, navigate } = useRoute();
+//   const { loading } = useAuth();
+//   const [showAuth, setShowAuth] = useState(false);
+
+//   if (loading) return (
+//     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
+//       <div className="spinner" />
+//     </div>
+//   );
+
+//   const segments = path.split("/").filter(Boolean);
+//   const root = "/" + (segments[0] || "");
+//   const param = segments[1];
+
+//   const renderPage = () => {
+//     if (root === "/" || path === "/") return <HomePage navigate={navigate} onAuth={() => setShowAuth(true)} />;
+//     if (root === "/courses" && !param) return <CoursesPage navigate={navigate} />;
+//     if (root === "/courses" && param) return <CourseDetailPage id={param} navigate={navigate} onAuth={() => setShowAuth(true)} />;
+//     if (root === "/live" && !param) return <LiveClassesPage navigate={navigate} />;
+//     if (root === "/live" && param) return <LiveClassDetailPage id={param} navigate={navigate} onAuth={() => setShowAuth(true)} />;
+//     if (root === "/notes" && !param) return <NotesPage navigate={navigate} />;
+//     if (root === "/notes" && param) return <NoteDetailPage id={param} navigate={navigate} onAuth={() => setShowAuth(true)} />;
+//     if (root === "/dashboard") return <DashboardPage navigate={navigate} />;
+//     if (root === "/admin") return <AdminPage navigate={navigate} />;
+//     return (
+//       <div className="page">
+//         <div style={{ textAlign: "center", padding: "100px 24px" }}>
+//           <div style={{ fontSize: "5rem", marginBottom: 20 }}>💻</div>
+//           <h2 style={{ fontFamily: "var(--font2)", marginBottom: 12 }}>404 — Page not found</h2>
+//           <button className="btn btn-primary" onClick={() => navigate("/")}>Go Home</button>
+//         </div>
+//       </div>
+//     );
+//   };
+
+//   return (
+//     <>
+//       <style>{css}</style>
+//       <Navbar navigate={navigate} path={root} onAuth={() => setShowAuth(true)} />
+//       {renderPage()}
+//       <Footer navigate={navigate} />
+//       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+//     </>
+//   );
+// }
+
+// // ─────────────────────────────────────────────
+// // ROOT
+// // ─────────────────────────────────────────────
+// export default function App() {
+//   return (
+//     <AuthProvider>
+//       <ToastProvider>
+//         <AppRouter />
+//       </ToastProvider>
+//     </AuthProvider>
+//   );
+// }
+
+
 import { useState, useEffect, createContext, useContext, useCallback, useRef } from "react";
 
 // ─────────────────────────────────────────────
@@ -5137,7 +5537,7 @@ function useScrollReveal(options = {}) {
   return [ref, visible];
 }
 
-// Reveal wrapper component — fade + slide up
+// Reveal wrapper — fade + slide up
 function Reveal({ children, delay = 0, className = "", style = {} }) {
   const [ref, visible] = useScrollReveal();
   return (
@@ -5147,7 +5547,7 @@ function Reveal({ children, delay = 0, className = "", style = {} }) {
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(28px)",
-        transition: `opacity 0.55s ease ${delay}ms, transform 0.55s ease ${delay}ms`,
+        transition: `opacity 0.6s cubic-bezier(0.22,1,0.36,1) ${delay}ms, transform 0.6s cubic-bezier(0.22,1,0.36,1) ${delay}ms`,
         ...style,
       }}
     >
@@ -5156,7 +5556,7 @@ function Reveal({ children, delay = 0, className = "", style = {} }) {
   );
 }
 
-// Staggered children reveal — wraps each child in a Reveal with increasing delay
+// Staggered children reveal
 function RevealList({ children, baseDelay = 0, step = 80, className = "", style = {} }) {
   return (
     <div className={className} style={style}>
@@ -5168,6 +5568,44 @@ function RevealList({ children, baseDelay = 0, step = 80, className = "", style 
           ))
         : <Reveal delay={baseDelay}>{children}</Reveal>
       }
+    </div>
+  );
+}
+
+// Slide-in from left
+function RevealLeft({ children, delay = 0, className = "", style = {} }) {
+  const [ref, visible] = useScrollReveal();
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateX(0)" : "translateX(-40px)",
+        transition: `opacity 0.65s cubic-bezier(0.22,1,0.36,1) ${delay}ms, transform 0.65s cubic-bezier(0.22,1,0.36,1) ${delay}ms`,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// Scale in
+function RevealScale({ children, delay = 0, className = "", style = {} }) {
+  const [ref, visible] = useScrollReveal({ threshold: 0.15 });
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "scale(1)" : "scale(0.92)",
+        transition: `opacity 0.6s cubic-bezier(0.22,1,0.36,1) ${delay}ms, transform 0.6s cubic-bezier(0.22,1,0.36,1) ${delay}ms`,
+        ...style,
+      }}
+    >
+      {children}
     </div>
   );
 }
@@ -5239,25 +5677,26 @@ const css = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0a0b14;
-    --bg2: #11132a;
-    --bg3: #181b35;
-    --surface: #1e2245;
-    --surface2: #252a52;
-    --primary: #6c63ff;
-    --primary-light: #8b85ff;
-    --primary-glow: rgba(108,99,255,0.25);
-    --accent: #ff6b6b;
+    --bg: #ffffff;
+    --bg2: #fff5f6;
+    --bg3: #ffe9eb;
+    --surface: #ffffff;
+    --surface2: #fff0f1;
+    --primary: #e8113b;
+    --primary-light: #ff4d6d;
+    --primary-dark: #c00d30;
+    --primary-glow: rgba(232,17,59,0.18);
+    --accent: #ff8a00;
     --accent2: #ffd93d;
-    --green: #6bcb77;
-    --cyan: #4ecdc4;
-    --text: #f0f2ff;
-    --text2: #9ba3c8;
-    --text3: #6b7280;
-    --border: rgba(108,99,255,0.2);
+    --green: #1fa855;
+    --cyan: #0ea5b7;
+    --text: #1a1a2e;
+    --text2: #6b6b7d;
+    --text3: #9a9aab;
+    --border: rgba(232,17,59,0.16);
     --radius: 14px;
     --radius-sm: 8px;
-    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+    --shadow: 0 8px 32px rgba(232,17,59,0.10);
     --font: 'Plus Jakarta Sans', sans-serif;
     --font2: 'Space Grotesk', sans-serif;
   }
@@ -5270,7 +5709,7 @@ const css = `
   img { max-width: 100%; }
 
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-track { background: var(--bg3); }
   ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
 
   .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
@@ -5293,6 +5732,14 @@ const css = `
     0%   { background-position: -200% center; }
     100% { background-position: 200% center; }
   }
+  @keyframes floatY {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-10px); }
+  }
+  @keyframes logoPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(232,17,59,0.25); }
+    50%       { box-shadow: 0 0 0 8px rgba(232,17,59,0); }
+  }
 
   /* Hero entrance animations */
   .hero-eyebrow  { animation: heroFadeIn 0.6s ease 0.1s both; }
@@ -5303,7 +5750,7 @@ const css = `
 
   /* Stat counter shimmer */
   .stat-num {
-    background: linear-gradient(90deg, var(--text) 0%, var(--primary-light) 50%, var(--text) 100%);
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 50%, var(--primary) 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -5316,37 +5763,55 @@ const css = `
   /* Navbar */
   .navbar {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: rgba(10,11,20,0.92); backdrop-filter: blur(20px);
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
     height: 72px; display: flex; align-items: center;
     animation: heroFadeIn 0.5s ease both;
+    box-shadow: 0 2px 16px rgba(232,17,59,0.05);
   }
   .navbar .inner { display: flex; align-items: center; gap: 32px; width: 100%; }
-  .logo { display: flex; align-items: center; gap: 10px; font-family: var(--font2); font-size: 1.4rem; font-weight: 700; }
-  .logo-icon { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-  .logo-text { background: linear-gradient(135deg, #fff 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+  /* ── LOGO ── */
+  .logo { display: flex; align-items: center; gap: 10px; font-family: var(--font2); font-size: 1.4rem; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+  .logo-img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: logoPulse 3s ease-in-out infinite;
+  }
+  .logo:hover .logo-img {
+    transform: scale(1.08) rotate(-2deg);
+    box-shadow: 0 4px 20px rgba(232,17,59,0.3);
+    animation: none;
+  }
+  /* keep the old logo-icon class for auth modal only */
+  .logo-icon { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #fff; }
+  .logo-text { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
   .nav-links { display: flex; gap: 4px; flex: 1; }
   .nav-link { padding: 8px 16px; border-radius: var(--radius-sm); color: var(--text2); font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
-  .nav-link:hover, .nav-link.active { background: var(--surface); color: var(--text); }
+  .nav-link:hover, .nav-link.active { background: var(--bg3); color: var(--primary); }
   .nav-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
-  .avatar-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; cursor: pointer; flex-shrink: 0; }
+  .avatar-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; cursor: pointer; flex-shrink: 0; }
 
   /* Buttons */
   .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
   .btn-primary { background: var(--primary); color: #fff; }
-  .btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 6px 24px var(--primary-glow); }
+  .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 6px 24px var(--primary-glow); }
   .btn-primary:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
-  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
-  .btn-outline:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
+  .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+  .btn-outline:hover { background: var(--primary); color: #fff; transform: translateY(-1px); }
   .btn-sm { padding: 7px 14px; font-size: 0.82rem; }
   .btn-lg { padding: 14px 32px; font-size: 1rem; border-radius: var(--radius); }
   .btn-accent { background: var(--accent); color: #fff; }
   .btn-accent:hover { opacity: 0.9; transform: translateY(-1px); }
-  .btn-green { background: var(--green); color: #0a0b14; }
+  .btn-green { background: var(--green); color: #fff; }
   .btn-green:hover { opacity: 0.9; }
-  .btn-danger { background: #ef4444; color: #fff; }
-  .btn-danger:hover { background: #dc2626; }
-  .btn-yellow { background: var(--accent2); color: #0a0b14; }
+  .btn-danger { background: #d92d20; color: #fff; }
+  .btn-danger:hover { background: #b42318; }
+  .btn-yellow { background: var(--accent2); color: #1a1a2e; }
 
   /* Cards — hover lift + glow */
   .card {
@@ -5360,7 +5825,7 @@ const css = `
   .card:hover {
     border-color: var(--primary);
     transform: translateY(-6px) scale(1.01);
-    box-shadow: var(--shadow), 0 0 0 1px var(--primary-glow), 0 20px 40px rgba(108,99,255,0.15);
+    box-shadow: var(--shadow), 0 0 0 1px var(--primary-glow), 0 20px 40px rgba(232,17,59,0.12);
   }
   .card-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: var(--text3); overflow: hidden; }
   .card-thumb img { transition: transform 0.4s ease; }
@@ -5370,12 +5835,12 @@ const css = `
   .card-desc { font-size: 0.83rem; color: var(--text2); line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .card-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-  .badge-primary { background: rgba(108,99,255,0.2); color: var(--primary-light); }
-  .badge-accent { background: rgba(255,107,107,0.2); color: #ff8a8a; }
-  .badge-green { background: rgba(107,203,119,0.2); color: var(--green); }
-  .badge-yellow { background: rgba(255,217,61,0.2); color: var(--accent2); }
-  .badge-cyan { background: rgba(78,205,196,0.2); color: var(--cyan); }
-  .price { font-size: 1.15rem; font-weight: 800; color: var(--primary-light); }
+  .badge-primary { background: rgba(232,17,59,0.12); color: var(--primary); }
+  .badge-accent { background: rgba(255,138,0,0.15); color: #c45f00; }
+  .badge-green { background: rgba(31,168,85,0.12); color: var(--green); }
+  .badge-yellow { background: rgba(255,217,61,0.2); color: #b88600; }
+  .badge-cyan { background: rgba(14,165,183,0.12); color: var(--cyan); }
+  .price { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
   .price-free { color: var(--green); }
   .price-old { font-size: 0.82rem; color: var(--text3); text-decoration: line-through; margin-left: 4px; }
 
@@ -5386,11 +5851,11 @@ const css = `
 
   /* Hero */
   .hero { padding: 80px 0 60px; position: relative; overflow: hidden; }
-  .hero::before { content: ''; position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%); pointer-events: none; animation: heroFadeIn 1.2s ease both; }
-  .hero::after { content: ''; position: absolute; bottom: -100px; left: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,107,107,0.08) 0%, transparent 70%); pointer-events: none; }
-  .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 0.82rem; color: var(--text2); margin-bottom: 28px; }
-  .hero-title { font-family: var(--font2); font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 700; line-height: 1.15; margin-bottom: 20px; }
-  .hero-title .hl { color: var(--primary-light); }
+  .hero::before { content: ''; position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(232,17,59,0.10) 0%, transparent 70%); pointer-events: none; animation: heroFadeIn 1.2s ease both; }
+  .hero::after { content: ''; position: absolute; bottom: -100px; left: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,138,0,0.06) 0%, transparent 70%); pointer-events: none; }
+  .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 0.82rem; color: var(--primary); margin-bottom: 28px; font-weight: 600; }
+  .hero-title { font-family: var(--font2); font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 700; line-height: 1.15; margin-bottom: 20px; color: var(--text); }
+  .hero-title .hl { color: var(--primary); }
   .hero-sub { font-size: 1.1rem; color: var(--text2); max-width: 560px; line-height: 1.7; margin-bottom: 36px; }
   .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
   .hero-stats { display: flex; gap: 40px; margin-top: 56px; flex-wrap: wrap; }
@@ -5400,51 +5865,51 @@ const css = `
   /* Section */
   .section { padding: 56px 0; }
   .section-header { margin-bottom: 36px; }
-  .section-eyebrow { font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--primary-light); margin-bottom: 10px; }
-  .section-title { font-family: var(--font2); font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; }
+  .section-eyebrow { font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--primary); margin-bottom: 10px; }
+  .section-title { font-family: var(--font2); font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; color: var(--text); }
   .section-sub { color: var(--text2); margin-top: 10px; font-size: 0.95rem; max-width: 600px; line-height: 1.6; }
 
   /* Form */
   .form-group { margin-bottom: 18px; }
   .form-label { display: block; font-size: 0.83rem; font-weight: 600; color: var(--text2); margin-bottom: 7px; }
-  .form-input { width: 100%; padding: 11px 14px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.9rem; transition: border-color 0.2s, box-shadow 0.2s; }
+  .form-input { width: 100%; padding: 11px 14px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.9rem; transition: border-color 0.2s, box-shadow 0.2s; }
   .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
   .form-input::placeholder { color: var(--text3); }
-  select.form-input option { background: var(--bg2); color: var(--text); }
-  .form-error { font-size: 0.78rem; color: #ff6b6b; margin-top: 5px; }
+  select.form-input option { background: #fff; color: var(--text); }
+  .form-error { font-size: 0.78rem; color: #d92d20; margin-top: 5px; }
   .form-hint { font-size: 0.75rem; color: var(--text3); margin-top: 4px; }
   .checkbox-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
   .checkbox-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
   .checkbox-row label { font-size: 0.88rem; font-weight: 600; cursor: pointer; }
 
   /* File upload */
-  .file-upload-area { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg3); }
-  .file-upload-area:hover, .file-upload-area.drag-over { border-color: var(--primary); background: rgba(108,99,255,0.05); }
+  .file-upload-area { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg2); }
+  .file-upload-area:hover, .file-upload-area.drag-over { border-color: var(--primary); background: rgba(232,17,59,0.04); }
   .file-upload-area input[type="file"] { display: none; }
   .file-upload-icon { font-size: 2.2rem; margin-bottom: 8px; }
   .file-upload-text { font-size: 0.88rem; color: var(--text2); }
   .file-upload-hint { font-size: 0.75rem; color: var(--text3); margin-top: 4px; }
-  .file-selected { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: rgba(107,203,119,0.1); border: 1px solid var(--green); border-radius: var(--radius-sm); font-size: 0.85rem; margin-top: 8px; }
+  .file-selected { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: rgba(31,168,85,0.08); border: 1px solid var(--green); border-radius: var(--radius-sm); font-size: 0.85rem; margin-top: 8px; }
 
   /* Progress */
   .upload-progress { margin-top: 10px; }
   .progress-bar-wrap { width: 100%; background: var(--bg3); border-radius: 4px; height: 8px; overflow: hidden; }
-  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--cyan)); border-radius: 4px; transition: width 0.3s; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 4px; transition: width 0.3s; }
 
   /* Modal */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; animation: heroFadeIn 0.2s ease both; }
-  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 36px; max-width: 540px; width: 100%; position: relative; box-shadow: var(--shadow); margin: auto; animation: heroFadeIn 0.3s ease 0.05s both; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(26,26,46,0.55); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; animation: heroFadeIn 0.2s ease both; }
+  .modal { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 36px; max-width: 540px; width: 100%; position: relative; box-shadow: var(--shadow); margin: auto; animation: heroFadeIn 0.3s ease 0.05s both; }
   .modal-lg { max-width: 760px; }
-  .modal-close { position: absolute; top: 16px; right: 16px; background: var(--surface); border: none; color: var(--text2); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; flex-shrink: 0; transition: all 0.2s; }
-  .modal-close:hover { color: var(--text); background: var(--surface2); transform: rotate(90deg); }
-  .modal-title { font-family: var(--font2); font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; padding-right: 40px; }
+  .modal-close { position: absolute; top: 16px; right: 16px; background: var(--bg3); border: none; color: var(--text2); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; flex-shrink: 0; transition: all 0.2s; }
+  .modal-close:hover { color: #fff; background: var(--primary); transform: rotate(90deg); }
+  .modal-title { font-family: var(--font2); font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; padding-right: 40px; color: var(--text); }
   .modal-sub { color: var(--text2); font-size: 0.88rem; margin-bottom: 24px; }
 
   /* Toast */
   .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
-  .toast { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; font-size: 0.88rem; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease; min-width: 260px; max-width: 360px; }
+  .toast { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; font-size: 0.88rem; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease; min-width: 260px; max-width: 360px; box-shadow: var(--shadow); color: var(--text); }
   .toast.success { border-color: var(--green); }
-  .toast.error { border-color: var(--accent); }
+  .toast.error { border-color: var(--primary); }
   @keyframes slideIn { from { opacity:0; transform: translateX(30px); } to { opacity:1; transform: translateX(0); } }
 
   /* Loading */
@@ -5453,26 +5918,26 @@ const css = `
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* Tabs */
-  .tabs { display: flex; gap: 4px; background: var(--surface); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 28px; overflow-x: auto; }
+  .tabs { display: flex; gap: 4px; background: var(--bg3); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 28px; overflow-x: auto; }
   .tab { flex: 1; padding: 9px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text2); background: transparent; border: none; cursor: pointer; transition: all 0.2s; text-align: center; white-space: nowrap; min-width: fit-content; }
   .tab.active { background: var(--primary); color: #fff; }
 
   /* Tags */
   .tags { display: flex; flex-wrap: wrap; gap: 8px; }
-  .tag { padding: 4px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; font-size: 0.78rem; color: var(--text2); cursor: pointer; transition: all 0.2s; }
-  .tag:hover, .tag.active { border-color: var(--primary); color: var(--primary-light); background: rgba(108,99,255,0.1); }
+  .tag { padding: 4px 12px; background: #fff; border: 1px solid var(--border); border-radius: 20px; font-size: 0.78rem; color: var(--text2); cursor: pointer; transition: all 0.2s; }
+  .tag:hover, .tag.active { border-color: var(--primary); color: var(--primary); background: rgba(232,17,59,0.06); }
 
   /* Detail page */
   .detail-header { background: linear-gradient(135deg, var(--bg2) 0%, var(--bg3) 100%); border-bottom: 1px solid var(--border); padding: 48px 0; }
   .detail-breadcrumb { font-size: 0.82rem; color: var(--text3); margin-bottom: 16px; cursor: pointer; transition: color 0.2s; }
-  .detail-breadcrumb:hover { color: var(--text2); }
+  .detail-breadcrumb:hover { color: var(--primary); }
   .detail-breadcrumb span { color: var(--text2); }
-  .detail-title { font-family: var(--font2); font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; margin-bottom: 12px; }
+  .detail-title { font-family: var(--font2); font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; margin-bottom: 12px; color: var(--text); }
   .detail-meta-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; color: var(--text2); font-size: 0.85rem; margin-bottom: 20px; }
   .detail-layout { display: grid; grid-template-columns: 1fr 340px; gap: 32px; padding: 40px 0; align-items: start; }
-  .detail-sidebar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; position: sticky; top: 90px; transition: box-shadow 0.3s; }
-  .detail-sidebar:hover { box-shadow: 0 8px 32px rgba(108,99,255,0.15); }
-  .sidebar-price { font-family: var(--font2); font-size: 2rem; font-weight: 800; color: var(--primary-light); margin-bottom: 4px; }
+  .detail-sidebar { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; position: sticky; top: 90px; transition: box-shadow 0.3s; box-shadow: var(--shadow); }
+  .detail-sidebar:hover { box-shadow: 0 8px 32px rgba(232,17,59,0.18); }
+  .sidebar-price { font-family: var(--font2); font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 4px; }
   .sidebar-price-old { font-size: 0.9rem; color: var(--text3); text-decoration: line-through; margin-bottom: 16px; }
   .sidebar-btn { width: 100%; margin-bottom: 10px; justify-content: center; }
   .sidebar-features { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
@@ -5480,42 +5945,42 @@ const css = `
 
   /* Video list */
   .video-list { display: flex; flex-direction: column; gap: 6px; }
-  .video-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; }
-  .video-item:hover { border-color: var(--border); background: var(--surface2); transform: translateX(4px); }
+  .video-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--bg2); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; }
+  .video-item:hover { border-color: var(--border); background: var(--bg3); transform: translateX(4px); }
   .video-item.locked { opacity: 0.6; cursor: not-allowed; }
-  .video-num { width: 28px; height: 28px; background: var(--bg3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--text2); flex-shrink: 0; }
+  .video-num { width: 28px; height: 28px; background: var(--bg3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--primary); flex-shrink: 0; }
   .video-info { flex: 1; min-width: 0; }
   .video-title-text { font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .video-dur { font-size: 0.75rem; color: var(--text3); margin-top: 2px; }
 
   /* Admin */
   .admin-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 72px); }
-  .admin-sidebar { background: var(--bg2); border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 72px; height: calc(100vh - 72px); overflow-y: auto; }
+  .admin-sidebar { background: #fff; border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 72px; height: calc(100vh - 72px); overflow-y: auto; }
   .admin-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--text2); font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
-  .admin-nav-item:hover { color: var(--text); background: var(--surface); }
-  .admin-nav-item.active { color: var(--primary-light); border-left-color: var(--primary); background: rgba(108,99,255,0.08); }
+  .admin-nav-item:hover { color: var(--primary); background: var(--bg2); }
+  .admin-nav-item.active { color: var(--primary); border-left-color: var(--primary); background: rgba(232,17,59,0.06); }
   .admin-nav-icon { font-size: 1.1rem; flex-shrink: 0; }
-  .admin-content { padding: 32px; background: var(--bg); min-height: calc(100vh - 72px); }
+  .admin-content { padding: 32px; background: var(--bg2); min-height: calc(100vh - 72px); }
   .admin-header { margin-bottom: 28px; }
-  .admin-title { font-family: var(--font2); font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
+  .admin-title { font-family: var(--font2); font-size: 1.6rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
   .admin-sub { color: var(--text2); font-size: 0.88rem; }
 
   /* Stats cards */
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; transition: transform 0.25s, box-shadow 0.25s; }
-  .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(108,99,255,0.2); }
+  .stat-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; transition: transform 0.25s, box-shadow 0.25s; }
+  .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(232,17,59,0.15); }
   .stat-card-icon { font-size: 1.8rem; margin-bottom: 12px; }
-  .stat-card-num { font-family: var(--font2); font-size: 1.8rem; font-weight: 700; }
+  .stat-card-num { font-family: var(--font2); font-size: 1.8rem; font-weight: 700; color: var(--primary); }
   .stat-card-label { font-size: 0.8rem; color: var(--text2); margin-top: 2px; }
 
   /* Table */
-  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; overflow-x: auto; }
+  .table-wrap { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; min-width: 600px; }
-  th { background: var(--bg3); padding: 12px 16px; text-align: left; font-size: 0.78rem; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  td { padding: 13px 16px; font-size: 0.87rem; border-bottom: 1px solid rgba(108,99,255,0.08); vertical-align: middle; }
+  th { background: var(--bg2); padding: 12px 16px; text-align: left; font-size: 0.78rem; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 13px 16px; font-size: 0.87rem; border-bottom: 1px solid rgba(232,17,59,0.06); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
   tr { transition: background 0.15s; }
-  tr:hover td { background: rgba(108,99,255,0.04); }
+  tr:hover td { background: rgba(232,17,59,0.03); }
 
   /* Misc */
   .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
@@ -5523,7 +5988,7 @@ const css = `
   .empty-state p { font-size: 0.9rem; }
   .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
   .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
-  .search-bar { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 16px; margin-bottom: 28px; transition: border-color 0.2s, box-shadow 0.2s; }
+  .search-bar { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 16px; margin-bottom: 28px; transition: border-color 0.2s, box-shadow 0.2s; }
   .search-bar:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
   .search-bar input { flex: 1; background: none; border: none; color: var(--text); font-size: 0.9rem; outline: none; }
   .search-bar input::placeholder { color: var(--text3); }
@@ -5531,9 +5996,9 @@ const css = `
   /* Category strip */
   .mascot-strip { display: flex; gap: 20px; padding: 20px 0; overflow-x: auto; scrollbar-width: none; }
   .mascot-strip::-webkit-scrollbar { display: none; }
-  .mascot-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; min-width: 130px; text-align: center; cursor: pointer; transition: all 0.25s; flex-shrink: 0; }
-  .mascot-card:hover { border-color: var(--primary); transform: translateY(-5px) scale(1.03); box-shadow: 0 8px 24px rgba(108,99,255,0.2); }
-  .mascot-card.active { border-color: var(--primary); background: rgba(108,99,255,0.12); }
+  .mascot-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; min-width: 130px; text-align: center; cursor: pointer; transition: all 0.25s; flex-shrink: 0; }
+  .mascot-card:hover { border-color: var(--primary); transform: translateY(-5px) scale(1.03); box-shadow: 0 8px 24px rgba(232,17,59,0.15); }
+  .mascot-card.active { border-color: var(--primary); background: rgba(232,17,59,0.06); }
   .mascot-emoji { font-size: 2.4rem; margin-bottom: 8px; transition: transform 0.3s; }
   .mascot-card:hover .mascot-emoji { transform: scale(1.15) rotate(-5deg); }
   .mascot-name { font-size: 0.8rem; font-weight: 600; color: var(--text2); }
@@ -5541,40 +6006,40 @@ const css = `
 
   /* Features */
   .features-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-  .feature-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; transition: all 0.3s; }
-  .feature-item:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(108,99,255,0.15); }
+  .feature-item { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; transition: all 0.3s; }
+  .feature-item:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(232,17,59,0.12); }
   .feature-icon { font-size: 2rem; margin-bottom: 12px; transition: transform 0.3s; }
   .feature-item:hover .feature-icon { transform: scale(1.2); }
-  .feature-title { font-weight: 700; margin-bottom: 6px; font-size: 0.95rem; }
+  .feature-title { font-weight: 700; margin-bottom: 6px; font-size: 0.95rem; color: var(--text); }
   .feature-desc { font-size: 0.82rem; color: var(--text2); line-height: 1.5; }
 
   /* Live */
-  .live-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; background: rgba(255,107,107,0.2); border-radius: 20px; font-size: 0.72rem; font-weight: 700; color: #ff8a8a; }
-  .live-dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+  .live-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; background: rgba(232,17,59,0.12); border-radius: 20px; font-size: 0.72rem; font-weight: 700; color: var(--primary); }
+  .live-dot { width: 7px; height: 7px; background: var(--primary); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  .grad { background: linear-gradient(135deg, var(--primary-light), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad { background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
   /* User menu */
-  .user-menu { position: absolute; top: calc(100% + 10px); right: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; min-width: 200px; box-shadow: var(--shadow); z-index: 150; animation: heroFadeIn 0.2s ease both; }
+  .user-menu { position: absolute; top: calc(100% + 10px); right: 0; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; min-width: 200px; box-shadow: var(--shadow); z-index: 150; animation: heroFadeIn 0.2s ease both; }
   .user-menu-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; font-size: 0.87rem; color: var(--text2); cursor: pointer; transition: all 0.2s; }
-  .user-menu-item:hover { background: var(--surface); color: var(--text); }
+  .user-menu-item:hover { background: var(--bg2); color: var(--primary); }
   .user-menu-divider { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
 
   /* Video manager */
-  .video-manager-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; transition: all 0.2s; }
+  .video-manager-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; transition: all 0.2s; }
   .video-manager-item:hover { border-color: var(--primary); }
   .video-manager-info { flex: 1; min-width: 0; }
   .video-manager-title { font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .video-manager-meta { font-size: 0.75rem; color: var(--text3); margin-top: 2px; display: flex; gap: 12px; }
   .video-type-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
-  .video-type-tab { flex: 1; padding: 10px; background: var(--bg3); border: 2px solid var(--border); border-radius: var(--radius-sm); text-align: center; cursor: pointer; font-size: 0.88rem; font-weight: 600; color: var(--text2); transition: all 0.2s; }
-  .video-type-tab.active { border-color: var(--primary); color: var(--primary-light); background: rgba(108,99,255,0.1); }
+  .video-type-tab { flex: 1; padding: 10px; background: var(--bg2); border: 2px solid var(--border); border-radius: var(--radius-sm); text-align: center; cursor: pointer; font-size: 0.88rem; font-weight: 600; color: var(--text2); transition: all 0.2s; }
+  .video-type-tab.active { border-color: var(--primary); color: var(--primary); background: rgba(232,17,59,0.06); }
 
   /* Info boxes */
-  .info-box { background: rgba(108,99,255,0.08); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.84rem; color: var(--text2); margin-bottom: 16px; }
-  .success-box { background: rgba(107,203,119,0.1); border: 1px solid rgba(107,203,119,0.3); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.87rem; }
-  .warning-box { background: rgba(255,217,61,0.1); border: 1px solid rgba(255,217,61,0.3); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.87rem; color: var(--accent2); }
+  .info-box { background: rgba(232,17,59,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.84rem; color: var(--text2); margin-bottom: 16px; }
+  .success-box { background: rgba(31,168,85,0.08); border: 1px solid rgba(31,168,85,0.3); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.87rem; color: var(--green); }
+  .warning-box { background: rgba(255,217,61,0.12); border: 1px solid rgba(255,217,61,0.4); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.87rem; color: #b88600; }
 
   /* Responsive */
   @media (max-width: 900px) {
@@ -5602,6 +6067,23 @@ const css = `
     }
   }
 `;
+
+// ─────────────────────────────────────────────
+// LOGO COMPONENT  ← single source of truth
+// ─────────────────────────────────────────────
+const LOGO_URL = "https://res.cloudinary.com/dfsimrqwi/image/upload/v1781501874/What_Next_actual_Logo_1_1_q10dni.png";
+
+function Logo({ onClick }) {
+  return (
+    <div className="logo" onClick={onClick}>
+      <img
+        src={LOGO_URL}
+        alt="WhatNext"
+        className="logo-img"
+      />
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────
 // TOAST SYSTEM
@@ -5700,9 +6182,9 @@ function AuthModal({ onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>✕</button>
-        <div className="logo" style={{ marginBottom: 24 }}>
-          <div className="logo-icon">💻</div>
-          <span className="logo-text">WhatNext</span>
+        {/* Auth modal uses the same logo image */}
+        <div style={{ marginBottom: 24 }}>
+          <Logo />
         </div>
         <div className="tabs">
           <button className={`tab ${tab === "login" ? "active" : ""}`} onClick={() => setTab("login")}>Login</button>
@@ -5756,10 +6238,7 @@ function Navbar({ navigate, path, onAuth }) {
   return (
     <nav className="navbar">
       <div className="container inner">
-        <div className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer", flexShrink: 0 }}>
-          <div className="logo-icon">💻</div>
-          <span className="logo-text">WhatNext</span>
-        </div>
+        <Logo onClick={() => navigate("/")} />
         <div className="nav-links">
           {links.map(l => (
             <span key={l.to} className={`nav-link ${path === l.to ? "active" : ""}`}
@@ -5781,7 +6260,7 @@ function Navbar({ navigate, path, onAuth }) {
                   <div className="user-menu-item" onClick={() => { navigate("/dashboard"); setMenu(false); }}>📚 My Learning</div>
                   {isAdmin && <div className="user-menu-item" onClick={() => { navigate("/admin"); setMenu(false); }}>⚙️ Admin Panel</div>}
                   <hr className="user-menu-divider" />
-                  <div className="user-menu-item" style={{ color: "var(--accent)" }} onClick={() => { logout(); setMenu(false); }}>🚪 Logout</div>
+                  <div className="user-menu-item" style={{ color: "var(--primary)" }} onClick={() => { logout(); setMenu(false); }}>🚪 Logout</div>
                 </div>
               )}
             </div>
@@ -5955,7 +6434,7 @@ function NotesCard({ note, onClick }) {
 }
 
 // ─────────────────────────────────────────────
-// HOME PAGE  ← scroll animations applied here
+// HOME PAGE
 // ─────────────────────────────────────────────
 function HomePage({ navigate, onAuth }) {
   const { user } = useAuth();
@@ -5975,7 +6454,7 @@ function HomePage({ navigate, onAuth }) {
 
   return (
     <div className="page">
-      {/* ── Hero (CSS-animated, no IntersectionObserver needed — always in view) */}
+      {/* ── Hero (CSS-animated) */}
       <section className="hero">
         <div className="container">
           <div className="hero-eyebrow">🎓 India's Most Affordable Learning Platform</div>
@@ -6007,12 +6486,12 @@ function HomePage({ navigate, onAuth }) {
       {/* ── Category strip */}
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="container">
-          <Reveal>
+          <RevealLeft>
             <div className="section-header">
               <div className="section-eyebrow">Choose Your Batch</div>
               <h2 className="section-title">Find Your <span className="grad">Learning Tribe</span></h2>
             </div>
-          </Reveal>
+          </RevealLeft>
           <Reveal delay={100}>
             <CategoryStrip onSelect={() => navigate("/courses")} selected={null} />
           </Reveal>
@@ -6028,7 +6507,6 @@ function HomePage({ navigate, onAuth }) {
               <h2 className="section-title">Everything You Need to <span className="grad">Excel</span></h2>
             </div>
           </Reveal>
-          {/* Staggered feature cards */}
           <div className="features-row">
             {[
               ["📡", "Live Classes", "Interact with instructors in real-time."],
@@ -6038,13 +6516,13 @@ function HomePage({ navigate, onAuth }) {
               ["💳", "Easy Payments", "Secure Razorpay checkout. Pay once, learn forever."],
               ["🏆", "Certificates", "Earn certificates to showcase achievements."]
             ].map(([icon, title, desc], i) => (
-              <Reveal key={title} delay={i * 80}>
+              <RevealScale key={title} delay={i * 80}>
                 <div className="feature-item">
                   <div className="feature-icon">{icon}</div>
                   <div className="feature-title">{title}</div>
                   <div className="feature-desc">{desc}</div>
                 </div>
-              </Reveal>
+              </RevealScale>
             ))}
           </div>
         </div>
@@ -6106,18 +6584,18 @@ function HomePage({ navigate, onAuth }) {
       {/* ── CTA Banner */}
       <section className="section">
         <div className="container">
-          <Reveal>
-            <div style={{ background: "linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%)", border: "1px solid var(--border)", borderRadius: 20, padding: "48px 40px", textAlign: "center" }}>
-              <div style={{ fontSize: "3rem", marginBottom: 16 }}>💻</div>
-              <h2 style={{ fontFamily: "var(--font2)", fontSize: "1.8rem", fontWeight: 700, marginBottom: 12 }}>Ready to start learning?</h2>
-              <p style={{ color: "var(--text2)", marginBottom: 28, maxWidth: 480, margin: "0 auto 28px" }}>
+          <RevealScale>
+            <div style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)", border: "1px solid var(--border)", borderRadius: 20, padding: "48px 40px", textAlign: "center" }}>
+              <div style={{ fontSize: "3rem", marginBottom: 16, animation: "floatY 3s ease-in-out infinite" }}>💻</div>
+              <h2 style={{ fontFamily: "var(--font2)", fontSize: "1.8rem", fontWeight: 700, marginBottom: 12, color: "#fff" }}>Ready to start learning?</h2>
+              <p style={{ color: "rgba(255,255,255,0.9)", marginBottom: 28, maxWidth: 480, margin: "0 auto 28px" }}>
                 Join 50,000+ students mastering their subjects with expert guidance.
               </p>
-              <button className="btn btn-primary btn-lg" onClick={user ? () => navigate("/courses") : onAuth}>
+              <button className="btn btn-lg" style={{ background: "#fff", color: "var(--primary)" }} onClick={user ? () => navigate("/courses") : onAuth}>
                 {user ? "Browse Courses 🚀" : "Start Learning Free →"}
               </button>
             </div>
-          </Reveal>
+          </RevealScale>
         </div>
       </section>
     </div>
@@ -6352,60 +6830,6 @@ function CourseDetailPage({ id, navigate, onAuth }) {
 // ─────────────────────────────────────────────
 // LIVE CLASSES PAGE
 // ─────────────────────────────────────────────
-// function LiveClassesPage({ navigate }) {
-//   const [classes, setClasses] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [status, setStatus] = useState("all");
-
-//   useEffect(() => {
-//     const params = new URLSearchParams();
-//     if (status !== "all") params.set("status", status);
-//     fetch(`${API_BASE}/live-classes?${params}`).then(r => r.json()).then(d => {
-//       if (d.success) setClasses(d.data || d.liveClasses || []);
-//       setLoading(false);
-//     }).catch(() => setLoading(false));
-//   }, [status]);
-
-//   const filtered = status === "all" ? classes : classes.filter(c => c.status === status);
-
-//   return (
-//     <div className="page">
-//       <div style={{ background: "var(--bg2)", borderBottom: "1px solid var(--border)", padding: "40px 0 28px" }}>
-//         <div className="container">
-//           <Reveal>
-//             <h1 className="section-title" style={{ marginBottom: 8 }}>Live <span className="grad">Classes</span></h1>
-//             <p style={{ color: "var(--text2)", fontSize: "0.9rem" }}>Join interactive sessions with expert instructors in real time</p>
-//           </Reveal>
-//         </div>
-//       </div>
-//       <div className="container section">
-//         <Reveal>
-//           <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
-//             {["all", "upcoming", "live", "completed"].map(s => (
-//               <button key={s} className={`btn ${status === s ? "btn-primary" : "btn-outline"} btn-sm`}
-//                 onClick={() => setStatus(s)} style={{ textTransform: "capitalize" }}>
-//                 {s === "live" && "🔴 "}{s}
-//               </button>
-//             ))}
-//           </div>
-//         </Reveal>
-//         {loading ? <div className="spinner" />
-//           : filtered.length === 0
-//             ? <div className="empty-state"><div className="icon">📡</div><p>No live classes found.</p></div>
-//             : (
-//               <div className="grid-3">
-//                 {filtered.map((lc, i) => (
-//                   <Reveal key={lc._id} delay={i * 70}>
-//                     <LiveClassCard liveClass={lc} onClick={() => navigate(`/live/${lc._id}`)} />
-//                   </Reveal>
-//                 ))}
-//               </div>
-//             )
-//         }
-//       </div>
-//     </div>
-//   );
-// }
 function LiveClassesPage({ navigate }) {
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -6419,7 +6843,6 @@ function LiveClassesPage({ navigate }) {
       .then(r => r.json())
       .then(d => {
         if (d.success) {
-          // Handle all possible response shapes
           setClasses(d.data || d.liveClasses || d.classes || []);
         }
         setLoading(false);
@@ -6466,6 +6889,7 @@ function LiveClassesPage({ navigate }) {
     </div>
   );
 }
+
 // ─────────────────────────────────────────────
 // LIVE CLASS DETAIL
 // ─────────────────────────────────────────────
@@ -6488,12 +6912,82 @@ function LiveClassDetailPage({ id, navigate, onAuth }) {
 
   const handleRegister = async () => {
     if (!user) { onAuth(); return; }
+
+    if (!lc.isFree && lc.price > 0) {
+      try {
+        const order = await authFetch('/payments/create-order', {
+          method: 'POST',
+          body: JSON.stringify({ itemType: 'liveClass', itemId: id })
+        });
+
+        if (!order.success) {
+          toast(order.message || 'Could not create order', 'error');
+          return;
+        }
+
+        const options = {
+          key: order.razorpayKeyId || '',
+          amount: order.order?.amount,
+          currency: order.order?.currency || 'INR',
+          name: 'WhatNext',
+          description: lc.title,
+          order_id: order.order?.id,
+          handler: async (razorpayRes) => {
+            const verify = await authFetch('/payments/verify', {
+              method: 'POST',
+              body: JSON.stringify({
+                razorpayOrderId:   razorpayRes.razorpay_order_id,
+                razorpayPaymentId: razorpayRes.razorpay_payment_id,
+                razorpaySignature: razorpayRes.razorpay_signature,
+                itemType: 'liveClass',
+                itemId: id
+              })
+            });
+            if (verify.success) {
+              toast("Payment successful! You're registered 🎉", 'success');
+              const headers = token ? { Authorization: `Bearer ${token}` } : {};
+              fetch(`${API_BASE}/live-classes/${id}`, { headers })
+                .then(r => r.json())
+                .then(d => { if (d.success) setLc(d.data || d.liveClass); });
+            } else {
+              toast(verify.message || 'Payment verification failed', 'error');
+            }
+          },
+          prefill: { name: user.name, email: user.email },
+          modal: { ondismiss: () => toast('Payment cancelled', 'info') }
+        };
+
+        if (window.Razorpay) {
+          const rz = new window.Razorpay(options);
+          rz.open();
+        } else {
+          toast('Payment gateway not loaded', 'error');
+        }
+      } catch {
+        toast('Payment error', 'error');
+      }
+      return;
+    }
+
     setRegistering(true);
     try {
-      const res = await authFetch(`/live-classes/${id}/register`, { method: "POST", body: JSON.stringify({}) });
-      if (res.success) { toast("Registered! You'll receive the link before the class. 🎉", "success"); }
-      else toast(res.message || "Registration failed", "error");
-    } catch { toast("Error registering", "error"); }
+      const res = await authFetch(`/live-classes/${id}/register`, {
+        method: 'POST',
+        body: JSON.stringify({})
+      });
+
+      if (res.success) {
+        toast('Registered! 🎉 Meeting link will be sent before class starts.', 'success');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        fetch(`${API_BASE}/live-classes/${id}`, { headers })
+          .then(r => r.json())
+          .then(d => { if (d.success) setLc(d.data || d.liveClass); });
+      } else {
+        toast(res.message || 'Registration failed', 'error');
+      }
+    } catch {
+      toast('Error registering', 'error');
+    }
     setRegistering(false);
   };
 
@@ -6536,7 +7030,7 @@ function LiveClassDetailPage({ id, navigate, onAuth }) {
               </Reveal>
             )}
             <Reveal delay={60}>
-              <div style={{ background: "var(--surface)", borderRadius: 14, padding: 24 }}>
+              <div style={{ background: "var(--surface)", borderRadius: 14, padding: 24, border: "1px solid var(--border)" }}>
                 <h3 style={{ fontWeight: 700, marginBottom: 16 }}>📋 Class Details</h3>
                 {[["Platform", lc.platform], ["Duration", `${lc.duration} minutes`], ["Max Participants", lc.maxParticipants], ["Registered", lc.registrations?.length || 0], ["Seats Left", lc.availableSeats ?? Math.max(0, lc.maxParticipants - (lc.registrations?.length || 0))]].map(([k, v]) => (
                   <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)", fontSize: "0.87rem" }}>
@@ -6714,7 +7208,7 @@ function NoteDetailPage({ id, navigate, onAuth }) {
               <Reveal><div className="success-box" style={{ marginBottom: 24 }}>✅ You own this — click Download to access your file!</div></Reveal>
             )}
             <Reveal delay={60}>
-              <div style={{ background: "var(--surface)", borderRadius: 14, padding: 24 }}>
+              <div style={{ background: "var(--surface)", borderRadius: 14, padding: 24, border: "1px solid var(--border)" }}>
                 <h3 style={{ fontWeight: 700, marginBottom: 16 }}>📋 Document Details</h3>
                 {[["File Type", note.fileType?.toUpperCase()], ["Category", note.category || "General"], ["Downloads", note.totalPurchases || 0], ...(note.previewPages > 0 ? [["Free Preview", `${note.previewPages} pages`]] : [])].map(([k, v]) => (
                   <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)", fontSize: "0.87rem" }}>
@@ -6803,7 +7297,7 @@ function DashboardPage({ navigate }) {
 
         {tab === "courses" && (
           courses.length === 0
-            ? <div className="empty-state"><div className="icon">📚</div><p>No courses yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => navigate("/courses")}>Browse courses →</span></p></div>
+            ? <div className="empty-state"><div className="icon">📚</div><p>No courses yet. <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={() => navigate("/courses")}>Browse courses →</span></p></div>
             : <div className="grid-3">
                 {courses.map((p, i) => (
                   <Reveal key={p._id || p.course} delay={i * 70}>
@@ -6827,7 +7321,7 @@ function DashboardPage({ navigate }) {
 
         {tab === "notes" && (
           notes.length === 0
-            ? <div className="empty-state"><div className="icon">📄</div><p>No notes yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => navigate("/notes")}>Browse notes →</span></p></div>
+            ? <div className="empty-state"><div className="icon">📄</div><p>No notes yet. <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={() => navigate("/notes")}>Browse notes →</span></p></div>
             : <div className="grid-3">
                 {notes.map((p, i) => (
                   <Reveal key={p._id || p.notes} delay={i * 70}>
@@ -6846,7 +7340,7 @@ function DashboardPage({ navigate }) {
 
         {tab === "live" && (
           liveRegs.length === 0
-            ? <div className="empty-state"><div className="icon">📡</div><p>No classes registered. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => navigate("/live")}>Browse classes →</span></p></div>
+            ? <div className="empty-state"><div className="icon">📡</div><p>No classes registered. <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={() => navigate("/live")}>Browse classes →</span></p></div>
             : <div className="grid-3">
                 {liveRegs.map((r, i) => (
                   <Reveal key={i} delay={i * 70}>
@@ -7484,7 +7978,7 @@ function AdminPage({ navigate }) {
                 </div>
               ) : <div className="spinner" />}
               <Reveal delay={200}>
-                <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 24 }}>
+                <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: 24 }}>
                   <h3 style={{ fontWeight: 700, marginBottom: 16 }}>⚡ Quick Actions</h3>
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                     <button className="btn btn-primary" onClick={() => { setCourseFormData({}); loadSection("courses"); }}>+ New Course</button>
@@ -7530,7 +8024,7 @@ function AdminPage({ navigate }) {
                           </td>
                         </tr>
                       ))}
-                      {courses.length === 0 && <tr><td colSpan={8} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>No courses yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => setCourseFormData({})}>Create one →</span></td></tr>}
+                      {courses.length === 0 && <tr><td colSpan={8} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>No courses yet. <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={() => setCourseFormData({})}>Create one →</span></td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -7568,7 +8062,7 @@ function AdminPage({ navigate }) {
                           </td>
                         </tr>
                       ))}
-                      {liveClasses.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>No live classes yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => setLiveFormData({})}>Schedule one →</span></td></tr>}
+                      {liveClasses.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>No live classes yet. <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={() => setLiveFormData({})}>Schedule one →</span></td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -7606,7 +8100,7 @@ function AdminPage({ navigate }) {
                           </td>
                         </tr>
                       ))}
-                      {notes.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>No notes yet. <span style={{ color: "var(--primary-light)", cursor: "pointer" }} onClick={() => setNotesFormData({})}>Upload some →</span></td></tr>}
+                      {notes.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>No notes yet. <span style={{ color: "var(--primary)", cursor: "pointer" }} onClick={() => setNotesFormData({})}>Upload some →</span></td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -7664,7 +8158,7 @@ function AdminPage({ navigate }) {
                           <td style={{ fontWeight: 600 }}>{p.user?.name || "—"}</td>
                           <td style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.itemTitle || "—"}</td>
                           <td><span className="badge badge-primary">{p.itemType}</span></td>
-                          <td style={{ fontWeight: 700, color: "var(--primary-light)" }}>₹{p.amountInRupees}</td>
+                          <td style={{ fontWeight: 700, color: "var(--primary)" }}>₹{p.amountInRupees}</td>
                           <td><span className={`badge ${p.status==="paid"?"badge-green":p.status==="failed"?"badge-accent":"badge-yellow"}`}>{p.status}</span></td>
                           <td style={{ color: "var(--text3)", fontSize: "0.82rem" }}>{new Date(p.createdAt).toLocaleDateString()}</td>
                         </tr>
@@ -7693,9 +8187,8 @@ function Footer({ navigate }) {
         <Reveal>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 32, marginBottom: 40 }}>
             <div>
-              <div className="logo" style={{ marginBottom: 14 }}>
-                <div className="logo-icon">💻</div>
-                <span className="logo-text">WhatNext</span>
+              <div style={{ marginBottom: 14 }}>
+                <Logo onClick={() => navigate("/")} />
               </div>
               <p style={{ fontSize: "0.83rem", color: "var(--text3)", lineHeight: 1.6 }}>India's most affordable online learning platform. Powered by expert instructors.</p>
             </div>
@@ -7704,11 +8197,11 @@ function Footer({ navigate }) {
               ["Categories", COURSE_CATS.slice(0,4).map(a => [a.emoji+" "+a.name,"/courses"])]
             ].map(([title, links]) => (
               <div key={title}>
-                <div style={{ fontWeight: 700, fontSize: "0.88rem", marginBottom: 14 }}>{title}</div>
+                <div style={{ fontWeight: 700, fontSize: "0.88rem", marginBottom: 14, color: "var(--text)" }}>{title}</div>
                 {links.map(([label, to]) => (
                   <div key={label} style={{ fontSize: "0.82rem", color: "var(--text3)", marginBottom: 8, cursor: "pointer", transition: "color 0.2s" }}
                     onClick={() => navigate(to)}
-                    onMouseEnter={e => e.target.style.color = "var(--text2)"}
+                    onMouseEnter={e => e.target.style.color = "var(--primary)"}
                     onMouseLeave={e => e.target.style.color = "var(--text3)"}>
                     {label}
                   </div>
