@@ -3,7 +3,7 @@
 // // // ─────────────────────────────────────────────
 // // // CONFIG
 // // // ─────────────────────────────────────────────
-// // const API_BASE = "http://localhost:5000/api";
+// // const API_BASE = "https://whatnextbackend.vercel.app/api";
 
 // // // ─────────────────────────────────────────────
 // // // SCROLL REVEAL HOOK
@@ -2792,7 +2792,7 @@
 // // ─────────────────────────────────────────────
 // // CONFIG
 // // ─────────────────────────────────────────────
-// const API_BASE = "http://localhost:5000/api";
+// const API_BASE = "https://whatnextbackend.vercel.app/api";
 
 // // ─────────────────────────────────────────────
 // // SCROLL REVEAL HOOK
@@ -5583,7 +5583,7 @@
 
 import { useState, useEffect, createContext, useContext, useCallback, useRef } from "react";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://whatnextbackend.vercel.app/api";
 
 // ─────────────────────────────────────────────
 // SCROLL REVEAL HOOK

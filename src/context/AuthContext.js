@@ -1,6 +1,6 @@
 // import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-// const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// const API_BASE = process.env.REACT_APP_API_URL || 'https://whatnextbackend.vercel.app/api';
 
 // const AuthContext = createContext(null);
 // export const useAuth = () => useContext(AuthContext);
@@ -97,7 +97,7 @@
 // }
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE = process.env.REACT_APP_API_URL || 'https://whatnextbackend.vercel.app/api';
 
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
