@@ -2951,8 +2951,8 @@
 
 import { useState, useEffect, createContext, useContext, useCallback, useRef } from "react";
 
-const API_BASE = "https://whatnextbackend.vercel.app/api";
-
+// const API_BASE = "https://whatnextbackend.vercel.app/api";
+const API_BASE = process.env.REACT_APP_API_URL || "https://whatnextbackend.vercel.app/api";
 // ─────────────────────────────────────────────
 // SCROLL REVEAL HOOK
 // ─────────────────────────────────────────────
