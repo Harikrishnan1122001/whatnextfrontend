@@ -5626,16 +5626,16 @@ function Reveal({ children, delay = 0, className = "", style = {} }) {
   );
 }
 
-function RevealList({ children, baseDelay = 0, step = 80, className = "", style = {} }) {
-  return (
-    <div className={className} style={style}>
-      {Array.isArray(children)
-        ? children.map((child, i) => <Reveal key={i} delay={baseDelay + i * step}>{child}</Reveal>)
-        : <Reveal delay={baseDelay}>{children}</Reveal>
-      }
-    </div>
-  );
-}
+// function RevealList({ children, baseDelay = 0, step = 80, className = "", style = {} }) {
+//   return (
+//     <div className={className} style={style}>
+//       {Array.isArray(children)
+//         ? children.map((child, i) => <Reveal key={i} delay={baseDelay + i * step}>{child}</Reveal>)
+//         : <Reveal delay={baseDelay}>{children}</Reveal>
+//       }
+//     </div>
+//   );
+// }
 
 function RevealLeft({ children, delay = 0, className = "", style = {} }) {
   const [ref, visible] = useScrollReveal();
@@ -5772,40 +5772,40 @@ function MagneticBtn({ children, className = "", onClick, disabled, style = {} }
 }
 
 // NEW: Ripple effect on click
-function RippleCard({ children, className = "", onClick, style = {} }) {
-  const [ripples, setRipples] = useState([]);
-  const ref = useRef(null);
+// function RippleCard({ children, className = "", onClick, style = {} }) {
+//   const [ripples, setRipples] = useState([]);
+//   const ref = useRef(null);
 
-  const handleClick = (e) => {
-    const rect = ref.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const id = Date.now();
-    setRipples(p => [...p, { id, x, y }]);
-    setTimeout(() => setRipples(p => p.filter(r => r.id !== id)), 600);
-    onClick?.(e);
-  };
+//   const handleClick = (e) => {
+//     const rect = ref.current.getBoundingClientRect();
+//     const x = e.clientX - rect.left;
+//     const y = e.clientY - rect.top;
+//     const id = Date.now();
+//     setRipples(p => [...p, { id, x, y }]);
+//     setTimeout(() => setRipples(p => p.filter(r => r.id !== id)), 600);
+//     onClick?.(e);
+//   };
 
-  return (
-    <div
-      ref={ref}
-      className={className}
-      onClick={handleClick}
-      style={{ position: "relative", overflow: "hidden", cursor: "pointer", ...style }}
-    >
-      {ripples.map(r => (
-        <span key={r.id} style={{
-          position: "absolute", left: r.x, top: r.y,
-          width: 6, height: 6, marginLeft: -3, marginTop: -3,
-          background: "rgba(232,17,59,0.25)", borderRadius: "50%",
-          transform: "scale(0)", animation: "rippleAnim 0.6s ease-out forwards",
-          pointerEvents: "none", zIndex: 0,
-        }} />
-      ))}
-      <div style={{ position: "relative", zIndex: 1 }}>{children}</div>
-    </div>
-  );
-}
+//   return (
+//     <div
+//       ref={ref}
+//       className={className}
+//       onClick={handleClick}
+//       style={{ position: "relative", overflow: "hidden", cursor: "pointer", ...style }}
+//     >
+//       {ripples.map(r => (
+//         <span key={r.id} style={{
+//           position: "absolute", left: r.x, top: r.y,
+//           width: 6, height: 6, marginLeft: -3, marginTop: -3,
+//           background: "rgba(232,17,59,0.25)", borderRadius: "50%",
+//           transform: "scale(0)", animation: "rippleAnim 0.6s ease-out forwards",
+//           pointerEvents: "none", zIndex: 0,
+//         }} />
+//       ))}
+//       <div style={{ position: "relative", zIndex: 1 }}>{children}</div>
+//     </div>
+//   );
+// }
 
 // NEW: Tilt card on hover
 function TiltCard({ children, className = "", style = {}, onClick }) {
@@ -5836,21 +5836,21 @@ function TiltCard({ children, className = "", style = {}, onClick }) {
 }
 
 // NEW: Glitch text animation
-function GlitchText({ children, className = "" }) {
-  const [glitching, setGlitching] = useState(false);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGlitching(true);
-      setTimeout(() => setGlitching(false), 300);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-  return (
-    <span className={`${className} ${glitching ? "glitch-active" : ""}`} style={{ display: "inline-block" }}>
-      {children}
-    </span>
-  );
-}
+// function GlitchText({ children, className = "" }) {
+//   const [glitching, setGlitching] = useState(false);
+//   useEffect(() => {
+//     const interval = setInterval(() => {
+//       setGlitching(true);
+//       setTimeout(() => setGlitching(false), 300);
+//     }, 4000);
+//     return () => clearInterval(interval);
+//   }, []);
+//   return (
+//     <span className={`${className} ${glitching ? "glitch-active" : ""}`} style={{ display: "inline-block" }}>
+//       {children}
+//     </span>
+//   );
+// }
 
 // NEW: Particle burst on hover for mascot cards
 function ParticleMascotCard({ emoji, name, label, active, onClick }) {
